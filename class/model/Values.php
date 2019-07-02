@@ -21,11 +21,13 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   }
 
   protected function formatDate($value, $format = 'd/m/Y'){
+    if($this->isEmpty($value)) return null;
     if(gettype($value) === "string") $value = SpanishDateTime::createFromFormat("Y-m-d", $value);
     return ($value) ? $value->format($format) : null;
   }
 
   protected function formatString($value, $format = null){
+    if($this->isEmpty($value)) return null;
     switch($format){
       case "XxYy": return str_replace(" ", "", ucwords(str_replace("_", " ", mb_strtolower($value, "UTF-8"))));
       case "xxyy": case "xy": case "x": return mb_strtolower(str_replace("_", "", $value), "UTF-8");
