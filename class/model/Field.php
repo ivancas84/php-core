@@ -67,7 +67,11 @@ abstract class Field {
 
   //public $typescriptType = null; //tipo de datos typescript
 
-
+  public $exclusive = true; //flag para indicar si el campo es o no exclusivo
+  /**
+   * Un campo exclusivo puede definirse internamente en la entidad.
+   * Un campo no exlusivo debe definirse con alguna relación independiente. 
+   */
 
   public function __construct() {
     $this->defineDataType();
@@ -97,6 +101,8 @@ abstract class Field {
   public function isUnique(){ return $this->unique; }
   public function isAdmin(){ return $this->admin; }
   public function isHistory(){ return $this->history; }
+  public function isExclusive(){ return $this->exclusive; }
+
 
 
   public function getAlias($format = null) {
