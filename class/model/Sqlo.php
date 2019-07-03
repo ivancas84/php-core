@@ -289,6 +289,8 @@ WHERE
   }*/
 
 
+
+  /* DEPRECATED
   public function select($select, $render = NULL) { //select definido por el usuario
     $r = $this->render($render);
 
@@ -302,7 +304,7 @@ WHERE
 ";
 
     return $sql;
-  }
+  }*/
 
 
   public function advanced(RenderAux $render) { //consulta avanzada
