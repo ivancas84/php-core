@@ -187,18 +187,7 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
     return $sql;
   }
 
-  public function _all($render = NULL){
-    $r = $this->render($render);
 
-    $sql = "SELECT DISTINCT
-{$this->sql->_fieldsExclusive()}
-{$this->sql->from()}
-{$this->sql->_joinAux()}
-{$this->sql->conditionAll($r)}
-{$this->sql->orderBy($r->getOrder())}
-{$this->sql->limit($r->getPage(), $r->getSize())}
-";
-  }
 
   public function ids($render = NULL) { //sql para obtener ids
     /**

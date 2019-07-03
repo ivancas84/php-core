@@ -297,6 +297,12 @@ abstract class EntitySql { //Definir SQL
 ";
   }
 
+  public function _from(){
+    $t = $this->prt();    
+    return " FROM " . $this->entity->sn() . " AS {$t}
+";
+  }
+
   public function limit($page = 1, $size = false){
     if ($size) {
       return " LIMIT {$size} OFFSET " . ( ($page - 1) * $size ) . "
@@ -334,7 +340,7 @@ abstract class EntitySql { //Definir SQL
      *   "historic": busqueda de datos historicos
      *   ""
      */
-    $sqlCond = concat($this->conditionSearch($render->search), $connect);
+    $sqlCond = concat($this->_conditionSearch($render->search), $connect);
     $sqlCond .= concat($this->conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
     $sqlCond .= concat($this->conditionHistory($render->history), " AND", $connect, $sqlCond);
     $sqlCond .= concat($this->conditionAux(), " AND", $connect, $sqlCond);
@@ -370,12 +376,8 @@ abstract class EntitySql { //Definir SQL
     return $this->conditionAdvanced($advancedSearch);
   }
 
-
-
-
   //Definir sql de campos
   public function fieldsFull(){ return $this->fields(); } //sobrescribir si existen relaciones
-
 
   //Definir sql con campos auxiliares
   public function fieldsAux() { return $this->_fieldsAux(); }
@@ -383,7 +385,6 @@ abstract class EntitySql { //Definir SQL
 
   //Definir sql con cadena de relaciones fk y u_
   public function join(){ return ""; } //Sobrescribir si existen relaciones fk u_
-
 
   public function _join($field, $fromTable){ //definir relacion
     /**
@@ -601,4 +602,16 @@ abstract class EntitySql { //Definir SQL
 
     return "(".$condition.")";
   }
+
+  public function _subSql($render = NULL){ //subconsulta sql (en construccion)
+    $r = $this->render($render);
+
+    $sql = "SELECT DISTINCT
+{$this->sql->_fieldsExclusive()}
+{$this->sql->_from()}
+{$this->sql->_joinAux()}
+{$this->sql->conditionAll($r)}
+";
+  }
+
 }
