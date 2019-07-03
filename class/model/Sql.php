@@ -5,6 +5,11 @@ require_once("function/concat.php");
 require_once("function/settypebool.php");
 require_once("class/db/Interface.php");
 
+/**
+ * Se define el prefijo _ para indicar que el metodo no define relaciones
+ * Los métodos _  habitulamente utilizan el atributo prefix para poder relacionarse con otras entidades
+ * Los métodos no _ habitualmente accede a otras entidades para definir codigo
+ */
 abstract class EntitySql { //Definir SQL
   /**
    * Facilitar la definición de SQL
@@ -106,9 +111,7 @@ abstract class EntitySql { //Definir SQL
     /**
      * Este metodo sera sobrescrito si existen relaciones fk
      */
-    if(empty($search)) return '';
-    $condition = $this->_conditionSearch($search);
-    return "(" . $condition . ")";
+    return $this->_conditionSearch($search);
   }
 
   public function conditionAux(){ return $this->_conditionAux(); } //concatenacion de condicion auxiliar
@@ -269,7 +272,7 @@ abstract class EntitySql { //Definir SQL
 
   public function fields(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
   
-  public function fieldsExclusive(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (solo exclusivos)
+  public function _fieldsExclusive(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (solo exclusivos)
   
   public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
 
@@ -305,6 +308,23 @@ abstract class EntitySql { //Definir SQL
 
 
   public function conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones
+
+    /**
+     * $condition =
+     *   "advanced": array de condiciones avanzadas
+     *     array (["field","option","value"])
+     *   "search": string de busqueda simple
+     *   "historic": busqueda de datos historicos
+     *   ""
+     */
+    $sqlCond = concat($this->conditionSearch($render->search), $connect);
+    $sqlCond .= concat($this->conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
+    $sqlCond .= concat($this->conditionHistory($render->history), " AND", $connect, $sqlCond);
+    $sqlCond .= concat($this->conditionAux(), " AND", $connect, $sqlCond);
+    return $sqlCond;
+  }
+
+  public function _conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones
 
     /**
      * $condition =
