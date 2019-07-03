@@ -365,8 +365,9 @@ abstract class EntitySql { //Definir SQL
 
   public function _join($field, $fromTable){ //definir relacion
     /**
+     * En funcion del campo pasado como parametro define una relacion
      * Por defecto define una relacion simple utilizando LEFT JOIN
-     * Este método puede ser sobrescrito para dar soporte a campos derivados complejos
+     * Este método puede ser sobrescrito para dar soporte a campos derivados
      */
     $t = $this->prt();
     return "LEFT OUTER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
