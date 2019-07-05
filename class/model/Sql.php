@@ -116,21 +116,6 @@ abstract class EntitySql { //Definir SQL
     return $this->_conditionSearch($search);
   }
 
-  public function conditionAux(){ return $this->_conditionAux(); } //concatenacion de condicion auxiliar
-  public function _conditionAux(){ return "";  } //Sobrescribir si existe condicion auxiliar obligatoria
-  /**
-   * No utilizar conditionAux para condiciones historicas (las condiciones historicas no deben ser definidas en cadena)
-   * Ejemplo: "(alias.field = "value") " dejar un espacio despues de la condicion
-   */
-
-  public function conditionHistory(array $history = []) { //condicion para visualizar datos historicos
-    if(!key_exists("history", $history)) $history["history"] = false;
-    return $this->_conditionHistory($history);
-  }
-  public function _conditionHistory(array $history){ return "";  } //Sobrescribir si existe condicion auxiliar obligatoria
-  /**
-   * por defecto se define la entidad actual solo para mostrar los datos activos y las relacionadas todos los datos
-   */
 
   public function conditionAdvanced(array $advanced = null) { //busqueda avanzada considerando relaciones
 
@@ -421,8 +406,6 @@ abstract class EntitySql { //Definir SQL
      */
     $sqlCond = concat($this->conditionSearch($render->search), $connect);
     $sqlCond .= concat($this->conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
-    $sqlCond .= concat($this->conditionHistory($render->history), " AND", $connect, $sqlCond);
-    $sqlCond .= concat($this->conditionAux(), " AND", $connect, $sqlCond);
     return $sqlCond;
   }
 
@@ -437,8 +420,6 @@ abstract class EntitySql { //Definir SQL
      */
     $sqlCond = concat($this->_conditionSearch($render->search), $connect);
     $sqlCond .= concat($this->_conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
-    $sqlCond .= concat($this->conditionHistory($render->history), " AND", $connect, $sqlCond);
-    $sqlCond .= concat($this->conditionAux(), " AND", $connect, $sqlCond);
     return $sqlCond;
   }
 

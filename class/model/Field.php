@@ -50,14 +50,6 @@ abstract class Field {
 
   public $admin = true; //administracion de campo, al desactivarlo, no se incluye el campo en los formularios de administracion
 
-  public $history = false;
-    /**
-     * Los campos history deben ser del tipo timestamp, date o boolean
-     * Habitualmente los campos history se definen con admin = false
-     * el valor se define al eliminar un campo, por lo que deben sobrescribirse los metodos de eliminacion (ej delete, deleteAll)
-     * se define conditionHistory para discriminar entre valores historicos
-     */
-
   public $hidden = false;
     /**
      * Los campos de agregacion definen al admin como false y no se incluyen en la consulta (solo pueden ser definidos en consultas avanzadas)
@@ -78,7 +70,6 @@ abstract class Field {
     $this->defineSubtype();
     $this->defineNotNull();
     $this->defineLength();
-    $this->defineHistory();
     $this->defineMain();
   }
 
@@ -100,7 +91,6 @@ abstract class Field {
   public function isNotNull(){ return $this->notNull; }
   public function isUnique(){ return $this->unique; }
   public function isAdmin(){ return $this->admin; }
-  public function isHistory(){ return $this->history; }
   public function isExclusive(){ return $this->exclusive; }
 
 
@@ -137,8 +127,6 @@ abstract class Field {
   }
 
   protected function defineMain(){ if ( $this->isHidden() ) { $this->main = false; } }
-
-  protected function defineHistory(){ if ( $this->isHidden() ) { $this->history = false; } }
 
   protected function defineDataType(){
     if (is_null($this->dataType)) {
