@@ -25,21 +25,26 @@ abstract class EntitySql { //Definir SQL
    * Para definir el sql es necesaria la existencia de una clase de acceso abierta, ya que ciertos metodos, como por ejemplo "escapar caracteres" lo requieren.
    * Ademas, ciertos metodos requieren determinar el motor de base de datos para definir la sintaxis SQL adecuada
    */
-
-   public static function getInstanceFromString($entity, $prefix = NULL) { //crear instancias de sql
-     /**
-      * sql, a diferencia de sus pares entity y sqlo, no puede ser implementada como singleton porque utiliza prefijos de identificacion
-      */
-     $sqlName = snake_case_to("XxYy", $entity) . "Sql";
-     $sql = new $sqlName;
-     if($prefix) $sql->prefix = $prefix;
-     return $sql;
-   }
-
-
   public function __construct(){
     $this->db = Dba::dbInstance();
     $this->format = SqlFormat::getInstance();
+  }
+
+  public static function getInstanceFromString($entity, $prefix = NULL) { //crear instancias de sql
+    /**
+     * sql, a diferencia de sus pares entity y sqlo, no puede ser implementada como singleton porque utiliza prefijos de identificacion
+     */
+    $sqlName = snake_case_to("XxYy", $entity) . "Sql";
+    $sql = new $sqlName;
+    if($prefix) $sql->prefix = $prefix;
+    return $sql;
+  }
+
+  final public static function getInstance($prefix = null) {
+    $className = get_called_class();
+    $sql = new $className;
+    if($prefix) $sql->prefix = $prefix;
+    return $sql;    
   }
 
   public function prf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; }   //prefijo fields
@@ -49,15 +54,15 @@ abstract class EntitySql { //Definir SQL
   public function format(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //formato de sql
   public function _json(array $row) { throw new BadMethodCallException("No implementado"); }
 
+  /**
+   * @todo Metodo obsoleto, debe pasar a formar parte de Sqlo
   public function json(array $row) { return $this->_json($row); }
-    /**
-     * @todo Metodo obsoleto, debe pasar a formar parte de Sqlo
-     */
+   */
 
+  /**
+   * @todo Metodo obsoleto, debe pasar a formar parte de Sqlo
   public function jsonAll(array $rows){
-    /**
-     * @todo Metodo obsoleto, debe pasar a formar parte de Sqlo
-     */
+ 
     $rows_ = [];
 
     foreach($rows as $row){
@@ -67,6 +72,7 @@ abstract class EntitySql { //Definir SQL
 
     return $rows_;
   }
+   */
 
   public function formatIds(array $ids = []) { //formato sql de ids
     $ids_ = [];
@@ -102,11 +108,7 @@ abstract class EntitySql { //Definir SQL
   }
   public function _conditionSearch($search = ""){ throw new BadMethodCallException("Not Implemented"); } //traduccion local
 
-  public function fieldsAll() { //todos los fields de consulta (incluye derivados estructurales)
-    return ($this->fieldsAux()) ? "{$this->fieldsFull()},
-{$this->fieldsAux()}" : "{$this->fieldsFull()}";
-  }
-
+ 
   public function conditionSearch($search = ""){ //Definir condicion de busqueda simple
     /**
      * Este metodo sera sobrescrito si existen relaciones fk
@@ -130,7 +132,7 @@ abstract class EntitySql { //Definir SQL
    * por defecto se define la entidad actual solo para mostrar los datos activos y las relacionadas todos los datos
    */
 
-  public function conditionAdvanced(array $advanced = null) { //busqueda avanzada
+  public function conditionAdvanced(array $advanced = null) { //busqueda avanzada considerando relaciones
 
     /**
      * Array $advanced:
@@ -151,13 +153,28 @@ abstract class EntitySql { //Definir SQL
     return $conditionMode["condition"];
   }
 
+  public function _conditionAdvanced(array $advanced = null) { //busqueda avanzada sin considerar relaciones
 
+    /**
+     * Array $advanced:
+     *  [
+     *    0 => "field"
+     *    1 => "=", "!=", ">=", "<=", "<", ">", "=="
+     *    2 => "value" array|string|int|boolean|date (si es null no se define busqueda, si es un array se definen tantas busquedas como elementos tenga el array)
+     *    3 => "AND" | "OR" | null (opcional, por defecto AND)
+     *  ]
+     *  Array(
+     *    Array("field" => "field", "value" => array|string|int|boolean|date (si es null no se define busqueda, si es un array se definen tantas busquedas como elementos tenga el array) [, "option" => "="|"=~"|"!="|"<"|"<="|">"|">="|true (no nulos)|false (nulos)][, "mode" => "and"|"or"]
+     *    ...
+     *  )
+     *  )
+     */
+    if(empty($advanced)) return "";
+    $conditionMode = $this->_conditionAdvancedRecursive($advanced);
+    return $conditionMode["condition"];
+  }
 
-
-
-
-  private function conditionAdvancedRecursive(array $advanced){
-
+  private function conditionAdvancedRecursive(array $advanced){ //metodo recursivo para definir condiciones avanzada (considera relaciones)
     /**
      * Para facilitar la definicion de condiciones, retorna un array con dos elementos:
      * "condition": SQL
@@ -184,11 +201,59 @@ abstract class EntitySql { //Definir SQL
     return ["condition" => $condicion, "mode" => $mode];
   }
 
-  private function conditionAdvancedIterable(array $advanced) {
+  private function _conditionAdvancedRecursive(array $advanced){ //metodo recursivo para definir condicines avanzadas (no considera relaciones)
+    /**
+     * Para facilitar la definicion de condiciones, retorna un array con dos elementos:
+     * "condition": SQL
+     * "mode": Concatenacion de condiciones "AND" | "OR"
+     */
+
+    if(is_array($advanced[0])) return $this->_conditionAdvancedIterable($advanced);
+    /**
+     * si en la posicion 0 es un string significa que es un campo a buscar, caso contrario es un nuevo conjunto (array) de campos que debe ser recorrido
+     */
+
+    $option = (empty($advanced[1])) ? "=" : $advanced[1]; //por defecto se define "="
+    $value = (!isset($advanced[2])) ? null : $advanced[2]; //hay opciones de configuracion que pueden no definir valores
+    /**
+     * No usar empty, puede definirse el valor false
+     */
+    $mode = (empty($advanced[3])) ? "AND" : $advanced[3];  //el modo indica la concatenacion con la opcion precedente, se usa en un mismo conjunto (array) de opciones
+
+   $condicion = $this->_conditionFieldValue($advanced[0], $option, $value);
+    /**
+     * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
+     * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
+     */
+    return ["condition" => $condicion, "mode" => $mode];
+  }
+
+
+  private function conditionAdvancedIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (considera relaciones)
     $conditionModes = array();
 
     for($i = 0; $i < count($advanced); $i++){
       $conditionMode = $this->conditionAdvancedRecursive($advanced[$i]);
+      array_push($conditionModes, $conditionMode);
+    }
+
+    $modeReturn = $conditionModes[0]["mode"];
+    $condition = "";
+
+    foreach($conditionModes as $cm){
+      $mode = $cm["mode"];
+      if(!empty($condition)) $condition .= $mode . " ";
+      $condition.= $cm["condition"];
+    }
+
+    return ["condition"=>"(".$condition.")", "mode"=>$modeReturn];
+  }
+
+  private function _conditionAdvancedIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (no considera relaciones)
+    $conditionModes = array();
+
+    for($i = 0; $i < count($advanced); $i++){
+      $conditionMode = $this->_conditionAdvancedRecursive($advanced[$i]);
       array_push($conditionModes, $conditionMode);
     }
 
@@ -234,6 +299,36 @@ abstract class EntitySql { //Definir SQL
     return "(".$condition.")";
   }
 
+  protected function _conditionFieldValue($field, $option, $value) {
+    //se verifica inicialmente la condicion auxiliar.
+    //las condiciones auxiliares no siguen la estructura definida de condicion
+    $condition = $this->_conditionFieldAux($field, $option, $value);
+    if($condition) return $condition;
+    
+    if(!is_array($value)) {
+      $condition = $this->_conditionField($field, $option, $value);
+      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      return $condition;
+    }
+
+    $condition = "";
+    $cond = false;
+
+    foreach($value as $v){
+      if($cond) {
+        if($option == "=") $condition .= " OR ";
+        elseif($option == "!=") $condition .= " AND ";
+        else throw new Exception("Error al definir opción");
+      } else $cond = true;
+
+      $condition_ = $this->_conditionField($field, $option, $v);
+      if(!$condition_) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      $condition .= $condition_;
+    }
+
+    return "(".$condition.")";
+  }
+
 
   protected function conditionField($field, $option, $value){ //condicion avanzada principal
     if($c = $this->_conditionField($field, $option, $value)) return $c;
@@ -243,8 +338,9 @@ abstract class EntitySql { //Definir SQL
    * La restriccion de conditionField es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
    * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
    */
+  protected function _conditionField($field, $option, $value) { throw new BadMethodCallException("Not Implemented"); }
 
-  protected function conditionFieldAux($field, $option, $value){ //condicion de field auxiliar
+  protected function conditionFieldAux($field, $option, $value) { //condicion de field auxiliar (considera relaciones si existen)
     /**
      * Se sobrescribe si tiene relaciones
      */
@@ -313,7 +409,7 @@ abstract class EntitySql { //Definir SQL
 
 
 
-  public function conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones
+  public function conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones considerando relaciones
 
     /**
      * $condition =
@@ -330,8 +426,7 @@ abstract class EntitySql { //Definir SQL
     return $sqlCond;
   }
 
-  public function _conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones
-
+  public function _conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones sin considerar relaciones
     /**
      * $condition =
      *   "advanced": array de condiciones avanzadas
@@ -341,7 +436,7 @@ abstract class EntitySql { //Definir SQL
      *   ""
      */
     $sqlCond = concat($this->_conditionSearch($render->search), $connect);
-    $sqlCond .= concat($this->conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
+    $sqlCond .= concat($this->_conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
     $sqlCond .= concat($this->conditionHistory($render->history), " AND", $connect, $sqlCond);
     $sqlCond .= concat($this->conditionAux(), " AND", $connect, $sqlCond);
     return $sqlCond;
@@ -379,9 +474,7 @@ abstract class EntitySql { //Definir SQL
   //Definir sql de campos
   public function fieldsFull(){ return $this->fields(); } //sobrescribir si existen relaciones
 
-  //Definir sql con campos auxiliares
-  public function fieldsAux() { return $this->_fieldsAux(); }
-  public function _fieldsAux() { return ""; }
+
 
   //Definir sql con cadena de relaciones fk y u_
   public function join(){ return ""; } //Sobrescribir si existen relaciones fk u_
@@ -603,14 +696,12 @@ abstract class EntitySql { //Definir SQL
     return "(".$condition.")";
   }
 
-  public function _subSql($render = NULL){ //subconsulta sql (en construccion)
-    $r = $this->render($render);
-
-    $sql = "SELECT DISTINCT
-{$this->sql->_fieldsExclusive()}
-{$this->sql->_from()}
-{$this->sql->_joinAux()}
-{$this->sql->conditionAll($r)}
+  public function _subSql(Render $render){ //subconsulta sql (en construccion)
+    return "SELECT DISTINCT
+{$this->_fieldsExclusive()}
+{$this->_from()}
+{$this->_joinAux()}
+{$this->_conditionAll($render)}
 ";
   }
 
