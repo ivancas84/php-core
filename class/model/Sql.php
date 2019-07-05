@@ -314,17 +314,17 @@ abstract class EntitySql { //Definir SQL
     return "(".$condition.")";
   }
 
-
+  protected function _conditionField($field, $option, $value) { throw new BadMethodCallException("Not Implemented"); }
   protected function conditionField($field, $option, $value){ //condicion avanzada principal
+    /**
+     * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
+     * La restriccion de conditionField es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
+     * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
+     */
     if($c = $this->_conditionField($field, $option, $value)) return $c;
   }
-  /**
-   * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
-   * La restriccion de conditionField es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
-   * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
-   */
-  protected function _conditionField($field, $option, $value) { throw new BadMethodCallException("Not Implemented"); }
-
+  
+  
   protected function conditionFieldAux($field, $option, $value) { //condicion de field auxiliar (considera relaciones si existen)
     /**
      * Se sobrescribe si tiene relaciones
@@ -341,7 +341,6 @@ abstract class EntitySql { //Definir SQL
         $f2 = $this->_mappingFieldEntity($value[1]);
         return "({$f1} {$option} {$f2})";
       break;
-
 
       case "_cantidad": //campo de agregacion general: "_cantidad"
         $f = $this->_mappingFieldEntity($field);
