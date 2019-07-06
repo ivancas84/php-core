@@ -494,11 +494,6 @@ abstract class EntitySql { //Definir SQL
 ";
   }
 
-  //Definir sql con relacion auxiliar
-  //Utilizada generalmente para restringir visualización, CUIDADO CON LA PERSISTENCIA!!! Las restricciones de visualización son también aplicadas al persistir, pudiendo no tener el efecto deseado.
-  public function joinAux() { return $this->_joinAux(); }
-  public function _joinAux() { return ""; }
-
   //Ordenamiento de cadena de relaciones
   protected function orderDefault(){   //ordenamiento por defecto
     /**
@@ -675,7 +670,6 @@ abstract class EntitySql { //Definir SQL
     return "SELECT DISTINCT
 {$this->_fieldsExclusive()}
 {$this->_from()}
-{$this->_joinAux()}
 {$this->_conditionAll($render)}
 ";
   }
