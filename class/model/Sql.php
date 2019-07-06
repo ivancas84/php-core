@@ -139,20 +139,8 @@ abstract class EntitySql { //Definir SQL
   }
 
   public function _conditionAdvanced(array $advanced = null) { //busqueda avanzada sin considerar relaciones
-
     /**
-     * Array $advanced:
-     *  [
-     *    0 => "field"
-     *    1 => "=", "!=", ">=", "<=", "<", ">", "=="
-     *    2 => "value" array|string|int|boolean|date (si es null no se define busqueda, si es un array se definen tantas busquedas como elementos tenga el array)
-     *    3 => "AND" | "OR" | null (opcional, por defecto AND)
-     *  ]
-     *  Array(
-     *    Array("field" => "field", "value" => array|string|int|boolean|date (si es null no se define busqueda, si es un array se definen tantas busquedas como elementos tenga el array) [, "option" => "="|"=~"|"!="|"<"|"<="|">"|">="|true (no nulos)|false (nulos)][, "mode" => "and"|"or"]
-     *    ...
-     *  )
-     *  )
+     * A diferencia del metodo que recorre relaciones, _conditionAdvanced no genera error si la condicion no existe
      */
     if(empty($advanced)) return "";
     $conditionMode = $this->_conditionAdvancedRecursive($advanced);
@@ -210,6 +198,7 @@ abstract class EntitySql { //Definir SQL
      * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
      * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
      */
+    if(empty($condition)) return "";
     return ["condition" => $condicion, "mode" => $mode];
   }
 
@@ -242,10 +231,15 @@ abstract class EntitySql { //Definir SQL
       array_push($conditionModes, $conditionMode);
     }
 
-    $modeReturn = $conditionModes[0]["mode"];
     $condition = "";
+    foreach($conditionModes as $cm){
+      if(empty($cm)) continue;
+      $modeReturn = $cm["mode"];
+      break;
+    }
 
     foreach($conditionModes as $cm){
+      if(empty($cm)) continue;
       $mode = $cm["mode"];
       if(!empty($condition)) $condition .= $mode . " ";
       $condition.= $cm["condition"];
@@ -292,7 +286,7 @@ abstract class EntitySql { //Definir SQL
     
     if(!is_array($value)) {
       $condition = $this->_conditionField($field, $option, $value);
-      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      //if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
       return $condition;
     }
 
@@ -307,10 +301,11 @@ abstract class EntitySql { //Definir SQL
       } else $cond = true;
 
       $condition_ = $this->_conditionField($field, $option, $v);
-      if(!$condition_) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      //if(!$condition_) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
       $condition .= $condition_;
     }
 
+    if(empty($condition)) return "";
     return "(".$condition.")";
   }
 
