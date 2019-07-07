@@ -192,17 +192,6 @@ abstract class Entity {
     return $unique;
   }
 
-  public function getFieldHistory(){ //Field historico
-    /**
-     * Puede definirse por entidad un unico field historico del tipo boolean, date o timestamp
-     */
-    foreach($this->getFieldsNf() as $field){
-      if($field->isHistory()) return $field;
-    }
-
-    return null;
-  }
-
 
   /**
    * Tiene relaciones?

@@ -109,7 +109,7 @@ class Dba { //Facilita el acceso a la base de datos
        * Si los atributos son desconocidos se agregan como filtros
        */
       switch($key){
-        case "size": case "page": case "search": case "history"://pueden redefinirse ciertos parametros la prioridad la tiene los que estan fuera del elemento data (parametros definidos directamente)
+        case "size": case "page": case "search": //pueden redefinirse ciertos parametros la prioridad la tiene los que estan fuera del elemento data (parametros definidos directamente)
           $display[$key] = $value;
         break;
         case "order": //ejemplo http://localhost/programacion/curso/all?order={%22horario%22:%22asc%22}
@@ -141,7 +141,6 @@ class Dba { //Facilita el acceso a la base de datos
 
     if(!empty($display["search"])) $render->setSearch($display["search"]);
     if(!empty($display["filters"])) $render->setAdvanced($display["filters"]);
-    if(!empty($display["history"])) $render->setHistory($display["history"]);
     if(!empty($display["params"])) $render->setParams($display["params"]);
 
     return $render;

@@ -394,8 +394,6 @@ abstract class EntitySql { //Definir SQL
      * $condition =
      *   "advanced": array de condiciones avanzadas
      *     array (["field","option","value"])
-     *   "search": string de busqueda simple
-     *   "historic": busqueda de datos historicos
      *   ""
      */
     $sqlCond = concat($this->conditionSearch($render->search), $connect);
@@ -409,8 +407,6 @@ abstract class EntitySql { //Definir SQL
      *   "advanced": array de condiciones avanzadas
      *     array (["field","option","value"])
      *   "search": string de busqueda simple
-     *   "historic": busqueda de datos historicos
-     *   ""
      */
     $sqlCond = concat($this->_conditionSearch($render->search), $connect);
     $sqlCond .= concat($this->_conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);

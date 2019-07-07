@@ -8,15 +8,9 @@ class Render {
   public $order;
   public $page;
   public $size;
-  public $history; //permite multiples valores historicos segun cadena de relaciones
-  /**
-   * para el valor de la primera entidad es history, para el de la segundao prefix_history, y asi sucesivamente
-   * true (historicos), false (activos), null (todos)
-   */
 
   public function __construct() {
     $this->advanced = array();
-    $this->history = array();
     $this->order = array();
     $this->page = 1;
     $this->size = false; //si es false o 0 se incluyen todas las paginas, no se define tamanio
@@ -30,9 +24,6 @@ class Render {
   public function setParams (array $params = null) { foreach($params as $key => $value) array_push ( $this->advanced, [$key, "=", $value] ); } //params es una forma corta de asignar filtros a traves de un array asociativo
 
   public function setSearch ($search = null) { $this->search = $search; }
-
-  public function setHistory ($history = null) { $this->history = $history; }
-
 
   //Ordenamiento
   //@param array $order Ordenamiento
@@ -62,8 +53,6 @@ class Render {
   public function getPage(){ return $this->page; }
 
   public function getAdvanced(){ return $this->advanced; }
-
-  public function getHistory(){ return $this->history; }
 
   public function getSearch(){ return $this->search; }
 
