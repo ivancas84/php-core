@@ -165,7 +165,6 @@ WHERE id IN ({$ids_});
 SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->joinAux()}
 {$this->sql->conditionAll($r)}
 ";
   }
@@ -178,7 +177,6 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 {$this->sql->fieldsFull()}
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->joinAux()}
 {$this->sql->conditionAll($r)}
 {$this->sql->orderBy($r->getOrder())}
 {$this->sql->limit($r->getPage(), $r->getSize())}
@@ -198,7 +196,6 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
     $sql = "SELECT DISTINCT {$this->sql->fieldId()}
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->joinAux()}
 {$this->sql->conditionAll($r)}
 {$this->sql->limit($r->getPage(), $r->getSize())}
 ";
@@ -233,7 +230,6 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 {$this->sql->fieldsFull()}
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->joinAux()}
 WHERE
 {$conditionUniqueFields}
 ";
@@ -249,7 +245,6 @@ WHERE
 {$this->sql->fieldsFull()}
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->joinAux()}
 WHERE
 {$conditionUniqueFields}
 {$this->sql->conditionAll($r, 'AND')}
@@ -299,7 +294,6 @@ WHERE
     $sql = "SELECT {$select}
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->joinAux()}
 {$this->sql->conditionAll($r)}
 {$this->sql->orderBy($r->getOrder())}
 {$this->sql->limit($r->getPage(), $r->getSize())}
@@ -332,7 +326,6 @@ WHERE
 {$fieldsQuery}
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->joinAux()}
 {$this->sql->conditionAll($render)}
 {$group}
 {$having}
