@@ -174,7 +174,7 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
     $r = $this->render($render);
 
     $sql = "SELECT DISTINCT
-{$this->sql->fieldsFull()}
+{$this->sql->fields()}
 {$this->sql->from()}
 {$this->sql->join()}
 {$this->sql->conditionAll($r)}
@@ -227,7 +227,7 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
     if(empty($conditionUniqueFields)) return null;
 
     return "SELECT DISTINCT
-{$this->sql->fieldsFull()}
+{$this->sql->fields()}
 {$this->sql->from()}
 {$this->sql->join()}
 WHERE
@@ -242,7 +242,7 @@ WHERE
     if(empty($conditionUniqueFields)) return null;
 
     return "SELECT DISTINCT
-{$this->sql->fieldsFull()}
+{$this->sql->fields()}
 {$this->sql->from()}
 {$this->sql->join()}
 WHERE

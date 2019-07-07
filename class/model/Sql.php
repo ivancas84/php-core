@@ -345,7 +345,7 @@ abstract class EntitySql { //Definir SQL
   }
 
 
-  public function fields(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
+  public function _fields(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
   
   public function _fieldsExclusive(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (solo exclusivos)
   
@@ -443,7 +443,7 @@ abstract class EntitySql { //Definir SQL
   }
 
   //Definir sql de campos
-  public function fieldsFull(){ return $this->fields(); } //sobrescribir si existen relaciones
+  public function fields(){ return $this->_fields(); } //sobrescribir si existen relaciones
 
 
 
