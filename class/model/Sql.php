@@ -374,7 +374,7 @@ abstract class EntitySql { //Definir SQL
 
   public function _from(){
     $t = $this->prt();    
-    return " FROM " . $this->entity->sn() . " AS {$t}
+    return " FROM " . $this->entity->sn_() . " AS {$t}
 ";
   }
 
