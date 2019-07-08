@@ -198,7 +198,8 @@ abstract class EntitySql { //Definir SQL
      * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
      * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
      */
-    if(empty($condition)) return "";
+    
+    if(empty($condicion)) return "";
     return ["condition" => $condicion, "mode" => $mode];
   }
 
