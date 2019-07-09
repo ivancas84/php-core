@@ -144,6 +144,7 @@ abstract class EntitySql { //Definir SQL
      */
     if(empty($advanced)) return "";
     $conditionMode = $this->_conditionAdvancedRecursive($advanced);
+    if (empty($conditionMode)) return "";
     return $conditionMode["condition"];
   }
 
@@ -227,10 +228,14 @@ abstract class EntitySql { //Definir SQL
   private function _conditionAdvancedIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (no considera relaciones)
     $conditionModes = array();
 
+
     for($i = 0; $i < count($advanced); $i++){
       $conditionMode = $this->_conditionAdvancedRecursive($advanced[$i]);
+      if(empty($conditionMode)) continue;
       array_push($conditionModes, $conditionMode);
     }
+
+    if(empty($conditionModes)) return "";
 
     $condition = "";
     foreach($conditionModes as $cm){
@@ -373,6 +378,18 @@ abstract class EntitySql { //Definir SQL
 ";
   }
 
+  public function _fromSubSql(Render $render){
+    $t = $this->prt();    
+    return " FROM (
+
+
+" . $this->_subSql($render) . "
+
+
+) AS {$t}
+";
+  }
+
   public function _from(){
     $t = $this->prt();    
     return " FROM " . $this->entity->sn_() . " AS {$t}
@@ -448,8 +465,7 @@ abstract class EntitySql { //Definir SQL
 
 
 
-  //Definir sql con cadena de relaciones fk y u_
-  public function join(){ return ""; } //Sobrescribir si existen relaciones fk u_
+  public function join(Render $render){ return ""; } //Sobrescribir si existen relaciones fk u_
 
   public function _join($field, $fromTable, Render $render){ //definir relacion como subconsulta
     /**
@@ -459,7 +475,11 @@ abstract class EntitySql { //Definir SQL
      */
     $t = $this->prt();
     return "LEFT OUTER JOIN (
+
+
       " . $this->_subSql($render) . "
+
+
 ) AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
 ";
   }
@@ -668,7 +688,7 @@ abstract class EntitySql { //Definir SQL
   public function _subSql(Render $render){ //subconsulta sql (en construccion)
     return "SELECT DISTINCT
 {$this->_fieldsExclusive()}
-{$this->_from()}
+{$this->_from($render)}
 {$this->_conditionAll($render)}
 ";
   }
