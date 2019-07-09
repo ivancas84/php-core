@@ -451,14 +451,16 @@ abstract class EntitySql { //Definir SQL
   //Definir sql con cadena de relaciones fk y u_
   public function join(){ return ""; } //Sobrescribir si existen relaciones fk u_
 
-  public function _join($field, $fromTable){ //definir relacion
+  public function _join($field, $fromTable, Render $render){ //definir relacion como subconsulta
     /**
      * En funcion del campo pasado como parametro define una relacion
      * Por defecto define una relacion simple utilizando LEFT JOIN
      * Este método puede ser sobrescrito para dar soporte a campos derivados
      */
     $t = $this->prt();
-    return "LEFT OUTER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
+    return "LEFT OUTER JOIN (
+      " . $this->_subSql($render) . "
+) AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
 ";
   }
 
