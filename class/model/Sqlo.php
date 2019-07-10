@@ -49,6 +49,7 @@ abstract class EntitySqlo { //SQL object
     return $rows;
   }
 
+
   final public static function getInstance() {
     $className = get_called_class();
     if (!isset(self::$instances[$className])) {
@@ -59,6 +60,12 @@ abstract class EntitySqlo { //SQL object
   }
 
   final public static function getInstanceFromString($entity) {
+    $className = snake_case_to("XxYy", $entity) . "Sqlo";
+    return call_user_func("{$className}::getInstance");
+  }
+
+  final public static function getInstanceRequire($entity) {    
+    require_once("class/model/sqlo/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
     $className = snake_case_to("XxYy", $entity) . "Sqlo";
     return call_user_func("{$className}::getInstance");
   }

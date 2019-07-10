@@ -47,6 +47,13 @@ abstract class EntitySql { //Definir SQL
     return $sql;    
   }
 
+  final public static function getInstanceRequire($entity, $prefix = null) {    
+    require_once("class/model/sql/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");    $className = snake_case_to("XxYy", $entity) . "Sql";
+    $className = snake_case_to("XxYy", $entity) . "Sql";
+    return call_user_func_array("{$className}::getInstance", [$prefix]);
+  }
+
+
   public function prf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; }   //prefijo fields
   public function prt(){ return (empty($this->prefix)) ?  $this->entity->getAlias() : $this->prefix; } //prefijo tabla
   public function initializeInsert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //inicializar valores para insercion
