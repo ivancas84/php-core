@@ -188,7 +188,6 @@ abstract class EntitySql { //Definir SQL
      * "condition": SQL
      * "mode": Concatenacion de condiciones "AND" | "OR"
      */
-
     if(is_array($advanced[0])) return $this->_conditionAdvancedIterable($advanced);
     /**
      * si en la posicion 0 es un string significa que es un campo a buscar, caso contrario es un nuevo conjunto (array) de campos que debe ser recorrido
@@ -234,7 +233,6 @@ abstract class EntitySql { //Definir SQL
 
   private function _conditionAdvancedIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (no considera relaciones)
     $conditionModes = array();
-
 
     for($i = 0; $i < count($advanced); $i++){
       $conditionMode = $this->_conditionAdvancedRecursive($advanced[$i]);
@@ -298,6 +296,7 @@ abstract class EntitySql { //Definir SQL
     if($condition) return $condition;
     
     if(!is_array($value)) {
+
       $condition = $this->_conditionField($field, $option, $value);
       //if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
       return $condition;

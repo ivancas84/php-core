@@ -73,6 +73,14 @@ class SqlFormat { //Formato SQL
     else return "(" . $field . " " . $option. " TO_TIMESTAMP('" . $value . "', 'YYYY-MM-DD HH24:MI:SS') )";
   }
 
+  public function conditionTime($field, $value, $option = "="){
+    if($value === false) return "(" . $field . " IS NULL) ";
+    if($value === true) return "(" . $field . " IS NOT NULL) ";
+
+    if($this->db->getDbms() == "mysql") return "(" . $field . " " . $option. " '" . $value . "')";
+    else return "(" . $field . " " . $option. " TO_TIMESTAMP('" . $value . "', 'HH24:MI:SS') )";
+  }
+
   public function conditionNumber($field, $value, $option = "="){
     if($value === false) return "(" . $field . " IS NULL) ";
     if($value === true) return "(" . $field . " IS NOT NULL) ";
