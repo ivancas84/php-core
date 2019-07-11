@@ -182,8 +182,8 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 
     $sql = "SELECT DISTINCT
 {$this->sql->fields()}
-{$this->sql->_fromSubSql($render)}
-{$this->sql->join($render)}
+{$this->sql->_fromSubSql($r)}
+{$this->sql->join($r)}
 {$this->sql->conditionAll($r)}
 {$this->sql->orderBy($r->getOrder())}
 {$this->sql->limit($r->getPage(), $r->getSize())}
