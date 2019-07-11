@@ -331,8 +331,8 @@ WHERE
 
     $sql = "SELECT DISTINCT
 {$fieldsQuery}
-{$this->sql->from()}
-{$this->sql->join()}
+{$this->sql->_fromSubSql($render)}
+{$this->sql->join($render)}
 {$this->sql->conditionAll($render)}
 {$group}
 {$having}
