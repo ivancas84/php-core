@@ -2,6 +2,12 @@
 
 abstract class EntityValues { //manipulacion de valores de una entidad
 
+  public $_warnings = [];
+  public $_errors = [];
+  
+  public function addWarning($warning) { array_push($this->_warnings, $warning); }
+  public function addError($error) { array_push($this->_errors, $error); }
+
   abstract public function setRow(array $row = NULL);
 
   public function __construct($row = NULL){
