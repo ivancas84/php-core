@@ -313,7 +313,7 @@ abstract class EntitySql { //Definir SQL
       } else $cond = true;
 
       $condition_ = $this->_conditionField($field, $option, $v);
-      //if(!$condition_) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      if(!$condition_) return "";
       $condition .= $condition_;
     }
 
@@ -434,6 +434,7 @@ abstract class EntitySql { //Definir SQL
      */
     $sqlCond = concat($this->_conditionSearch($render->search), $connect);
     $sqlCond .= concat($this->_conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
+    
     return $sqlCond;
   }
 
