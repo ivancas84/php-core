@@ -8,17 +8,14 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   public function addWarning($warning) { array_push($this->_warnings, $warning); }
   public function addError($error) { array_push($this->_errors, $error); }
 
-  abstract public function setRow(array $row = NULL);
+  abstract public function fromArray(array $row = NULL);
 
-  public function __construct($row = NULL){
-    $this->setRow($row);
-  }
+  //abstract public function setDefault();
 
   public static function getInstanceFromString($entity, array $row = NULL) { //crear instancias de values
-    //TODO: Implementar metodo setRow fuera del constructor
     $name = snake_case_to("XxYy", $entity) . "Values";
     $class = new $name;
-    $class->setRow($row);
+    if($row) $class->fromArray($row);
     return $class;
   }
 
