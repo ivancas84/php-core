@@ -59,7 +59,7 @@ abstract class Field {
 
   //public $typescriptType = null; //tipo de datos typescript
 
-  public $exclusive = true; //flag para indicar si el campo es o no exclusivo
+  public $db = true; //flag para indicar si el campo es o no exclusivo
   /**
    * Un campo exclusivo puede definirse internamente en la entidad.
    * Un campo no exlusivo debe definirse con alguna relación independiente. 
@@ -91,7 +91,7 @@ abstract class Field {
   public function isNotNull(){ return $this->notNull; }
   public function isUnique(){ return $this->unique; }
   public function isAdmin(){ return $this->admin; }
-  public function isExclusive(){ return $this->exclusive; }
+  public function isDb(){ return $this->db; }
 
 
 
