@@ -82,11 +82,16 @@ class SqlFormat { //Formato SQL
   }
 
   public function conditionNumber($field, $value, $option = "="){
-    if($value === false) return "(" . $field . " IS NULL) ";
     if($value === true) return "(" . $field . " IS NOT NULL) ";
-    if($option === true) return "(" . $field . " IS NULL) ";
-    if($option === false) return "(" . $field . " IS NOT NULL) ";
-    return "(" . $field . " " . $option . " " . $value . ") ";
+    switch($option) {
+      case "=": 
+        if($value === false) return "(" . $field . " IS NULL) ";
+        if($value === true) return "(" . $field . " IS NOT NULL) "; 
+        return "(" . $field . " " . $option . " " . $value . ") ";
+      case "=~": return $this->_conditionNumberApprox($field, $value);
+      default: return "(" . $field . " " . $option . " " . $value . ") ";
+    }
+    
   }
 
   public function conditionBoolean($field, $value = NULL){ //definir condicion de busqueda de booleano

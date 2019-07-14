@@ -416,8 +416,9 @@ abstract class EntitySql { //Definir SQL
 
 
   protected function _conditionSearch($option, $value){
+    if($option != "=~") throw new Exception("Opción no permitida para condición " . $this->entity->getName("XxYy") . "Sql._conditionSearch([\"search_\",\"{$option}\",\"{$value}\"])");
     //condicion estructurada de busqueda que involucra a todos los campos
-
+    $conditions = [];
     foreach($this->entity->getFields() as $field){
       $c = $this->_conditionFieldStruct($this->prf().$field->getName(),$option,$value);
       array_push($conditions, $c);
@@ -444,7 +445,7 @@ abstract class EntitySql { //Definir SQL
      *     array (["field","option","value"])
      *   "search": string de busqueda simple
      */
-    return concat($this->_conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
+    return concat($this->_conditionAdvanced($render->advanced), " AND", $connect);
   }
 
   public function conditionUniqueFields(array $params){ //filtrar campos unicos y definir condicion
