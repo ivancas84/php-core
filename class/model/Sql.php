@@ -113,16 +113,6 @@ abstract class EntitySql { //Definir SQL
       case '_cantidad': return "COUNT(*)";
     } 
   }
-  public function _conditionSearch($search = ""){ throw new BadMethodCallException("Not Implemented"); } //traduccion local
-
- 
-  public function conditionSearch($search = ""){ //Definir condicion de busqueda simple
-    /**
-     * Este metodo sera sobrescrito si existen relaciones fk
-     */
-    return $this->_conditionSearch($search);
-  }
-
 
   public function conditionAdvanced(array $advanced = null) { //busqueda avanzada considerando relaciones
 
@@ -174,7 +164,7 @@ abstract class EntitySql { //Definir SQL
      */
     $mode = (empty($advanced[3])) ? "AND" : $advanced[3];  //el modo indica la concatenacion con la opcion precedente, se usa en un mismo conjunto (array) de opciones
 
-   $condicion = $this->conditionFieldValue($advanced[0], $option, $value);
+   $condicion = $this->conditionField($advanced[0], $option, $value);
     /**
      * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
      * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
@@ -200,7 +190,7 @@ abstract class EntitySql { //Definir SQL
      */
     $mode = (empty($advanced[3])) ? "AND" : $advanced[3];  //el modo indica la concatenacion con la opcion precedente, se usa en un mismo conjunto (array) de opciones
 
-   $condicion = $this->_conditionFieldValue($advanced[0], $option, $value);
+   $condicion = $this->_conditionField($advanced[0], $option, $value);
     /**
      * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
      * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
@@ -259,14 +249,14 @@ abstract class EntitySql { //Definir SQL
     return ["condition"=>"(".$condition.")", "mode"=>$modeReturn];
   }
 
-  protected function conditionFieldValue($field, $option, $value){
+  protected function conditionField($field, $option, $value){
     //se verifica inicialmente la condicion auxiliar.
     //las condiciones auxiliares no siguen la estructura definida de condicion
     $condition = $this->conditionFieldAux($field, $option, $value);
     if($condition) return $condition;
     
     if(!is_array($value)) {
-      $condition = $this->conditionField($field, $option, $value);
+      $condition = $this->conditionFieldStruct($field, $option, $value);
       if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
       return $condition;
     }
@@ -281,7 +271,7 @@ abstract class EntitySql { //Definir SQL
         else throw new Exception("Error al definir opción");
       } else $cond = true;
 
-      $condition_ = $this->conditionField($field, $option, $v);
+      $condition_ = $this->conditionFieldStruct($field, $option, $v);
       if(!$condition_) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
       $condition .= $condition_;
     }
@@ -289,7 +279,7 @@ abstract class EntitySql { //Definir SQL
     return "(".$condition.")";
   }
 
-  protected function _conditionFieldValue($field, $option, $value) {
+  protected function _conditionField($field, $option, $value) {
     //se verifica inicialmente la condicion auxiliar.
     //las condiciones auxiliares no siguen la estructura definida de condicion
     $condition = $this->_conditionFieldAux($field, $option, $value);
@@ -297,7 +287,7 @@ abstract class EntitySql { //Definir SQL
     
     if(!is_array($value)) {
 
-      $condition = $this->_conditionField($field, $option, $value);
+      $condition = $this->_conditionFieldStruct($field, $option, $value);
       //if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
       return $condition;
     }
@@ -312,7 +302,7 @@ abstract class EntitySql { //Definir SQL
         else throw new Exception("Error al definir opción");
       } else $cond = true;
 
-      $condition_ = $this->_conditionField($field, $option, $v);
+      $condition_ = $this->_conditionFieldStruct($field, $option, $v);
       if(!$condition_) return "";
       $condition .= $condition_;
     }
@@ -321,14 +311,28 @@ abstract class EntitySql { //Definir SQL
     return "(".$condition.")";
   }
 
-  protected function _conditionField($field, $option, $value) { throw new BadMethodCallException("Not Implemented"); }
-  protected function conditionField($field, $option, $value){ //condicion avanzada principal
+  protected function _conditionFieldStruct($field, $option, $value) { 
+    $p = $this->prf();
+
+    switch($field){
+      case $p."search_": 
+        /**
+         * define la misma condicion y valor para todos los campos de la entidad
+        */
+        return $this->_conditionSearch($option, $value);;
+      break;
+
+    }
+
+  }
+  
+  protected function conditionFieldStruct($field, $option, $value){ //condicion avanzada principal
     /**
      * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
-     * La restriccion de conditionField es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
+     * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
      */
-    if($c = $this->_conditionField($field, $option, $value)) return $c;
+    if($c = $this->_conditionFieldStruct($field, $option, $value)) return $c;
   }
   
   
@@ -411,6 +415,16 @@ abstract class EntitySql { //Definir SQL
   }
 
 
+  protected function _conditionSearch($option, $value){
+    //condicion estructurada de busqueda que involucra a todos los campos
+
+    foreach($this->entity->getFields() as $field){
+      $c = $this->_conditionFieldStruct($this->prf().$field->getName(),$option,$value);
+      array_push($conditions, $c);
+    }
+
+    return implode(" OR ", $conditions);
+  }
 
   public function conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones considerando relaciones
 
@@ -420,9 +434,7 @@ abstract class EntitySql { //Definir SQL
      *     array (["field","option","value"])
      *   ""
      */
-    $sqlCond = concat($this->conditionSearch($render->search), $connect);
-    $sqlCond .= concat($this->conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
-    return $sqlCond;
+    return concat($this->conditionAdvanced($render->advanced), $connect);
   }
 
   public function _conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones sin considerar relaciones
@@ -432,10 +444,7 @@ abstract class EntitySql { //Definir SQL
      *     array (["field","option","value"])
      *   "search": string de busqueda simple
      */
-    $sqlCond = concat($this->_conditionSearch($render->search), $connect);
-    $sqlCond .= concat($this->_conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
-    
-    return $sqlCond;
+    return concat($this->_conditionAdvanced($render->advanced), " AND", $connect, $sqlCond);
   }
 
   public function conditionUniqueFields(array $params){ //filtrar campos unicos y definir condicion
