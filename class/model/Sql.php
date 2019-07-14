@@ -690,10 +690,10 @@ abstract class EntitySql { //Definir SQL
   }
 
   public function _subSql(Render $render){ //subconsulta sql (en construccion)
-    return "SELECT DISTINCT
+ return "SELECT DISTINCT
 {$this->_fieldsDb()}
 {$this->_from($render)}
-{concat($this->_condition($render), 'WHERE ')}
+" . concat($this->_condition($render), 'WHERE ') . "
 ";
   }
 

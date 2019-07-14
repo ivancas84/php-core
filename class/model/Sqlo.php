@@ -76,14 +76,14 @@ abstract class EntitySqlo { //SQL object
   }
 
   public function all($render = NULL) {
+    
 
     $r = $this->render($render);
-
     $sql = "SELECT DISTINCT
 {$this->sql->fields()}
 {$this->sql->fromSubSql($r)}
 {$this->sql->join($r)}
-{concat($this->sql->condition($r), 'WHERE ')}
+" . concat($this->sql->condition($r), 'WHERE ') . "
 {$this->sql->orderBy($r->getOrder())}
 {$this->sql->limit($r->getPage(), $r->getSize())}
 ";
@@ -191,7 +191,7 @@ WHERE id IN ({$ids_});
 SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->conditionAll($r)}
+" . concat($this->sql->condition($r), 'WHERE ') . "
 ";
   }
 
@@ -208,7 +208,7 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
     $sql = "SELECT DISTINCT {$this->sql->fieldId()}
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->conditionAll($r)}
+" . concat($this->sql->condition($r), 'WHERE ') . "
 {$this->sql->limit($r->getPage(), $r->getSize())}
 ";
 
@@ -259,7 +259,7 @@ WHERE
 {$this->sql->join()}
 WHERE
 {$conditionUniqueFields}
-{$this->sql->conditionAll($r, 'AND')}
+" . concat($this->sql->condition($r), 'AND ') . "
 ";
   }
 
@@ -306,7 +306,7 @@ WHERE
     $sql = "SELECT {$select}
 {$this->sql->from()}
 {$this->sql->join()}
-{$this->sql->conditionAll($r)}
+" . concat($this->sql->condition($r), 'WHERE ') . "
 {$this->sql->orderBy($r->getOrder())}
 {$this->sql->limit($r->getPage(), $r->getSize())}
 ";
@@ -338,7 +338,7 @@ WHERE
 {$fieldsQuery}
 {$this->sql->fromSubSql($render)}
 {$this->sql->join($render)}
-{$this->sql->conditionAll($render)}
+" . concat($this->sql->condition($render), 'WHERE ') . "
 {$group}
 {$having}
 {$this->sql->order($render->getOrder())}
