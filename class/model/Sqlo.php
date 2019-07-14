@@ -18,47 +18,7 @@ abstract class EntitySqlo { //SQL object
   public $sql;    //EntitySql. Atributo auxiliar para facilitar la definicion de consultas sql
   protected static $instances = [];
 
-  public function nextPk(){ return $this->db->uniqId(); } //siguiente identificador unico
-  protected function _insert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de insercion
-  protected function _update(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de actualizacion
-  public function json(array $row) { return $this->sql->_json($row); }
-
-  public function values(array $row){ //retornar instancias de EntityValues
-    /**
-     * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
-     * El resultado es almacenado en un array asociativo.
-     * Las claves del array son nombres representativo de la entidad que contiene
-     * Las claves se forman a partir del nombre de la clave foranea
-     * Se asigna un numero incremental a la clave en el caso de que se repita
-     * Este metodo debe sobrescribirse en el caso de que existan relaciones
-     */
-    $row_ = [];
-
-    $json = ($row && !is_null($row['id'])) ? $this->sql->_json($row) : null;
-    $row_["toma"] = EntityValues::getInstanceFromString("toma", $json);
-  }
-
-
-  public function jsonAll(array $rows){
-    foreach($rows as &$row) $row = $this->json($row);
-    return $rows;
-  }
-
-  public function valuesAll(array $rows){
-    foreach($rows as &$row) $row = $this->values($row);
-    return $rows;
-  }
-
-
-  final public static function getInstance() {
-    $className = get_called_class();
-    if (!isset(self::$instances[$className])) {
-      $c = new $className;
-      self::$instances[$className] = $c;
-    }
-    return self::$instances[$className];
-  }
-
+  
   final public static function getInstanceFromString($entity) {
     $className = snake_case_to("XxYy", $entity) . "Sqlo";
     return call_user_func("{$className}::getInstance");
@@ -82,10 +42,69 @@ abstract class EntitySqlo { //SQL object
     if(gettype($render) == "object") return $render;
 
     $r = new Render();
-    if(gettype($render) == "string") $r->setSearch($render);
+    if(gettype($render) == "string") $r->setCondition(["search_","=~",$render]);
     elseif (gettype($render) == "array") $r->setCondition($render);
     return $r;
   }
+
+  public function nextPk(){ return $this->db->uniqId(); } //siguiente identificador unico
+  public function json(array $row) { return $this->sql->_json($row); }
+  public function jsonAll(array $rows){ foreach($rows as &$row) $row = $this->json($row); return $rows; }
+  public function values(array $row){ //retornar instancias de EntityValues
+    /**
+     * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
+     * El resultado es almacenado en un array asociativo.
+     * Las claves del array son nombres representativo de la entidad que contiene
+     * Las claves se forman a partir del nombre de la clave foranea
+     * Se asigna un numero incremental a la clave en el caso de que se repita
+     * Este metodo debe sobrescribirse en el caso de que existan relaciones
+     */
+    $row_ = [];
+
+    $json = ($row && !is_null($row['id'])) ? $this->sql->_json($row) : null;
+    $row_[$this->entity->getName()] = EntityValues::getInstanceFromString($this->entity->getName(), $json);
+  }
+  public function valuesAll(array $rows){ foreach($rows as &$row) $row = $this->values($row); return $rows; }
+
+  final public static function getInstance() {
+    $className = get_called_class();
+    if (!isset(self::$instances[$className])) {
+      $c = new $className;
+      self::$instances[$className] = $c;
+    }
+    return self::$instances[$className];
+  }
+
+  public function all($render = NULL) {
+
+    $r = $this->render($render);
+
+    $sql = "SELECT DISTINCT
+{$this->sql->fields()}
+{$this->sql->fromSubSql($r)}
+{$this->sql->join($r)}
+{concat($this->sql->condition($r), 'WHERE ')}
+{$this->sql->orderBy($r->getOrder())}
+{$this->sql->limit($r->getPage(), $r->getSize())}
+";
+
+    return $sql;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  protected function _insert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de insercion
+  protected function _update(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de actualizacion
 
   public function insert(array $row) { //Formatear valores y definir sql de insercion
     /**
@@ -176,21 +195,7 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 ";
   }
 
-  public function all($render = NULL) {
 
-    $r = $this->render($render);
-
-    $sql = "SELECT DISTINCT
-{$this->sql->fields()}
-{$this->sql->_fromSubSql($r)}
-{$this->sql->join($r)}
-{$this->sql->conditionAll($r)}
-{$this->sql->orderBy($r->getOrder())}
-{$this->sql->limit($r->getPage(), $r->getSize())}
-";
-
-    return $sql;
-  }
 
 
 
@@ -331,7 +336,7 @@ WHERE
 
     $sql = "SELECT DISTINCT
 {$fieldsQuery}
-{$this->sql->_fromSubSql($render)}
+{$this->sql->fromSubSql($render)}
 {$this->sql->join($render)}
 {$this->sql->conditionAll($render)}
 {$group}

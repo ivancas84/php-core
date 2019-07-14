@@ -1,6 +1,10 @@
 <?php
 
 function concat($value, $connectNoEmpty, $connectEmpty = NULL, $connectCond = NULL){
+  /**
+   * Concatena valores en funcion de ciertas condiciones
+   */
+  
   if(empty($value)) {
     return '';
   }

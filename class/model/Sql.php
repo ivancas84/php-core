@@ -114,11 +114,13 @@ abstract class EntitySql { //Definir SQL
     } 
   }
 
-  public function conditionAdvanced(array $advanced = null) { //busqueda avanzada considerando relaciones
+  public function condition(Render $render) { //busqueda avanzada considerando relaciones
+
+    $condition = array_merge($render->condition, $render->generalCondition);
 
     /**
      * Array $advanced:
-     *  [
+    *    [
      *    0 => "field"
      *    1 => "=", "!=", ">=", "<=", "<", ">", "=="
      *    2 => "value" array|string|int|boolean|date (si es null no se define busqueda, si es un array se definen tantas busquedas como elementos tenga el array)
@@ -130,41 +132,41 @@ abstract class EntitySql { //Definir SQL
      *  )
      *  )
      */
-    if(empty($advanced)) return "";
-    $conditionMode = $this->conditionAdvancedRecursive($advanced);
+    if(empty($condition)) return "";
+    $conditionMode = $this->conditionRecursive($condition);
     return $conditionMode["condition"];
   }
 
-  public function _conditionAdvanced(array $advanced = null) { //busqueda avanzada sin considerar relaciones
+  public function _condition(Render $render) { //busqueda avanzada sin considerar relaciones
     /**
-     * A diferencia del metodo que recorre relaciones, _conditionAdvanced no genera error si la condicion no existe
+     * A diferencia del metodo que recorre relaciones, _condition no genera error si la condicion no existe
      */
-    if(empty($advanced)) return "";
-    $conditionMode = $this->_conditionAdvancedRecursive($advanced);
+    if(empty($render->getCondition())) return "";
+    $conditionMode = $this->_conditionRecursive($render->getCondition());
     if (empty($conditionMode)) return "";
     return $conditionMode["condition"];
   }
 
-  private function conditionAdvancedRecursive(array $advanced){ //metodo recursivo para definir condiciones avanzada (considera relaciones)
+  private function conditionRecursive(array $condition){ //metodo recursivo para definir condiciones avanzada (considera relaciones)
     /**
      * Para facilitar la definicion de condiciones, retorna un array con dos elementos:
      * "condition": SQL
      * "mode": Concatenacion de condiciones "AND" | "OR"
      */
 
-    if(is_array($advanced[0])) return $this->conditionAdvancedIterable($advanced);
+    if(is_array($condition[0])) return $this->conditionIterable($condition);
     /**
      * si en la posicion 0 es un string significa que es un campo a buscar, caso contrario es un nuevo conjunto (array) de campos que debe ser recorrido
      */
 
-    $option = (empty($advanced[1])) ? "=" : $advanced[1]; //por defecto se define "="
-    $value = (!isset($advanced[2])) ? null : $advanced[2]; //hay opciones de configuracion que pueden no definir valores
+    $option = (empty($condition[1])) ? "=" : $condition[1]; //por defecto se define "="
+    $value = (!isset($condition[2])) ? null : $condition[2]; //hay opciones de configuracion que pueden no definir valores
     /**
      * No usar empty, puede definirse el valor false
      */
-    $mode = (empty($advanced[3])) ? "AND" : $advanced[3];  //el modo indica la concatenacion con la opcion precedente, se usa en un mismo conjunto (array) de opciones
+    $mode = (empty($condition[3])) ? "AND" : $condition[3];  //el modo indica la concatenacion con la opcion precedente, se usa en un mismo conjunto (array) de opciones
 
-   $condicion = $this->conditionField($advanced[0], $option, $value);
+   $condicion = $this->conditionField($condition[0], $option, $value);
     /**
      * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
      * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
@@ -172,13 +174,13 @@ abstract class EntitySql { //Definir SQL
     return ["condition" => $condicion, "mode" => $mode];
   }
 
-  private function _conditionAdvancedRecursive(array $advanced){ //metodo recursivo para definir condicines avanzadas (no considera relaciones)
+  private function _conditionRecursive(array $advanced){ //metodo recursivo para definir condicines avanzadas (no considera relaciones)
     /**
      * Para facilitar la definicion de condiciones, retorna un array con dos elementos:
      * "condition": SQL
      * "mode": Concatenacion de condiciones "AND" | "OR"
      */
-    if(is_array($advanced[0])) return $this->_conditionAdvancedIterable($advanced);
+    if(is_array($advanced[0])) return $this->_conditionIterable($advanced);
     /**
      * si en la posicion 0 es un string significa que es un campo a buscar, caso contrario es un nuevo conjunto (array) de campos que debe ser recorrido
      */
@@ -201,11 +203,11 @@ abstract class EntitySql { //Definir SQL
   }
 
 
-  private function conditionAdvancedIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (considera relaciones)
+  private function conditionIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (considera relaciones)
     $conditionModes = array();
 
     for($i = 0; $i < count($advanced); $i++){
-      $conditionMode = $this->conditionAdvancedRecursive($advanced[$i]);
+      $conditionMode = $this->conditionRecursive($advanced[$i]);
       array_push($conditionModes, $conditionMode);
     }
 
@@ -221,11 +223,11 @@ abstract class EntitySql { //Definir SQL
     return ["condition"=>"(".$condition.")", "mode"=>$modeReturn];
   }
 
-  private function _conditionAdvancedIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (no considera relaciones)
+  private function _conditionIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (no considera relaciones)
     $conditionModes = array();
 
     for($i = 0; $i < count($advanced); $i++){
-      $conditionMode = $this->_conditionAdvancedRecursive($advanced[$i]);
+      $conditionMode = $this->_conditionRecursive($advanced[$i]);
       if(empty($conditionMode)) continue;
       array_push($conditionModes, $conditionMode);
     }
@@ -388,7 +390,7 @@ abstract class EntitySql { //Definir SQL
 ";
   }
 
-  public function _fromSubSql(Render $render){
+  public function fromSubSql(Render $render){
     $t = $this->prt();    
     return " FROM (
 
@@ -427,26 +429,8 @@ abstract class EntitySql { //Definir SQL
     return implode(" OR ", $conditions);
   }
 
-  public function conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones considerando relaciones
 
-    /**
-     * $condition =
-     *   "advanced": array de condiciones avanzadas
-     *     array (["field","option","value"])
-     *   ""
-     */
-    return concat($this->conditionAdvanced($render->condition), $connect);
-  }
-
-  public function _conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones sin considerar relaciones
-    /**
-     * $condition =
-     *   "advanced": array de condiciones avanzadas
-     *     array (["field","option","value"])
-     *   "search": string de busqueda simple
-     */
-    return concat($this->_conditionAdvanced($render->condition), " AND", $connect);
-  }
+  
 
   public function conditionUniqueFields(array $params){ //filtrar campos unicos y definir condicion
     /**
@@ -474,7 +458,10 @@ abstract class EntitySql { //Definir SQL
         }
       }
     }
-    return $this->conditionAdvanced($advancedSearch);
+
+    $render = new Render();
+    $render->setCondition($advancedSearch);
+    return $this->condition($render);
   }
 
   //Definir sql de campos
@@ -706,7 +693,7 @@ abstract class EntitySql { //Definir SQL
     return "SELECT DISTINCT
 {$this->_fieldsDb()}
 {$this->_from($render)}
-{$this->_conditionAll($render)}
+{concat($this->_condition($render), 'WHERE ')}
 ";
   }
 
