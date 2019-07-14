@@ -5,7 +5,7 @@ require_once("class/model/Dba.php");
 try{
 
     $render = new Render();
-    $render->setAdvanced(["numero","=",true]);
+    $render->setCondition(["numero","=",true]);
     $render->setOrder(["numero"=>"asc"]);
     $rows = Dba::all("sede", $render);
 

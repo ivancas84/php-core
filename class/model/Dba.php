@@ -140,7 +140,7 @@ class Dba { //Facilita el acceso a la base de datos
     $render->setOrder($display["order"]);
 
     if(!empty($display["search"])) $render->setSearch($display["search"]);
-    if(!empty($display["filters"])) $render->setAdvanced($display["filters"]);
+    if(!empty($display["filters"])) $render->setCondition($display["filters"]);
     if(!empty($display["params"])) $render->setParams($display["params"]);
 
     return $render;

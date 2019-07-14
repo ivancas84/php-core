@@ -435,7 +435,7 @@ abstract class EntitySql { //Definir SQL
      *     array (["field","option","value"])
      *   ""
      */
-    return concat($this->conditionAdvanced($render->advanced), $connect);
+    return concat($this->conditionAdvanced($render->condition), $connect);
   }
 
   public function _conditionAll(Render $render = null, $connect = "WHERE") { //definir todas las condiciones sin considerar relaciones
@@ -445,7 +445,7 @@ abstract class EntitySql { //Definir SQL
      *     array (["field","option","value"])
      *   "search": string de busqueda simple
      */
-    return concat($this->_conditionAdvanced($render->advanced), " AND", $connect);
+    return concat($this->_conditionAdvanced($render->condition), " AND", $connect);
   }
 
   public function conditionUniqueFields(array $params){ //filtrar campos unicos y definir condicion

@@ -3,27 +3,38 @@
 //Presentacion de datos
 class Render {
 
-  public $advanced; //array multiple cuya raiz es [field,option,value], ejemplo: [["nombre","=","unNombre"],[["apellido","=","unApellido"],["apellido","=","otroApellido","OR"]]]
-  public $search;
+  public $condition; //array multiple cuya raiz es [field,option,value], 
+  /**
+   * ejemplo:  [
+   *    ["nombre","=","unNombre"],
+   *    [
+   *      ["apellido","=","unApellido"],
+   *      ["apellido","=","otroApellido","OR"]
+   *    ]
+   * ]
+   */  
+  public $generalCondition; //condicion utilizada solo en la estructura general 
   public $order;
   public $page;
   public $size;
 
   public function __construct() {
-    $this->advanced = array();
+    $this->condition = array();
+    $this->generalCondition = array();
     $this->order = array();
     $this->page = 1;
     $this->size = false; //si es false o 0 se incluyen todas las paginas, no se define tamanio
-    $this->search = null;
   }
 
-  public function setAdvanced (array $advanced = null) { $this->advanced = $advanced; }
+  public function setCondition (array $condition = null) { $this->condition = $condition; }
 
-  public function addAdvanced ($advanced = null) { if(!empty($advanced)) array_push ( $this->advanced, $advanced ); }
+  public function addCondition ($condition = null) { if(!empty($condition)) array_push ( $this->condition, $condition ); }
 
-  public function setParams (array $params = null) { foreach($params as $key => $value) array_push ( $this->advanced, [$key, "=", $value] ); } //params es una forma corta de asignar filtros a traves de un array asociativo
+  public function setParams (array $params = null) { foreach($params as $key => $value) array_push ( $this->condition, [$key, "=", $value] ); } //params es una forma corta de asignar filtros a traves de un array asociativo
 
-  public function setSearch ($search = null) { $this->search = $search; }
+  public function setGeneralCondition ($generalCondition = null) { $this->generalCondition = $generalCondition; }
+
+  public function addGeneralCondition ($gc = null) { if(!empty($gc)) array_push ( $this->generalCondition, $gc ); }
 
   //Ordenamiento
   //@param array $order Ordenamiento
@@ -52,9 +63,9 @@ class Render {
 
   public function getPage(){ return $this->page; }
 
-  public function getAdvanced(){ return $this->advanced; }
+  public function getCondition(){ return $this->condition; }
 
-  public function getSearch(){ return $this->search; }
+  public function getGeneralCondition(){ return $this->generalCondition; }
 
   public function getOrder(){ return $this->order; }
 

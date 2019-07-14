@@ -83,7 +83,7 @@ abstract class EntitySqlo { //SQL object
 
     $r = new Render();
     if(gettype($render) == "string") $r->setSearch($render);
-    elseif (gettype($render) == "array") $r->setAdvanced($render);
+    elseif (gettype($render) == "array") $r->setCondition($render);
     return $r;
   }
 
