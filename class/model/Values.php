@@ -12,6 +12,13 @@ abstract class EntityValues { //manipulacion de valores de una entidad
 
   //abstract public function setDefault();
 
+  public static function getInstanceFromArray(array $row = NULL) { //crear instancias de values
+    $className = get_called_class();
+    $v = new $className;
+    if($row) $v->fromArray($row);
+    return $v;   
+  }
+
   public static function getInstanceFromString($entity, array $row = NULL) { //crear instancias de values
     $name = snake_case_to("XxYy", $entity) . "Values";
     $class = new $name;
