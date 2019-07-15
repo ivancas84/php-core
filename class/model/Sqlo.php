@@ -76,8 +76,6 @@ abstract class EntitySqlo { //SQL object
   }
 
   public function all($render = NULL) {
-    
-
     $r = $this->render($render);
     $sql = "SELECT DISTINCT
 {$this->sql->fields()}
@@ -91,6 +89,20 @@ abstract class EntitySqlo { //SQL object
     return $sql;
   }
 
+  public function getAll(array $ids, $render = NULL) {
+    $r = $this->render($render);
+    //Para dar soporte a distintos tipos de id, se define la condicion de ids a traves del metodo conditionAdvanced en vez de utilizar IN como se hacia habitualmente
+    $advanced = [];
+    for($i = 0; $i < count($ids); $i++) {
+      $connect = ($i == 0) ? "AND" : "OR";
+      array_push($advanced, ["id", "=", $ids[$i], $connect]);
+    }
+    if(!count($advanced)) return null;
+
+    $r->addCondition($advanced);
+
+    return $this->all($r);
+  }
 
 
 
@@ -215,20 +227,6 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
     return $sql;
   }
 
-  public function getAll(array $ids, $render = NULL) {
-    $r = $this->render($render);
-    //Para dar soporte a distintos tipos de id, se define la condicion de ids a traves del metodo conditionAdvanced en vez de utilizar IN como se hacia habitualmente
-    $advanced = [];
-    for($i = 0; $i < count($ids); $i++) {
-      $connect = ($i == 0) ? "AND" : "OR";
-      array_push($advanced, ["id", "=", $ids[$i], $connect]);
-    }
-    if(!count($advanced)) return null;
-
-    $r->addAdvanced($advanced);
-
-    return $this->all($r);
-  }
 
 
   public function _unique(array $row){ //busqueda auxiliar por campos unicos
