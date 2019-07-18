@@ -105,6 +105,24 @@ abstract class EntitySqlo { //SQL object
   }
 
 
+  public function deleteSubSql($render = null){
+    //se recomienda no utilizar este metodo
+    return "
+DELETE " . $this->entity->a_() . "*
+FROM " . $this->entity->sna_() . "
+WHERE id IN (SELECT id
+  FROM (
+
+
+" . $this->all($render) . "
+       
+
+  ) AS sub
+);
+";              
+  }
+
+
 
 
 
