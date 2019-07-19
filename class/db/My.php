@@ -59,12 +59,12 @@ class DbSqlMy extends mysqli implements DbInterface {
 
   public function multiQueryTransaction($query){
 
-    try {
-      $this->multiQuery("BEGIN; " . $query);
-      $this->query("COMMIT;");
+    try {      
+      $this->multiQuery("BEGIN; " . $query . " COMMIT;");
     }
 
     catch (Exception $ex) {
+      while ($this->next_result()) {;} // flush multi_queries
       $this->query("ROLLBACK;");
       throw $ex;
     }
