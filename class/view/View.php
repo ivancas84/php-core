@@ -16,4 +16,6 @@ class View {
   public function content(){ return $this->content(); }
   public function display(){ require_once($this->index); }
 
+  
+
 }
