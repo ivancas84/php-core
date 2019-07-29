@@ -2,15 +2,11 @@
 require_once("class/Filter.php");
 require_once("class/view/List.php");
 
-$entity = Filter::requestRequired("entity");
-$search = Filter::request("search");
+$params = Filter::requestAll();
+if(!isset($params["entity"])) throw new Exception("La entidad no se encuentra definida");
+$entity = $params["entity"];
+unset($params["entity"]);
 
 $viewList = new EntityViewList($entity);
-$viewList->search();
-print_r($viewList->rows);
-
-
-
-//$view = new View();
-//$view->content = "public/list/template.html";
-//$view->display();
+$viewList->setCondition($params);
+$viewList->display();
