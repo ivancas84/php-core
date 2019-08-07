@@ -1,11 +1,5 @@
 <?php
 
-require_once("class/model/Sqlo.php");
-require_once("class/model/Render.php");
-require_once("class/model/Dba.php");
-
-
-
 class View {
 
   public $index = PATH_VIEW_INDEX;
