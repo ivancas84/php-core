@@ -45,6 +45,12 @@ abstract class Entity {
     return call_user_func("{$className}::getInstance");
   }
 
+  final public static function getInstanceRequire($entity) {    
+    require_once("class/model/entity/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
+    return self::getInstanceFromString($entity);
+  }
+
+
 
   /**
    * Metodos para facilitar la sintaxis del sql
