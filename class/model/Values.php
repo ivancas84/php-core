@@ -1,5 +1,7 @@
 <?php
 
+require_once("function/snake_case_to.php");
+
 abstract class EntityValues { //manipulacion de valores de una entidad
 
   public $_warnings = [];
@@ -11,6 +13,11 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   abstract public function fromArray(array $row = NULL);
 
   //abstract public function setDefault();
+
+  public static function getInstance() { //crear instancias de values
+    $className = get_called_class();
+    return new $className;
+  }
 
   public static function getInstanceFromArray(array $row = NULL) { //crear instancias de values
     $className = get_called_class();
@@ -24,6 +31,12 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     $class = new $name;
     if($row) $class->fromArray($row);
     return $class;
+  }
+
+  final public static function getInstanceRequire($entity) {    
+    require_once("class/model/values/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
+    $className = snake_case_to("XxYy", $entity) . "Values";
+    return call_user_func("{$className}::getInstance");
   }
 
   public function isEmpty($value) { //esta vacio
