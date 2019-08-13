@@ -33,5 +33,8 @@ class EntityInitializeController { //controlador de inicializacion de entidad
     if(count($rows) == 1) return$rows[0];
     return null;
   }
-  
+
+  public function default(){
+    return EntityValues::getInstanceRequire($this->entity->getName())->default();
+  }
 }

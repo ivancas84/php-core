@@ -9,7 +9,7 @@ class EntityAdminController { //controlador de administracion de entidad
   public $entity; //Entity: Entidad principal de administracion
   public $sqlo; //EntitySqlo: Definicion de sqlo de la entidad
 
-  public static function getInstance($entity) { //instancia a partir de string  
+  public static function getInstance($entity) { //instancia a partir de string
     $className = snake_case_to("XxYy", $entity) . "AdminController";
     $instance = new $className;
     return $instance;
@@ -48,9 +48,5 @@ class EntityAdminController { //controlador de administracion de entidad
     else { return $this->sqlo->insert($row); } //3
   }
 
-
-  public function persistValue(EntityValue $value){
-    return $this->persistRow($value->toArray());
-  }
-  
+  public function persistValue(EntityValue $value){ return $this->persistRow($value->toArray()); }
 }
