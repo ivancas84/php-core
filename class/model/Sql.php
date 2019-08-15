@@ -53,7 +53,6 @@ abstract class EntitySql { //Definir SQL
     return call_user_func_array("{$className}::getInstance", [$prefix]);
   }
 
-
   public function prf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; }   //prefijo fields
   public function prt(){ return (empty($this->prefix)) ?  $this->entity->getAlias() : $this->prefix; } //prefijo tabla
   public function initializeInsert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //inicializar valores para insercion
@@ -115,12 +114,11 @@ abstract class EntitySql { //Definir SQL
   }
 
   public function condition(Render $render) { //busqueda avanzada considerando relaciones
-
     $condition = array_merge($render->condition, $render->generalCondition);
 
     /**
      * Array $advanced:
-    *    [
+     *    [
      *    0 => "field"
      *    1 => "=", "!=", ">=", "<=", "<", ">", "=="
      *    2 => "value" array|string|int|boolean|date (si es null no se define busqueda, si es un array se definen tantas busquedas como elementos tenga el array)
@@ -166,7 +164,7 @@ abstract class EntitySql { //Definir SQL
      */
     $mode = (empty($condition[3])) ? "AND" : $condition[3];  //el modo indica la concatenacion con la opcion precedente, se usa en un mismo conjunto (array) de opciones
 
-   $condicion = $this->conditionField($condition[0], $option, $value);
+    $condicion = $this->conditionField($condition[0], $option, $value);
     /**
      * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
      * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
@@ -192,7 +190,7 @@ abstract class EntitySql { //Definir SQL
      */
     $mode = (empty($advanced[3])) ? "AND" : $advanced[3];  //el modo indica la concatenacion con la opcion precedente, se usa en un mismo conjunto (array) de opciones
 
-   $condicion = $this->_conditionField($advanced[0], $option, $value);
+    $condicion = $this->_conditionField($advanced[0], $option, $value);
     /**
      * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
      * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
@@ -201,7 +199,6 @@ abstract class EntitySql { //Definir SQL
     if(empty($condicion)) return "";
     return ["condition" => $condicion, "mode" => $mode];
   }
-
 
   private function conditionIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (considera relaciones)
     $conditionModes = array();
@@ -323,9 +320,7 @@ abstract class EntitySql { //Definir SQL
         */
         return $this->_conditionSearch($option, $value);;
       break;
-
     }
-
   }
   
   protected function conditionFieldStruct($field, $option, $value){ //condicion avanzada principal
@@ -336,7 +331,6 @@ abstract class EntitySql { //Definir SQL
      */
     if($c = $this->_conditionFieldStruct($field, $option, $value)) return $c;
   }
-  
   
   protected function conditionFieldAux($field, $option, $value) { //condicion de field auxiliar (considera relaciones si existen)
     /**
@@ -363,7 +357,14 @@ abstract class EntitySql { //Definir SQL
   }
 
 
-  public function _fields(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
+  public function _fields(){ 
+    if($this->getEntity()->ids()){
+      $ids = [];
+      foreach($this->getEntity()->ids() as $identifier){
+        array_push($ids, $this->mappingField($identifier));
+      }
+    }
+    throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
   
   public function _fieldsDb(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (solo exclusivos)
   
@@ -696,5 +697,4 @@ abstract class EntitySql { //Definir SQL
 " . concat($this->_condition($render), 'WHERE ') . "
 ";
   }
-
 }
