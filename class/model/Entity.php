@@ -23,7 +23,10 @@ abstract class Entity {
    * Si es null, se considera el mismo nombre que la entidad
    */
 
-  public $identifiers = [];
+  public $identifier = []; //define un nuevo campo "_identifier" para facilitar las consultas y busquedas
+  /**
+   * El campo _identifier se define como condicion y como campo definido
+   */
 
   //http://php.net/manual/en/language.oop5.late-static-bindings.php
   //public static function name(){ return null; }
@@ -94,7 +97,7 @@ abstract class Entity {
 
   public function getSchema() { return $this->schema; }
 
-  public function getIdentifiers() { return $this->identifiers; }
+  public function getIdentifier() { return $this->identifier; }
 
   public function getFields(){ //pk, nf, fk
     $merge =  array_merge($this->getFieldsNf(), $this->getFieldsFk());

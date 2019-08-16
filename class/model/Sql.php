@@ -60,26 +60,6 @@ abstract class EntitySql { //Definir SQL
   public function format(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //formato de sql
   public function _json(array $row) { throw new BadMethodCallException("No implementado"); }
 
-  /**
-   * @todo Metodo obsoleto, debe pasar a formar parte de Sqlo
-  public function json(array $row) { return $this->_json($row); }
-   */
-
-  /**
-   * @todo Metodo obsoleto, debe pasar a formar parte de Sqlo
-  public function jsonAll(array $rows){
- 
-    $rows_ = [];
-
-    foreach($rows as $row){
-      $row_ = $this->json($row);
-      array_push($rows_, $row_);
-    }
-
-    return $rows_;
-  }
-   */
-
   public function formatIds(array $ids = []) { //formato sql de ids
     $ids_ = [];
     for($i = 0; $i < count($ids); $i++) {
@@ -112,10 +92,10 @@ abstract class EntitySql { //Definir SQL
   public function _mappingFieldDefined($field){ //traduccion local de campos generales
     switch ($field) {
       case "_cantidad": return "COUNT(*)";
-      case "identificador_": 
-        $ids = [];
-        foreach($this->entity->getIdentifiers() as $identifier) array_push($ids, $this->mappingField($identifier));
-        return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $ids) . ") AS identificador_
+      case "identifier_": 
+        $identifier = [];
+        foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->mappingField($id));
+        return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
 ";
     }
   }
@@ -321,12 +301,12 @@ abstract class EntitySql { //Definir SQL
     $p = $this->prf();
 
     switch($field){
-      case "identificador_": 
+      case "identifier_": 
         /**
          * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
          * No utilizar prefijo para su definicion
          */
-        $f = $this->mappingField("identificador_");
+        $f = $this->mappingField("identifier_");
         return $this->format->conditionText($f, $value, $option);
       break;
       
@@ -365,7 +345,7 @@ abstract class EntitySql { //Definir SQL
         return "({$f1} {$option} {$f2})";
       break;
 
-      case "_cantidad": //campo de agregacion general: "_cantidad"
+      case "_cantidad": //campo de agregacion general: "_cantidad" (no debería ser estructural?)
         $f = $this->_mappingFieldEntity($field);
         return $this->format->conditionNumber($f, $value, $option);
       break;
@@ -473,7 +453,8 @@ abstract class EntitySql { //Definir SQL
      * Sobrescribir si existen relaciones
      */
     $ret = $this->_fields();
-    if(!empty($this->entity->getIdentifier())) $ret .= $this->_mappingFieldDefined("identificador_");
+    //if(!empty($this->entity->getIdentifier())) $ret .= ", " . $this->_mappingFieldDefined("_identifier") . " AS _identifier
+//";
     return $ret; 
   }
 
