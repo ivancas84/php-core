@@ -103,14 +103,21 @@ abstract class EntitySql { //Definir SQL
      * Recorre relaciones (si existen)
      */
     if($field_ = $this->_mappingFieldEntity($field)) return $field_;
-    throw new Exception("Campo no reconocido");
+    //throw new Exception("Campo no reconocido");
   }
+
   public function _mappingField($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
   public function _mappingFieldAggregate($field){ return null; } //traduccion local de campos de agregacion
+  
   public function _mappingFieldDefined($field){ //traduccion local de campos generales
     switch ($field) {
-      case '_cantidad': return "COUNT(*)";
-    } 
+      case "_cantidad": return "COUNT(*)";
+      case "identificador_": 
+        $ids = [];
+        foreach($this->entity->getIdentifiers() as $identifier) array_push($ids, $this->mappingField($identifier));
+        return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $ids) . ") AS identificador_
+";
+    }
   }
 
   public function condition(Render $render) { //busqueda avanzada considerando relaciones
@@ -314,6 +321,15 @@ abstract class EntitySql { //Definir SQL
     $p = $this->prf();
 
     switch($field){
+      case "identificador_": 
+        /**
+         * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
+         * No utilizar prefijo para su definicion
+         */
+        $f = $this->mappingField("identificador_");
+        return $this->format->conditionText($f, $value, $option);
+      break;
+      
       case $p."search_": 
         /**
          * define la misma condicion y valor para todos los campos de la entidad
@@ -356,20 +372,11 @@ abstract class EntitySql { //Definir SQL
     }
   }
 
-
-  public function _fields(){ 
-    if($this->getEntity()->ids()){
-      $ids = [];
-      foreach($this->getEntity()->ids() as $identifier){
-        array_push($ids, $this->mappingField($identifier));
-      }
-    }
-    throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
+  public function _fields(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
   
   public function _fieldsDb(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (solo exclusivos)
   
   public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
-
 
   public function mappingFieldsAdvanced($fields, $method = NULL){ //Conexion de fields
     /**
@@ -417,7 +424,6 @@ abstract class EntitySql { //Definir SQL
     return "";
   }
 
-
   protected function _conditionSearch($option, $value){
     if($option != "=~") throw new Exception("Opción no permitida para condición " . $this->entity->getName("XxYy") . "Sql._conditionSearch([\"search_\",\"{$option}\",\"{$value}\"])");
     //condicion estructurada de busqueda que involucra a todos los campos
@@ -429,9 +435,6 @@ abstract class EntitySql { //Definir SQL
 
     return implode(" OR ", $conditions);
   }
-
-
-  
 
   public function conditionUniqueFields(array $params){ //filtrar campos unicos y definir condicion
     /**
@@ -465,8 +468,14 @@ abstract class EntitySql { //Definir SQL
     return $this->condition($render);
   }
 
-  //Definir sql de campos
-  public function fields(){ return $this->_fields(); } //sobrescribir si existen relaciones
+  public function fields(){ //Definir sql de campos
+    /**
+     * Sobrescribir si existen relaciones
+     */
+    $ret = $this->_fields();
+    if(!empty($this->entity->getIdentifier())) $ret .= $this->_mappingFieldDefined("identificador_");
+    return $ret; 
+  }
 
 
 

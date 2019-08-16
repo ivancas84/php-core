@@ -23,6 +23,8 @@ abstract class Entity {
    * Si es null, se considera el mismo nombre que la entidad
    */
 
+  public $identifiers = [];
+
   //http://php.net/manual/en/language.oop5.late-static-bindings.php
   //public static function name(){ return null; }
   //public static function alias(){ return null; }
@@ -80,7 +82,6 @@ abstract class Entity {
     }
   }
 
-
   public function getAlias($format = null) {
     switch($format){
      case ".": return (!empty($this->alias)) ?  $this->alias . '.' : "";
@@ -92,6 +93,8 @@ abstract class Entity {
   }
 
   public function getSchema() { return $this->schema; }
+
+  public function getIdentifiers() { return $this->identifiers; }
 
   public function getFields(){ //pk, nf, fk
     $merge =  array_merge($this->getFieldsNf(), $this->getFieldsFk());
