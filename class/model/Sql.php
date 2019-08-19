@@ -69,11 +69,11 @@ abstract class EntitySql { //Definir SQL
     return implode(', ', $ids_);
   }
 
-  public function _mappingFieldEntity($field) { //mapeo de fields de la entidad (todos los fields)
+  public function _mappingField($field) { //mapeo de fields de la entidad (todos los fields)
     /**
      * Recorre relaciones (si existen)
      */
-    if($field_ = $this->_mappingField($field)) return $field_;
+    if($field_ = $this->_mappingFieldStruct($field)) return $field_;
     if($field_ = $this->_mappingFieldAggregate($field)) return $field_;
     if($field_ = $this->_mappingFieldDefined($field)) return $field_;
   }
@@ -82,11 +82,11 @@ abstract class EntitySql { //Definir SQL
     /**
      * Recorre relaciones (si existen)
      */
-    if($field_ = $this->_mappingFieldEntity($field)) return $field_;
+    if($field_ = $this->_mappingField($field)) return $field_;
     //throw new Exception("Campo no reconocido");
   }
 
-  public function _mappingField($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
+  public function _mappingFieldStruct($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
   public function _mappingFieldAggregate($field){ return null; } //traduccion local de campos de agregacion
   
   public function _mappingFieldDefined($field){ //traduccion local de campos generales
@@ -340,13 +340,13 @@ abstract class EntitySql { //Definir SQL
 
     switch($field){
       case "_compare": //no define prefijo, los prefijos pueden definirse en los valores y comparar campos de diferentes entidades
-        $f1 = $this->_mappingFieldEntity($value[0]);
-        $f2 = $this->_mappingFieldEntity($value[1]);
+        $f1 = $this->mappingField($value[0]);
+        $f2 = $this->mappingField($value[1]);
         return "({$f1} {$option} {$f2})";
       break;
 
       case "_cantidad": //campo de agregacion general: "_cantidad" (no debería ser estructural?)
-        $f = $this->_mappingFieldEntity($field);
+        $f = $this->mappingField($field);
         return $this->format->conditionNumber($f, $value, $option);
       break;
     }
@@ -358,19 +358,6 @@ abstract class EntitySql { //Definir SQL
   
   public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
 
-  public function mappingFieldsAdvanced($fields, $method = NULL){ //Conexion de fields
-    /**
-     * Este metodo se creo inicialmente para facilitar la implementacion de consultas avanzadas
-     */
-    $arr = [];
-    foreach($fields as $key => $value){
-      $field_ = $this->mappingField($value);
-      $alias_ = is_string($key) ? $key : $value; //si es un array asociativo, las llaves se definiran como alias
-      $field = empty($method) ? "{$field_} AS {$alias_}" : "{$method}({$field_}) AS {$alias_}";
-      array_push($arr, $field);
-    }
-    return implode(",", $arr);
-  }
 
 
   public function from(){
@@ -452,10 +439,7 @@ abstract class EntitySql { //Definir SQL
     /**
      * Sobrescribir si existen relaciones
      */
-    $ret = $this->_fields();
-    //if(!empty($this->entity->getIdentifier())) $ret .= ", " . $this->_mappingFieldDefined("_identifier") . " AS _identifier
-//";
-    return $ret; 
+    return $this->_fields(); 
   }
 
 
