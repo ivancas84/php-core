@@ -6,6 +6,7 @@ abstract class EntityValues { //manipulacion de valores de una entidad
 
   public $_warnings = [];
   public $_errors = [];
+  public $_identifier = UNDEFINED; //el identificador puede estar formado por campos de la tabla actual o relacionadas
   
   public function addWarning($warning) { array_push($this->_warnings, $warning); }
   public function addError($error) { array_push($this->_errors, $error); }
@@ -64,5 +65,8 @@ abstract class EntityValues { //manipulacion de valores de una entidad
       default: return $value;
     }
   }
+
+  public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
+  public function _getIdentifier($format = null){ $this->formatString($this->_identifier, $format); }
 
 }
