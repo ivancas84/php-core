@@ -1,5 +1,6 @@
 <?php
 
+require_once("function/snake_case_to.php");
 /**
  * Configuracion de una tabla
  * Esta clase no deberia poseer seters publicos. Una vez definidos sus atributos, no deberian poder modificarse.
@@ -23,9 +24,9 @@ abstract class Entity {
    * Si es null, se considera el mismo nombre que la entidad
    */
 
-  public $identifier = []; //define un nuevo campo "_identifier" para facilitar las consultas y busquedas
+  public $identifier = []; //define un nuevo campo "identifier" para facilitar las consultas y busquedas
   /**
-   * El campo _identifier se define como condicion y como campo definido
+   * El campo identifier se define como condicion y como campo definido
    */
 
   //http://php.net/manual/en/language.oop5.late-static-bindings.php
@@ -43,7 +44,6 @@ abstract class Entity {
     if (!isset(self::$instances[$className])) { self::$instances[$className] = new $className; }
     return self::$instances[$className];
   }
-
 
   final public static function getInstanceFromString($entity) {
     $className = snake_case_to("XxYy", $entity) . "Entity";
@@ -222,3 +222,5 @@ abstract class Entity {
   }
 
 }
+
+require_once("class/model/entity/structure.php");

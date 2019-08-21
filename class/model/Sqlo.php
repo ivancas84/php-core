@@ -154,7 +154,7 @@ WHERE id IN (SELECT id
     $r_ = $this->sql->format($r);
     $sql = "
 {$this->_update($r_)}
-WHERE {$this->entity->getPk()->getName()} = {$row['id']};
+WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
 ";
 
     return array("id" => $r_["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$r["id"]]);

@@ -92,7 +92,8 @@ abstract class EntitySql { //Definir SQL
   public function _mappingFieldDefined($field){ //traduccion local de campos generales
     switch ($field) {
       case "_cantidad": return "COUNT(*)";
-      case "identifier_": 
+      case "identifier_":
+        if(empty($this->entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->entity->getName()); 
         $identifier = [];
         foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->mappingField($id));
         return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
@@ -301,7 +302,7 @@ abstract class EntitySql { //Definir SQL
     $p = $this->prf();
 
     switch($field){
-      case "identifier_": 
+      case "identifier_": //utilizar solo como condicion general
         /**
          * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
          * No utilizar prefijo para su definicion

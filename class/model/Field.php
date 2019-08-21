@@ -5,6 +5,8 @@ require_once("function/snake_case_to.php");
 
 abstract class Field {
 
+  protected static $instances = [];
+
   public $name;
   public $alias;
   public $default; //valor por defecto definido en base de datos (puede ser null)
@@ -64,6 +66,22 @@ abstract class Field {
    * Un campo exclusivo puede definirse internamente en la entidad.
    * Un campo no exlusivo debe definirse con alguna relación independiente. 
    */
+
+  final public static function getInstance() {
+    $className = get_called_class();
+    if (!isset(self::$instances[$className])) { self::$instances[$className] = new $className; }
+    return self::$instances[$className];
+  }
+
+  final public static function getInstanceFromString($entity, $field) {
+    $className = "Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);
+    return call_user_func("{$className}::getInstance");
+  }
+
+  final public static function getInstanceRequire($entity, $field) {    
+    require_once("class/model/field/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("xxYy", $field) . "/" . snake_case_to("XxYy", $field) . ".php");
+    return self::getInstanceFromString($entity, $field);
+  }
 
   public function __construct() {
     $this->defineDataType();

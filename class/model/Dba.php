@@ -4,10 +4,6 @@
  * @todo Implementar render en el getall
  */
 
-require_once("config/structure.php");
-require_once("config/modelClasses.php");
-require_once("config/entityClasses.php");
-require_once("config/valuesClasses.php");
 require_once("function/snake_case_to.php");
 require_once("class/db/My.php");
 require_once("class/db/Pg.php");
@@ -55,8 +51,8 @@ class Dba { //Facilita el acceso a la base de datos
   }
 
   public static function uniqId(){ //identificador unico
-    usleep(1); //con esto se evita que los procesadores generen el mismo id
-    return hexdec(uniqid());
+    //usleep(1); //con esto se evita que los procesadores generen el mismo id
+    return uniqid();
     //sleep(1);
     //return strtotime("now");
   }
