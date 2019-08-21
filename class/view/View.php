@@ -2,7 +2,7 @@
 
 class View {
 
-  public $index = PATH_VIEW_INDEX;
+  public $index = "public/index/index.html";
   public $title = SYS_NAME;
   public $content;
 
