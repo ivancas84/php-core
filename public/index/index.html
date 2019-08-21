@@ -35,7 +35,7 @@ function exportTableToExcel(tableID, filename = ''){
 </head>
 <body>
   <div class="container-fluid" style="overflow-x:scroll">
-      <?if(isset($this->content())) require($this->content())?>
+      <?if(!empty($this->content())) require($this->content())?>
   </div>
 </body>
 </html>
