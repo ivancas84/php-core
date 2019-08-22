@@ -11,8 +11,11 @@ require_once("function/toString.php");
 require_once("class/model/Transaction.php");
 require_once("class/model/SqlFormat.php");
 require_once("class/model/Sqlo.php");
+require_once("class/model/Entity.php");
+
 
 require_once("function/stdclass_to_array.php");
+require_once("function/array_combine_concat.php");
 
 
 
@@ -70,7 +73,7 @@ class Dba { //Facilita el acceso a la base de datos
 
   public static function isPersistible($entity, array $row){ //es persistible?
     $row_ = self::_unique($entity, $row); //1) Consultar valores a partir de los datos
-    $sqlo = EntitySqlo::getInstanceFromString($entity);
+    $sqlo = EntitySqlo::getInstanceRequire($entity);
 
     if (count($row_)){
       $row["id"] = $row_["id"];
@@ -143,7 +146,7 @@ class Dba { //Facilita el acceso a la base de datos
   }
 
   public static function count($entity, $render = null){ //cantidad
-    $sql = EntitySqlo::getInstanceFromString($entity)->count($render);
+    $sql = EntitySqlo::getInstanceRequire($entity)->count($render);
     $row = self::fetchAssoc($sql);
     return intval($row["num_rows"]);
   }
@@ -153,12 +156,12 @@ class Dba { //Facilita el acceso a la base de datos
      * $params
      *   array("nombre_field" => "valor_field", ...)
      */
-    $sql = EntitySqlo::getInstanceFromString($entity)->_unique($params, $render);
+    $sql = EntitySqlo::getInstanceRequire($entity)->_unique($params, $render);
     if(!$sql) return null;
     $rows = self::fetchAll($sql);
 
     if(count($rows) > 1) throw new Exception("La busqueda estricta por campos unicos de {$entity} retorno mas de un resultado");
-    if(count($rows) == 1) return EntitySqlo::getInstanceFromString($entity)->json($rows[0]);
+    if(count($rows) == 1) return EntitySqlo::getInstanceRequire($entity)->json($rows[0]);
     return null;
   }
 
@@ -167,17 +170,17 @@ class Dba { //Facilita el acceso a la base de datos
      * $params
      *   array("nombre_field" => "valor_field", ...)
      */
-    $sql = EntitySqlo::getInstanceFromString($entity)->unique($params);
+    $sql = EntitySqlo::getInstanceRequire($entity)->unique($params);
     if(empty($sql)) return null;
 
     $rows = self::fetchAll($sql);
     if(count($rows) > 1) throw new Exception("La busqueda por campos unicos de {$entity} retorno mas de un resultado");
-    if(count($rows) == 1) return EntitySqlo::getInstanceFromString($entity)->json($rows[0]);
+    if(count($rows) == 1) return EntitySqlo::getInstanceRequire($entity)->json($rows[0]);
     return null;
   }
 
   public static function ids($entity, $render = null){ //devolver ids
-    $sql = EntitySqlo::getInstanceFromString($entity)->all($render);
+    $sql = EntitySqlo::getInstanceRequire($entity)->all($render);
     $ids = self::fetchAllColumns($sql, 0);
     array_walk($ids, "toString"); //los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
     return $ids;
@@ -198,10 +201,9 @@ class Dba { //Facilita el acceso a la base de datos
   }
 
   public static function all($entity, $render = null){ //devolver todos los valores
-    $sqlo = EntitySqlo::getInstanceFromString($entity);
+    $sqlo = EntitySqlo::getInstanceRequire($entity);
     $sql = $sqlo->all($render);
-    $rows = self::fetchAll($sql);
-    return $sqlo->jsonAll($rows);
+    return self::fetchAll($sql);
   }
 
   public static function get($entity, $id, $render = null) { //busqueda por id
@@ -220,16 +222,15 @@ class Dba { //Facilita el acceso a la base de datos
   public static function getAll($entity, $ids, $render = null){ //busqueda por ids
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
-    $sqlo = EntitySqlo::getInstanceFromString($entity);
+    $sqlo = EntitySqlo::getInstanceRequire($entity);
     $sql = $sqlo->getAll($ids, $render);
-    $rows = self::fetchAll($sql);
-    return $sqlo->jsonAll($rows);
+    return self::fetchAll($sql);
   }
 
   public static function one($entity, $render = null) { //un solo valor
     $rows = self::all($entity, $render);
     if(count($rows) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
-    elseif(count($rows) == 1) return EntitySqlo::getInstanceFromString($entity)->json($rows[0]);
+    elseif(count($rows) == 1) return EntitySqlo::getInstanceRequire($entity)->json($rows[0]);
     else throw new Exception("La consulta no arrojó resultados");
   }
 
@@ -248,7 +249,7 @@ class Dba { //Facilita el acceso a la base de datos
     for($i = 0; $i < count($ids); $i++){
       if(empty($ids[$i])) return "El identificador está vacío";
 
-      foreach(Entity::getInstanceFromString($entity)->getFieldsRef() as $field) {
+      foreach(Entity::getInstanceRequire($entity)->getFieldsRef() as $field) {
         if(self::count($field->getEntity()->getName(), [$field->getName(), "=", $ids[$i]])) array_push($entities, $field->getEntity()->getName());
       }
     }
@@ -257,14 +258,6 @@ class Dba { //Facilita el acceso a la base de datos
     if(!count($entities)) return true;
     return "Esta asociado a " . implode(', ', array_unique($entities)) . ".";
   }
-
-  /*
-  public static function deleteRequiredAll($entity, array $ids, array $params = []) { //eliminacion requerida
-    $sqlo = EntitySqlo::getInstanceFromString($entity);
-    return $sqlo->deleteRequiredAll($ids, $params);
-  }*/
-
-
 
   public static function persist($entity, array $row){ //generar sql de persistencia para la entidad
     /**
@@ -278,7 +271,7 @@ class Dba { //Facilita el acceso a la base de datos
      *     "id": Dependiendo de la implementacion, el id del campo persistido puede no coincidir con el enviado
      *     "detail": array de elementos, cada elemento es un string concatenado de la forma entidadId, ejemplo "persona1234567890"
      */
-    $sqlo = EntitySqlo::getInstanceFromString($entity);
+    $sqlo = EntitySqlo::getInstanceRequire($entity);
     $row_ = self::_unique($entity, $row); //1
 
     if (!empty($row_)){ //2
@@ -293,7 +286,7 @@ class Dba { //Facilita el acceso a la base de datos
     /**
      * No se aplica json del field devuelto
      */
-    $sqlo = EntitySqlo::getInstanceFromString($entity);
+    $sqlo = EntitySqlo::getInstanceRequire($entity);
     $sql = $sqlo->all($render);
     $rows = self::fetchAll($sql);
     return array_values(array_unique(array_column ($rows ,$field)));
@@ -320,6 +313,9 @@ class Dba { //Facilita el acceso a la base de datos
 
   //query and fetch result
   public static function fetchAll($sql){
+    echo "<pre>";
+    echo $sql;
+    echo "<br><br><br>";
     $db = self::dbInstance();
     try {
       $result = $db->query($sql);
@@ -348,5 +344,12 @@ class Dba { //Facilita el acceso a la base de datos
       finally { $result->close(); }
     } finally { self::dbClose(); }
   }
+
+  public static function identifier($entity, $identifier){
+    $render = new Render();
+    $render->setGeneralCondition(["identifier_","=",$identifier]);
+    $sql = EntitySqlo::getInstanceRequire($entity)->all($render);
+    return array_combine_concat(Dba::fetchAll($sql), Entity::getInstanceRequire($entity)->getIdentifier());
+}
 
 }
