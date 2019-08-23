@@ -36,10 +36,13 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     return $class;
   }
 
-  final public static function getInstanceRequire($entity) {    
+  final public static function getInstanceRequire($entity, $values = null) {    
     require_once("class/model/values/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
     $className = snake_case_to("XxYy", $entity) . "Values";
-    return call_user_func("{$className}::getInstance");
+    $instance = call_user_func("{$className}::getInstance");
+    if(is_string($values) && $values == "DEFAULT") $instance->setDefault();
+    if(is_array($values)) $instance->fromArray($values);
+    return $instance;
   }
 
   public function isEmpty($value) { //esta vacio
