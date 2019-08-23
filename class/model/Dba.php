@@ -313,9 +313,7 @@ class Dba { //Facilita el acceso a la base de datos
 
   //query and fetch result
   public static function fetchAll($sql){
-    echo "<pre>";
-    echo $sql;
-    echo "<br><br><br>";
+
     $db = self::dbInstance();
     try {
       $result = $db->query($sql);

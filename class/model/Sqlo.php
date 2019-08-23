@@ -256,8 +256,8 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 
     return "SELECT DISTINCT
 {$this->sql->fields()}
-{$this->sql->from()}
-{$this->sql->join()}
+{$this->sql->fromSubSql($r)}
+{$this->sql->join($r)}
 WHERE
 {$conditionUniqueFields}
 ";
@@ -271,8 +271,8 @@ WHERE
 
     return "SELECT DISTINCT
 {$this->sql->fields()}
-{$this->sql->from()}
-{$this->sql->join()}
+{$this->sql->fromSubSql($r)}
+{$this->sql->join($r)}
 WHERE
 {$conditionUniqueFields}
 " . concat($this->sql->condition($r), 'AND ') . "
