@@ -30,7 +30,7 @@ abstract class EntitySql { //Definir SQL
     $this->format = SqlFormat::getInstance();
   }
 
-  public static function getInstanceFromString($entity, $prefix = NULL) { //crear instancias de sql
+  public static function getInstanceString($entity, $prefix = NULL) { //crear instancias de sql
     /**
      * sql, a diferencia de sus pares entity y sqlo, no puede ser implementada como singleton porque utiliza prefijos de identificacion
      */

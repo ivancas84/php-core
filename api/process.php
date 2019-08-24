@@ -56,7 +56,7 @@ function rows($entity, array $rows = [], array $params = null){ //procesar un co
   }
 
   if(!empty($idsActuales)) {
-    $persist = EntitySqlo::getInstanceFromString($entity)->deleteRequiredAll($idsActuales, $params);
+    $persist = EntitySqlo::getInstanceString($entity)->deleteRequiredAll($idsActuales, $params);
 
     /**
      * La eliminacion puede ser fisica, logica o simplemente puede nulificar ciertos campos
@@ -95,7 +95,7 @@ function delete($entity, array $ids = [], array $params = null){ //eliminar un c
   $ret = [ "ids" => [], "sql" => "", "detail" => [] ];
 
   if(!empty($ids)) {
-    $persist = EntitySqlo::getInstanceFromString($entity)->deleteRequiredAll($ids, $params);
+    $persist = EntitySqlo::getInstanceString($entity)->deleteRequiredAll($ids, $params);
     /**
      * La eliminacion puede ser fisica, logica o simplemente puede nulificar ciertos campos
      * El tipo de eliminacion es definido por cada entidad

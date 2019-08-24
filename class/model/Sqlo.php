@@ -19,7 +19,7 @@ abstract class EntitySqlo { //SQL object
   protected static $instances = [];
 
   
-  final public static function getInstanceFromString($entity) {
+  final public static function getInstanceString($entity) {
     $className = snake_case_to("XxYy", $entity) . "Sqlo";
     return call_user_func("{$className}::getInstance");
   }
@@ -62,7 +62,7 @@ abstract class EntitySqlo { //SQL object
     $row_ = [];
 
     $json = ($row && !is_null($row['id'])) ? $this->sql->_json($row) : null;
-    $row_[$this->entity->getName()] = EntityValues::getInstanceFromString($this->entity->getName(), $json);
+    $row_[$this->entity->getName()] = EntityValues::getInstanceString($this->entity->getName(), $json);
   }
   public function valuesAll(array $rows){ foreach($rows as &$row) $row = $this->values($row); return $rows; }
 

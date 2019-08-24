@@ -73,14 +73,14 @@ abstract class Field {
     return self::$instances[$className];
   }
 
-  final public static function getInstanceFromString($entity, $field) {
+  final public static function getInstanceString($entity, $field) {
     $className = "Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);
     return call_user_func("{$className}::getInstance");
   }
 
   final public static function getInstanceRequire($entity, $field) {    
     require_once("class/model/field/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("xxYy", $field) . "/" . snake_case_to("XxYy", $field) . ".php");
-    return self::getInstanceFromString($entity, $field);
+    return self::getInstanceString($entity, $field);
   }
 
   public function __construct() {

@@ -45,14 +45,14 @@ abstract class Entity {
     return self::$instances[$className];
   }
 
-  final public static function getInstanceFromString($entity) {
+  final public static function getInstanceString($entity) {
     $className = snake_case_to("XxYy", $entity) . "Entity";
     return call_user_func("{$className}::getInstance");
   }
 
   final public static function getInstanceRequire($entity) {    
     require_once("class/model/entity/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
-    return self::getInstanceFromString($entity);
+    return self::getInstanceString($entity);
   }
 
 
