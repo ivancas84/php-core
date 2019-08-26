@@ -17,24 +17,23 @@ abstract class EntityValues { //manipulacion de valores de una entidad
 
   //abstract public function setDefault();
 
-  public static function getInstance() { //crear instancias de values
+  public static function getInstance($values = NULL, $prefix = "") { //crear instancias de values
     $className = get_called_class();
-    return new $className;
+    $instance = new $className;
+    if(!empty($values)) $instance->setValues_($values, $prefix);
+    return $instance;
   }
 
-  public static function getInstanceString($entity, array $row = NULL) { //crear instancias de values
-    $name = snake_case_to("XxYy", $entity) . "Values";
-    $class = new $name;
-    if($row) $class->fromArray($row);
-    return $class;
+  public static function getInstanceString($entity, $values = NULL, $prefix = "") { //crear instancias de values
+    $className = snake_case_to("XxYy", $entity) . "Values";
+    $instance = call_user_func_array("{$className}::getInstance",[$values, $prefix]);
+    return $instance;
   }
 
-  final public static function getInstanceRequire($entity, $values = null) {    
+  final public static function getInstanceRequire($entity, $values = null, $prefix = "") {    
     require_once("class/model/values/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
     $className = snake_case_to("XxYy", $entity) . "Values";
-    $instance = call_user_func("{$className}::getInstance");
-    if(is_string($values) && $values == "DEFAULT") $instance->setDefault();
-    if(is_array($values)) $instance->fromArray($values);
+    $instance = call_user_func_array("{$className}::getInstance",[$values, $prefix]);
     return $instance;
   }
 
@@ -66,5 +65,20 @@ abstract class EntityValues { //manipulacion de valores de una entidad
 
   public function setIdentifier_($identifier){ $this->identifier_ = $identifier; }
   public function identifier_($format = null){ return $this->formatString($this->identifier_, $format); }
+  
+  public function setValues_($values, $prefix = ""){
+    if(is_string($values) && $values == "DEFAULT") $this->setDefault();
+    elseif(is_array($values)) $this->fromArray($values, $prefix);
+  }
 
+  public function equalTo_(EntityValues $entityValues, $strict = false){
+    $a = $this->toArray();
+    $b = $entityValues->toArray();
+    if($strict) return (empty(array_diff_assoc($a, $b)) && empty(array_diff_assoc($b, $a)))? true : false;
+    foreach($a as $ka => $va) {
+      if(is_null($va) || !key_exists($ka, $b)) continue;
+      if($b[$ka] !== $va) return false;
+    }
+    return true;
+  }
 }
