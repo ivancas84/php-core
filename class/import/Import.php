@@ -1,21 +1,23 @@
 <?php
 
 abstract class Import { //comportamiento general para importar datos
-    public $archivo;
-
+    public $file;
+    public $pathSummary;
+    
     public $ids = []; //array asociativo con identificadores
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
     public $elements = []; //array de elementos a importar
 
+    
     public function execute(){
-        echo date("Y-m-d H:i:s") . " BEGIN " . $this->$archivo . "<br>";
+        echo date("Y-m-d H:i:s") . " BEGIN " . $this->file . "<br>";
         $this->define();
         $this->identify();
         $this->query();
         $this->process();
         $this->persist();
         $this->summary();
-        echo date("Y-m-d H:i:s") . " END " . $this->$archivo."<br>";
+        echo date("Y-m-d H:i:s") . " END " . $this->file."<br>";
     }
 
     abstract public function element($i, $data);
@@ -29,7 +31,7 @@ abstract class Import { //comportamiento general para importar datos
     abstract public function summary();
 
     public function define(){
-        if (($gestor = fopen("../../tmp/" . $this->archivo . ".csv", "r")) !== FALSE) {
+        if (($gestor = fopen("../../tmp/" . $this->file . ".csv", "r")) !== FALSE) {
             $encabezados = fgetcsv($gestor, 1000, ",");
 
             $i = 0;
@@ -47,21 +49,26 @@ abstract class Import { //comportamiento general para importar datos
 
     public function persist(){
         //las etapas asociadas a una inscripcion, si existen, se eliminan y se vuelven a cargar
-        foreach($this->$elements as $element) {
+        $sql = "";
+        foreach($this->elements as $element) {
             if(!$element->process) continue;
             
             $db = Dba::dbInstance();
             try {
+                $sql .= $element->sql;
                 $db->multiQueryTransaction($element->sql);
             } catch(Exception $exception){
-                //echo "<pre>";
-                //echo $element->sql;
+                echo "<pre>";
+                echo $exception->getMessage();
+                echo "<br>";
                 $element->process = false;
                 $element->addError($exception->getMessage());
             } finally {
                 Dba::dbClose();
             }
         }
+        file_put_contents($this->pathSummary . ".sql", $sql);
+
     }
 
 

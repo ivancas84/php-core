@@ -155,7 +155,7 @@ class SqlFormat { //Formato SQL
   public function year($value){
     if($value == 'null') return 'null';
 
-    if(is_object($value) && get_class($value) == "DateTime"){
+    if(is_object($value) && (get_class($value) == "DateTime" || get_class($value) == "SpanishDateTime")){
       $datetime = $value;
     } else {
       $datetime = DateTime::createFromFormat('Y', $value);
