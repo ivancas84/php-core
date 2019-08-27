@@ -74,10 +74,19 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   public function equalTo_(EntityValues $entityValues, $strict = false){
     $a = $this->toArray();
     $b = $entityValues->toArray();
+    // print_r($a);
+    // print_r($b);
     if($strict) return (empty(array_diff_assoc($a, $b)) && empty(array_diff_assoc($b, $a)))? true : false;
     foreach($a as $ka => $va) {
       if(is_null($va) || !key_exists($ka, $b)) continue;
-      if($b[$ka] !== $va) return false;
+      echo "COMPARACION" . $ka . " "; 
+      echo  $b[$ka]; 
+      echo " CON " . $va; 
+      if($b[$ka] !== $va) {
+        echo "son distintos";
+        return false;
+      }
+      echo "<br>";
     }
     return true;
   }
