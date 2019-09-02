@@ -64,6 +64,20 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     }
   }
 
+  protected function formatBoolean($value, $format = null){
+    if($this->isEmpty($value)) return null;
+    switch($format){
+      case strpos(mb_strtolower($format), "si") !== false:
+      case strpos(mb_strtolower($format), "sí") !== false:
+      case strpos(mb_strtolower($format), "no") !== false:
+         return ($value) ? "Sí" : "No";
+      case strpos(mb_strtolower($format), "s") !== false:
+      case strpos(mb_strtolower($format), "n") !== false:        
+        return ($value) ? "S" : "N";
+      default: return $value;
+    }
+  }
+
   public function setIdentifier_($identifier){ $this->identifier_ = $identifier; }
   public function identifier_($format = null){ return $this->formatString($this->identifier_, $format); }
   
