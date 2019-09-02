@@ -38,7 +38,7 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   }
 
   public function isEmpty($value) { //esta vacio
-    return ($value === UNDEFINED || empty($value)) ? true : false;
+    return ($value == UNDEFINED || empty($value)) ? true : false;
   }
 
   protected function formatDate($value, $format = 'd/m/Y'){
@@ -58,6 +58,7 @@ abstract class EntityValues { //manipulacion de valores de una entidad
       case "xx-yy": case "x-y": return mb_strtolower(str_replace("_", "-", $value), "UTF-8");
       case "XX YY": case "X Y": case "X": return mb_strtoupper(str_replace("_", " ", $value), "UTF-8");
       case "XY": case "XXYY": return mb_strtoupper(str_replace("_", "", $value), "UTF-8");
+      case "xx yy": case "x y": return str_replace("_", " ", mb_strtolower($value, "UTF-8"));
 
       default: return $value;
     }

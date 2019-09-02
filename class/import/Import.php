@@ -41,7 +41,7 @@ abstract class Import { //comportamiento general para importar datos
                 $e = array_combine($encabezados, $datos);
 
                 $this->element($i, $e);                  
-                //if($i==1000) break;           
+                //if($i==100) break;           
             }
             fclose($gestor);
         }
