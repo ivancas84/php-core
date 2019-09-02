@@ -104,6 +104,21 @@ abstract class EntitySqlo { //SQL object
     return $this->all($r);
   }
 
+  public function ids($render = NULL) {
+    $r = $this->render($render);
+    $sql = "SELECT DISTINCT
+{$this->sql->fieldId()}
+{$this->sql->fromSubSql($r)}
+{$this->sql->join($r)}
+" . concat($this->sql->condition($r), 'WHERE ') . "
+{$this->sql->orderBy($r->getOrder())}
+{$this->sql->limit($r->getPage(), $r->getSize())}
+";
+
+    return $sql;
+  }
+
+
 
   public function deleteSubSql($render = null){
     //se recomienda no utilizar este metodo
@@ -229,21 +244,7 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 
 
 
-  public function ids($render = NULL) { //sql para obtener ids
-    /**
-     * No admite ordenamiento
-     */
-    $r = $this->render($render);
-
-    $sql = "SELECT DISTINCT {$this->sql->fieldId()}
-{$this->sql->from()}
-{$this->sql->join()}
-" . concat($this->sql->condition($r), 'WHERE ') . "
-{$this->sql->limit($r->getPage(), $r->getSize())}
-";
-
-    return $sql;
-  }
+  
 
 
 
