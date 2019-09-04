@@ -1,5 +1,9 @@
 <?php
 
+require_once("class/model/Sqlo.php");
+require_once("class/model/Dba.php");
+require_once("function/array_combine_key.php");
+
 abstract class Import { //comportamiento general para importar datos
     public $file;
     public $pathSummary;
@@ -71,6 +75,53 @@ abstract class Import { //comportamiento general para importar datos
 
     }
 
+    public function identifyValue_($id, $value){
+        if(!isset($this->ids[$id])) $this->ids[$id] = [];
+        if(!in_array($value, $this->ids[$id])) array_push($this->ids[$id], $value); 
+      }
 
+    public function queryEntityField_($name, $field, $id = null){
+        if(!$id) $id = $name;
+        $this->dbs[$id] = [];
+        if(empty($this->ids[$id])) return;
+    
+        $rows = Dba::all($name, [$field,"=",$this->ids[$id]]);
+    
+        $this->dbs[$id] = array_combine_key(
+          $rows,
+          $field
+        );
+      }
+
+    public function processSource_($name, &$source, $value, $id = null){
+        if(empty($id)) $id = $name;
+        if(key_exists($value, $this->dbs[$id])){
+          $existente = EntityValues::getInstanceRequire($name);
+          $existente->fromArray($this->dbs[$id][$value]);
+          $sql = $this->updateSource_($source, $name, $existente);
+        } else {
+            $sql = $this->insertSource_($source, $name);
+        }
+        $this->dbs[$id][$value] = $source[$name]->toArray();
+        return $sql;
+      }
+
+      public function insertSource_(&$source, $name){
+        $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->toArray());
+        $source[$name]->id = $persist["id"];
+        return $persist["sql"];
+      }
+      
+      public function updateSource_(&$source, $name, $existente){
+        $source[$name]->id = $existente->id();
+        
+    
+        if(!$source[$name]->equalTo_($existente)) {
+          $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->toArray());
+          return $persist["sql"];
+        }
+    
+        return "";
+      }
 
 }
