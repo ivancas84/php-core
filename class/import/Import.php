@@ -181,19 +181,20 @@ abstract class Import { //comportamiento general para importar datos
 
     public function processSource_($name, &$source, $value, $id = null){
         if(empty($id)) $id = $name;
+        
         if(key_exists($value, $this->dbs[$id])){
           $existente = EntityValues::getInstanceRequire($name);
-          $existente->fromArray($this->dbs[$id][$value]);
+          $existente->_fromArray($this->dbs[$id][$value]);
           $sql = $this->updateSource_($source, $name, $existente);
-        } else {
+        } else {        
             $sql = $this->insertSource_($source, $name);
         }
-        $this->dbs[$id][$value] = $source[$name]->toArray();
+        $this->dbs[$id][$value] = $source[$name]->_toArray();
         return $sql;
       }
 
       public function insertSource_(&$source, $name){
-        $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->toArray());
+        $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->_toArray());
         $source[$name]->id = $persist["id"];
         return $persist["sql"];
       }
@@ -202,8 +203,8 @@ abstract class Import { //comportamiento general para importar datos
         $source[$name]->id = $existente->id();
         
     
-        if(!$source[$name]->equalTo_($existente)) {
-          $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->toArray());
+        if(!$source[$name]->_equalTo($existente)) {
+          $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
           return $persist["sql"];
         }
     
