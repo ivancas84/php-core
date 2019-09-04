@@ -2,26 +2,35 @@
 
 require_once("class/model/Sqlo.php");
 require_once("class/model/Dba.php");
+
 require_once("function/array_combine_key.php");
 
 abstract class Import { //comportamiento general para importar datos
-    public $file;
-    public $pathSummary;
+    public $id; //identificacion de los datos a procear
+    public $source; //fuente de los datos a procesar
+    public $pathSummary; //directorio donde se almacena el resumen del procesamiento
+    public $headers; //opcional encabezados
+    public $mode = "csv";  //modo de procesamiento
+        /**
+         * post: post tab
+         * post_comma: post comma
+         */
     
     public $ids = []; //array asociativo con identificadores
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
     public $elements = []; //array de elementos a importar
+    
 
     
-    public function execute(){
-        echo date("Y-m-d H:i:s") . " BEGIN " . $this->file . "<br>";
+    public function main(){
+        echo date("Y-m-d H:i:s") . " BEGIN " . $this->id . "<br>";
         $this->define();
         $this->identify();
         $this->query();
         $this->process();
         $this->persist();
         $this->summary();
-        echo date("Y-m-d H:i:s") . " END " . $this->file."<br>";
+        echo date("Y-m-d H:i:s") . " END " . $this->id."<br>";
     }
 
     abstract public function element($i, $data);
@@ -32,10 +41,47 @@ abstract class Import { //comportamiento general para importar datos
 
     abstract public function process();
 
-    abstract public function summary();
+    public function summary(){
+        $informe = "<h3>Resultado " . $this->id . "</h3>";
+        $informe .= "<p>Cantidad de filas procesadas: " . count($this->elements) . "</p>
+";      
+    
+        //las etapas asociadas a una inscripcion, si existen, se eliminan y se vuelven a cargar
+        $i = 0;
+        foreach($this->elements as $element) {
+            $i++;
+            $errores = [];
+            $advertencias = [];
+            if(!empty($element->warnings)) $advertencias = array_merge($advertencias, $element->warnings);
+            if(!empty($element->errors)) $errores = array_merge($errores, $element->errors);
+            
+            if(count($errores) || count($advertencias)){
+                $informe .= "
+    <div class=\"card\">
+    <ul class=\"list-group list-group-flush\">
+        <li class=\"list-group-item active\">FILA " . $i . ": " . $element->entities["persona"]->nombre() . " " . $element->entities["persona"]->numeroDocumento() . "</li>
+";                
+                if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
+";
+                foreach($errores as $error) $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $error."</li>
+";
+                foreach($advertencias as $advertencia) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $advertencia. "</li>
+";
+                $informe .= "    </ul>
+    </div>
+    <br><br>";                          
+            }
+            
+        }
+        file_put_contents($this->pathSummary . ".html", $informe);
+    
+        echo $informe;
+    }
 
-    public function define(){
-        if (($gestor = fopen("../../tmp/" . $this->file . ".csv", "r")) !== FALSE) {
+    
+
+    public function defineCsv(){
+        if (($gestor = fopen("../../tmp/" . $this->source . ".csv", "r")) !== FALSE) {
             $encabezados = fgetcsv($gestor, 1000, ",");
 
             $i = 0;
@@ -48,6 +94,41 @@ abstract class Import { //comportamiento general para importar datos
                 //if($i==100) break;           
             }
             fclose($gestor);
+        }
+    }
+
+    public function defineTab(){
+        $source = preg_split('/\n+/', $this->source);
+
+        $source = explode("\n", $this->source);
+
+        if(empty($this->headers)) {
+            $this->headers = [];
+            foreach( preg_split('/\t+/', $source[0]) as $h) array_push($this->headers, trim($h));
+            $start = 1;
+        } else {
+            $start = 0;
+        }
+            
+        for($i = $start; $i < count($source); $i++){   
+            if(empty($source[$i])) break;
+            $datos = [];
+            foreach( preg_split('/\t+/', $source[$i]) as $d) array_push($datos, trim($d));
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
+            $e = array_combine($this->headers, $datos);
+            
+            $this->element($i, $e);                  
+            //if($i==100) break;           
+        }
+    }
+     
+    public function define(){
+        switch($this->mode){
+            case "tab":
+                $this->defineTab();
+            break;
+            default:
+                $this->defineCsv();
         }
     }
 
@@ -84,7 +165,7 @@ abstract class Import { //comportamiento general para importar datos
         if(!$id) $id = $name;
         $this->dbs[$id] = [];
         if(empty($this->ids[$id])) return;
-    
+
         $rows = Dba::all($name, [$field,"=",$this->ids[$id]]);
     
         $this->dbs[$id] = array_combine_key(
@@ -92,6 +173,11 @@ abstract class Import { //comportamiento general para importar datos
           $field
         );
       }
+
+      public function queryEntityIdentifier_($name){
+        if(!empty($this->ids[$name])) $this->dbs[$name] = Dba::identifier($name, $this->ids[$name]);
+      }
+    
 
     public function processSource_($name, &$source, $value, $id = null){
         if(empty($id)) $id = $name;
