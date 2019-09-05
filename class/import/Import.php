@@ -141,7 +141,7 @@ abstract class Import { //comportamiento general para importar datos
             $db = Dba::dbInstance();
             try {
                 $sql .= $element->sql;
-                $db->multiQueryTransaction($element->sql);
+                //$db->multiQueryTransaction($element->sql);
             } catch(Exception $exception){
                 echo "<pre>";
                 echo $exception->getMessage();
@@ -152,7 +152,9 @@ abstract class Import { //comportamiento general para importar datos
                 Dba::dbClose();
             }
         }
-        file_put_contents($this->pathSummary . ".sql", $sql);
+        echo "<pre>";
+        echo $sql;
+        //file_put_contents($this->pathSummary . ".sql", $sql);
 
     }
 
