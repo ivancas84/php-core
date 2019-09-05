@@ -55,7 +55,10 @@ class Dba { //Facilita el acceso a la base de datos
 
   public static function uniqId(){ //identificador unico
     //usleep(1); //con esto se evita que los procesadores generen el mismo id
-    return uniqid();
+    if(isset($_SESSION["uniqid"])) $_SESSION["uniqid"]++;
+    else $_SESSION["uniqid"] = intval(date("Ymdhisu"));
+    return $_SESSION["uniqid"];
+    //return uniqid();
     //sleep(1);
     //return strtotime("now");
   }
