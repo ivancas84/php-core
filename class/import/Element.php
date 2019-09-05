@@ -1,5 +1,6 @@
 <?php
 
+require_once("class/model/Values.php");
 abstract class ImportElement { //elemento a importar
     public $index;
     public $warnings = [];
@@ -14,6 +15,10 @@ abstract class ImportElement { //elemento a importar
     }
 
     abstract function setEntities($data);
+
+    public function setEntity_($name, $row){
+        $this->entities[$name] = EntityValues::getInstanceRequire($name, $row, $name . "_");
+      }
 
     public function addWarning($warning) { array_push($this->warnings, $warning); }
     public function addError($error) { array_push($this->errors, $error); }

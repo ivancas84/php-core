@@ -348,7 +348,7 @@ class Dba { //Facilita el acceso a la base de datos
   public static function identifier($entity, $identifier){
     $render = new Render();
     $render->setGeneralCondition(["identifier_","=",$identifier]);
-    $sql = EntitySqlo::getInstanceRequire($entity)->all($render);
+    $sql = EntitySqlo::getInstanceRequire($entity)->all($render);  
     return array_combine_concat(Dba::fetchAll($sql), Entity::getInstanceRequire($entity)->getIdentifier());
 }
 
