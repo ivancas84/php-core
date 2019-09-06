@@ -106,4 +106,11 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     }
     return true;
   }
+
+  public function _check(){ //chequeo basico de campos
+    /**
+     * return true or {"field":"error"}
+     */
+    return true;
+  }
 }
