@@ -18,7 +18,15 @@ abstract class EntitySqlo { //SQL object
   public $sql;    //EntitySql. Atributo auxiliar para facilitar la definicion de consultas sql
   protected static $instances = [];
 
-  
+  final public static function getInstance() {
+    $className = get_called_class();
+    if (!isset(self::$instances[$className])) {
+      $c = new $className;
+      self::$instances[$className] = $c;
+    }
+    return self::$instances[$className];
+  }
+
   final public static function getInstanceString($entity) {
     $className = snake_case_to("XxYy", $entity) . "Sqlo";
     return call_user_func("{$className}::getInstance");
@@ -34,18 +42,6 @@ abstract class EntitySqlo { //SQL object
 
   final public function __wakeup(){ trigger_error('Unserializing is not allowed.', E_USER_ERROR); } //singleton
 
-  protected function render($render = null){ //Definir clase de presentacion
-    /**
-     * @param String | Object | Array | Render En función del tipo de parámetro define el render
-     * @return Render Clase de presentacion
-     */
-    if(gettype($render) == "object") return $render;
-
-    $r = new Render();
-    if(gettype($render) == "string") $r->setCondition(["search_","=~",$render]);
-    elseif (gettype($render) == "array") $r->setCondition($render);
-    return $r;
-  }
 
   public function nextPk(){ return $this->db->uniqId(); } //siguiente identificador unico
   public function json(array $row) { return $this->sql->_json($row); }
@@ -66,17 +62,9 @@ abstract class EntitySqlo { //SQL object
   }
   public function valuesAll(array $rows){ foreach($rows as &$row) $row = $this->values($row); return $rows; }
 
-  final public static function getInstance() {
-    $className = get_called_class();
-    if (!isset(self::$instances[$className])) {
-      $c = new $className;
-      self::$instances[$className] = $c;
-    }
-    return self::$instances[$className];
-  }
-
+ 
   public function all($render = NULL) {
-    $r = $this->render($render);
+    $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
 {$this->sql->fields()}
 {$this->sql->fromSubSql($r)}
@@ -90,7 +78,7 @@ abstract class EntitySqlo { //SQL object
   }
 
   public function getAll(array $ids, $render = NULL) {
-    $r = $this->render($render);
+    $r = Render::getInstance($render);
     //Para dar soporte a distintos tipos de id, se define la condicion de ids a traves del metodo conditionAdvanced en vez de utilizar IN como se hacia habitualmente
     $advanced = [];
     for($i = 0; $i < count($ids); $i++) {
@@ -105,7 +93,7 @@ abstract class EntitySqlo { //SQL object
   }
 
   public function ids($render = NULL) {
-    $r = $this->render($render);
+    $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
 {$this->sql->fieldId()}
 {$this->sql->fromSubSql($r)}
@@ -230,7 +218,7 @@ WHERE id IN ({$ids_});
   }
 
   public function count($render = NULL) { //sql cantidad de valores
-    $r = $this->render($render);
+    $r = Render::getInstance($render);
 
     return "
 SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
@@ -239,14 +227,6 @@ SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
 " . concat($this->sql->condition($r), 'WHERE ') . "
 ";
   }
-
-
-
-
-
-  
-
-
 
   public function _unique(array $row){ //busqueda auxiliar por campos unicos
     /**
@@ -265,7 +245,7 @@ WHERE
   }
 
   public function unique(array $row, $render = NULL){ //busqueda por campos unicos
-    $r = $this->render($render);
+    $r = Render::getInstance($render);
 
     $conditionUniqueFields = $this->sql->conditionUniqueFields($row);
     if(empty($conditionUniqueFields)) return null;
@@ -279,58 +259,6 @@ WHERE
 " . concat($this->sql->condition($r), 'AND ') . "
 ";
   }
-
-
-
-  /* DEPRECATED
-  //TODO refactorizar metodo
-  public function uploadCsv($handle) {
-    //***** definir headers *****
-    $headersAux = fgetcsv($handle, 0, ';'); if(is_null($headersAux)) throw new Exception("Archivo CSV no válido");
-    $headers = array_map('trim', $headersAux);
-
-    //***** recorrer archivo csv y definir sql *****
-    $sql = ""; //se define todo el sql y se ejecuta conjuntamente
-    $rowCount = 0; //se utiliza un contador para indicar el numero de fila correspondiente al error, si es que existe alguno
-    $errores = ""; //se almacenan en un string los errores
-
-    while (($dataCsv = fgetcsv($handle, 0, ';')) !== FALSE) {
-      $rowCount++;
-
-      $dataAux = array_map('trim', $dataCsv);
-      $data = array_combine($headers, $dataAux);
-      try{
-        $persist = $this->persistSql($data);
-        $sql .= $persist["sql"];
-      }
-      catch (Exception $ex){
-        $errores .= $ex->getMessage() . " (fila " . $rowCount . ")
-";
-      }
-
-    }
-
-    //persistir datos
-    $this->db->multiQueryTransaction($sql);
-  }*/
-
-
-
-  /* DEPRECATED
-  public function select($select, $render = NULL) { //select definido por el usuario
-    $r = $this->render($render);
-
-    $sql = "SELECT {$select}
-{$this->sql->from()}
-{$this->sql->join()}
-" . concat($this->sql->condition($r), 'WHERE ') . "
-{$this->sql->orderBy($r->getOrder())}
-{$this->sql->limit($r->getPage(), $r->getSize())}
-";
-
-    return $sql;
-  }*/
-
 
   public function advanced(RenderAux $render) { //consulta avanzada
     $fields = array_merge($render->getGroup(), $render->getAggregate());

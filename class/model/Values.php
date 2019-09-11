@@ -85,8 +85,8 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     }
   }
 
-  public function _setIdentifier($identifier){ $this->identifier_ = $identifier; }
-  public function _identifier($format = null){ return $this->_formatString($this->identifier_, $format); }
+  public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
+  public function _identifier($format = null){ return $this->_formatString($this->_identifier, $format); }
   
   public function _setValues($values, $prefix = ""){
     if(is_string($values) && $values == "DEFAULT") $this->_setDefault();

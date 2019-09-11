@@ -35,7 +35,7 @@ class EntityViewList extends View {
 
   public function search(){
     $render = new Render();
-    //$render->setCondition(["search_","=",$this->search]);
+    //$render->setCondition(["_search","=",$this->search]);
     $sql = EntitySqlo::getInstanceRequire($this->entityName)->all($render);
     $this->rows = Dba::fetchAll($sql);    
   }

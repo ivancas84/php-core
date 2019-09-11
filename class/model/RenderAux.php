@@ -2,8 +2,7 @@
 
 require_once("class/model/Render.php");
 
-//Presentacion de datos
-class RenderAux extends Render {
+class RenderAux extends Render { //Presentacion de datos
   /**
    * Implementa metodos auxiliares a los que utiliza Render
    * Habitualmente son utilizados para consultas avanzadas que utilicen group by y funciones de agregacion

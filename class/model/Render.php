@@ -26,6 +26,19 @@ class Render {
     $this->size = false; //si es false o 0 se incluyen todas las paginas, no se define tamanio
   }
 
+  public static function getInstance($render = null){
+    /**
+     * @param String | Object | Array | Render En función del tipo de parámetro define el render
+     * @return Render Clase de presentacion
+     */
+    if(gettype($render) == "object") return $render;
+
+    $r = new Render();
+    if(gettype($render) == "string") $r->setCondition(["_search","=~",$render]);
+    elseif (gettype($render) == "array") $r->setCondition($render);
+    return $r;
+  }
+
   public function setCondition (array $condition = null) { $this->condition = $condition; }
 
   public function addCondition ($condition = null) { if(!empty($condition)) array_push ( $this->condition, $condition ); }

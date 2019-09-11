@@ -92,7 +92,7 @@ abstract class EntitySql { //Definir SQL
   public function _mappingFieldDefined($field){ //traduccion local de campos generales
     switch ($field) {
       case "_cantidad": return "COUNT(*)";
-      case "identifier_":
+      case "_identifier":
         if(empty($this->entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->entity->getName()); 
         $identifier = [];
         foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->mappingField($id));
@@ -305,16 +305,16 @@ abstract class EntitySql { //Definir SQL
     $p = $this->prf();
 
     switch($field){
-      case "identifier_": //utilizar solo como condicion general
+      case "_identifier": //utilizar solo como condicion general
         /**
          * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
          * No utilizar prefijo para su definicion
          */
-        $f = $this->mappingField("identifier_");
+        $f = $this->mappingField("_identifier");
         return $this->format->conditionText($f, $value, $option);
       break;
       
-      case $p."search_": 
+      case $p."_search": 
         /**
          * define la misma condicion y valor para todos los campos de la entidad
         */
@@ -411,7 +411,7 @@ abstract class EntitySql { //Definir SQL
   }
 
   protected function _conditionSearch($option, $value){
-    if($option != "=~") throw new Exception("Opción no permitida para condición " . $this->entity->getName("XxYy") . "Sql._conditionSearch([\"search_\",\"{$option}\",\"{$value}\"])");
+    if($option != "=~") throw new Exception("Opción no permitida para condición " . $this->entity->getName("XxYy") . "Sql._conditionSearch([\"_search\",\"{$option}\",\"{$value}\"])");
     //condicion estructurada de busqueda que involucra a todos los campos
     $conditions = [];
     foreach($this->entity->getFields() as $field){
