@@ -347,7 +347,7 @@ WHERE
     $group = empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
 ";
 
-    $having_ = $this->sql->having($render->getHaving());
+    $having_ = $this->sql->having($render);
     $having = empty($having_) ? "" : "HAVING {$having_}
 ";
 

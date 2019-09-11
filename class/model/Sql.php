@@ -244,7 +244,12 @@ abstract class EntitySql { //Definir SQL
     
     if(!is_array($value)) {
       $condition = $this->conditionFieldStruct($field, $option, $value);
-      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      
+      if(!$condition) {
+        $condition = $this->conditionFieldHaving($field, $option, $value);
+        if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      }
+      
       return $condition;
     }
 
@@ -258,8 +263,7 @@ abstract class EntitySql { //Definir SQL
         else throw new Exception("Error al definir opción");
       } else $cond = true;
 
-      $condition_ = $this->conditionFieldStruct($field, $option, $v);
-      if(!$condition_) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      $condition_ = $this->conditionField($field, $option, $v);
       $condition .= $condition_;
     }
 
@@ -273,9 +277,8 @@ abstract class EntitySql { //Definir SQL
     if($condition) return $condition;
     
     if(!is_array($value)) {
-
       $condition = $this->_conditionFieldStruct($field, $option, $value);
-      //if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      if(!$condition) $condition = $this->_conditionFieldHaving($field, $option, $value);
       return $condition;
     }
 
@@ -318,6 +321,21 @@ abstract class EntitySql { //Definir SQL
         return $this->_conditionSearch($option, $value);;
       break;
     }
+  }
+
+  protected function _conditionFieldHaving($field, $option, $value) { 
+    //@TODO soporte para otro tipo de campos actualmente funciona con numeros
+    $field = $this->_mappingField($field);
+    return (empty($field))? "" : $this->format->conditionNumber($field, $value, $option);
+  }
+
+  protected function conditionFieldHaving($field, $option, $value){ //condicion de agregacionavanzada principal
+    /**
+     * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
+     * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
+     * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
+     */
+    if($c = $this->_conditionFieldHaving($field, $option, $value)) return $c;
   }
   
   protected function conditionFieldStruct($field, $option, $value){ //condicion avanzada principal
@@ -579,8 +597,29 @@ abstract class EntitySql { //Definir SQL
   }
 
 
-  public function having(array $having = null) { //busqueda avanzada
+  public function having($render) { //busqueda avanzada
+    $condition = $render->getHaving();
+    /**
+     * Array $advanced:
+     *  [
+     *    0 => "field"
+     *    1 => "=", "!=", ">=", "<=", "<", ">", "=="
+     *    2 => "value" array|string|int|boolean|date (si es null no se define busqueda, si es un array se definen tantas busquedas como elementos tenga el array)
+     *    3 => "AND" | "OR" | null (opcional, por defecto AND)
+     *  ]
+     *  Array(
+     *    Array("field" => "field", "value" => array|string|int|boolean|date (si es null no se define busqueda, si es un array se definen tantas busquedas como elementos tenga el array) [, "option" => "="|"=~"|"!="|"<"|"<="|">"|">="|true (no nulos)|false (nulos)][, "mode" => "and"|"or"]
+     *    ...
+     *  )
+     *  )
+     */
+    if(empty($condition)) return "";
+    $conditionMode = $this->conditionRecursive($condition);
+    return $conditionMode["condition"];
+  }
 
+  public function _having($render) { //busqueda avanzada
+    $condition = $render->getHaving();
     /**
      * Array $advanced:
      *  [
@@ -596,74 +635,10 @@ abstract class EntitySql { //Definir SQL
      *  )
      */
     if(empty($having)) return "";
-    $conditionMode = $this->havingRecursive($having);
+    $conditionMode = $this->_conditionRecursive($condition);
     return $conditionMode["condition"];
   }
 
-
-  private function havingRecursive(array $having){
-
-    /**
-     * Para facilitar la definicion de condiciones, retorna un array con dos elementos:
-     * "condition": SQL
-     * "mode": Concatenacion de condiciones "AND" | "OR"
-     */
-
-    if(is_array($having[0])) return $this->havingIterable($having);
-    /**
-     * si en la posicion 0 es un string significa que es un campo a buscar, caso contrario es un nuevo conjunto (array) de campos que debe ser recorrido
-     */
-
-    $option = (empty($having[1])) ? "=" : $having[1]; //por defecto se define "="
-    $value = (!isset($having[2])) ? null : $having[2]; //hay opciones de configuracion que pueden no definir valores
-    /**
-     * No usar empty, puede definirse el valor false
-     */
-    $mode = (empty($having[3])) ? "AND" : $having[3];  //el modo indica la concatenacion con la opcion precedente, se usa en un mismo conjunto (array) de opciones
-
-    $condicion = $this->_conditionFieldAux($having[0], $option, $value);
-    if(!$condicion) $condicion = $this->havingValue($having[0], $option, $value);
-    /**
-     * El campo de identificacion del array posicion 0 no debe repetirse en las condiciones no estructuradas y las condiciones estructuras
-     * Se recomienda utilizar un sufijo por ejemplo "_" para distinguirlas mas facilmente
-     */
-    return ["condition" => $condicion, "mode" => $mode];
-  }
-
-
-  private function havingIterable(array $having) {
-    $hav = array();
-
-    $condition = "";
-    for($i = 0; $i < count($having); $i++) {
-      $h = $this->havingRecursive($having[$i]);
-      if($i == 0) $mode = $h["mode"];
-      if(!empty($condition)) $condition .= $h["mode"] . " ";
-      $condition .= $h["condition"];
-    }
-
-    return ["condition" => "({$condition})", "mode" => $mode];
-  }
-
-  protected function havingValue($field, $option, $value){
-    if(!is_array($value)) {
-      return $this->_conditionFieldAggregate($field, $option, $value);
-    }
-
-    $condition = "";
-    $cond = false;
-
-    foreach($value as $v){
-      if($cond) {
-        if($option == "=") $condition .= " OR ";
-        elseif($option == "!=") $condition .= " AND ";
-        else throw new Exception("Error al definir opción");
-      } else $cond = true;
-      $condition .= $this->_conditionFieldAggregate($field, $option, $v);
-    }
-
-    return "(".$condition.")";
-  }
 
   public function _subSql(Render $render){ //subconsulta sql (en construccion)
  return "SELECT DISTINCT
