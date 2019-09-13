@@ -44,8 +44,12 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     
   }
 
+  public function _isUndefinedValue($value) { //esta vacio
+    return ($value === UNDEFINED) ? true : false;
+  }
+
   public function _isEmptyValue($value) { //esta vacio
-    return ($value == UNDEFINED || empty($value)) ? true : false;
+    return ($value === UNDEFINED || empty($value)) ? true : false;
   }
 
   protected function _formatDate($value, $format = 'd/m/Y'){
@@ -72,16 +76,18 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   }
 
   protected function _formatBoolean($value, $format = null){
-    if($this->_isEmptyValue($value)) return null;
+
+    if($this->_isUndefinedValue($value)) return null;
     switch($format){
       case strpos(mb_strtolower($format), "si") !== false:
       case strpos(mb_strtolower($format), "sí") !== false:
-      case strpos(mb_strtolower($format), "no") !== false:
-         return ($value) ? "Sí" : "No";
+      case strpos(mb_strtolower($format), "no") !== false:   
+        return (settypebool($value)) ? "Sí" : "No";
       case strpos(mb_strtolower($format), "s") !== false:
-      case strpos(mb_strtolower($format), "n") !== false:        
-        return ($value) ? "S" : "N";
-      default: return $value;
+      case strpos(mb_strtolower($format), "n") !== false:              
+        return (settypebool($value)) ? "S" : "N";
+      default:         
+        return $value;
     }
   }
 
@@ -95,9 +101,7 @@ abstract class EntityValues { //manipulacion de valores de una entidad
 
   public function _equalTo(EntityValues $entityValues, $strict = false){
     $a = $this->_toArray();
-    $b = $entityValues->_toArray();
-    // print_r($a);
-    // print_r($b);
+    $b = $entityValues->_toArray();    
     if($strict) return (empty(array_diff_assoc($a, $b)) && empty(array_diff_assoc($b, $a)))? true : false;
     foreach($a as $ka => $va) {
       if(is_null($va) || !key_exists($ka, $b)) continue;
