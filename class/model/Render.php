@@ -3,7 +3,7 @@
 //Presentacion de datos
 class Render {
 
-  public $condition; //array multiple cuya raiz es [field,option,value], 
+  public $condition = array(); //array multiple cuya raiz es [field,option,value], 
   /**
    * ejemplo:  [
    *    ["nombre","=","unNombre"],
@@ -13,18 +13,10 @@ class Render {
    *    ]
    * ]
    */  
-  public $generalCondition; //condicion utilizada solo en la estructura general 
-  public $order;
-  public $page;
-  public $size;
-
-  public function __construct() {
-    $this->condition = array();
-    $this->generalCondition = array();
-    $this->order = array();
-    $this->page = 1;
-    $this->size = false; //si es false o 0 se incluyen todas las paginas, no se define tamanio
-  }
+  public $generalCondition = array(); //condicion utilizada solo en la estructura general 
+  public $order = array();
+  public $page = 1;
+  public $size = false;
 
   public static function getInstance($render = null){
     /**
