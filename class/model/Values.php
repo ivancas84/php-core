@@ -95,7 +95,7 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   public function _identifier($format = null){ return $this->_formatString($this->_identifier, $format); }
   
   public function _setValues($values, $prefix = ""){
-    if(is_string($values) && $values == "DEFAULT") $this->_setDefault();
+    if(is_string($values) && ($values == DEFAULT_VALUE || $values == "DEFAULT") ) $this->_setDefault();
     elseif(is_array($values)) $this->_fromArray($values, $prefix);
   }
 
