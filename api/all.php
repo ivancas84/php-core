@@ -12,9 +12,9 @@ try{
    * Se puede definir un parametro opcional "display" que posee un string en formato json para facilitar el uso de tipos basicos
    */
 
-  $render = Dba::renderParams($params);
-  $rows = Dba::all(ENTITY, $render);
-  echo json_encode($rows);
+  // $render = Dba::renderParams($params);
+  // $rows = Dba::all(ENTITY, $render);
+  // echo json_encode($rows);
 
 } catch (Exception $ex) {
   error_log($ex->getTraceAsString());
