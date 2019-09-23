@@ -5,9 +5,10 @@ require_once("class/model/Dba.php");
 require_once("function/stdclass_to_array.php");
 try{
 
+print_r($_GET);
+echo "<br><br><br>";
 $postdata = file_get_contents("php://input");
-$request = stdclass_to_array(json_decode($postdata));
-print_r($request);
+print_r($postdata);
 
   //$params = Filter::postAll();
   //$params = json_decode($params);
