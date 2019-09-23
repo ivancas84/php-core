@@ -82,9 +82,6 @@ class Dba { //Facilita el acceso a la base de datos
     return $sqlo->sql->isInsertable($row); //3) Si 1 no dio resultado, verificar si es insertable
   }
 
-
-
-
   public static function count($entity, $render = null){ //cantidad
     $sql = EntitySqlo::getInstanceRequire($entity)->count($render);
     $row = self::fetchAssoc($sql);
@@ -285,66 +282,4 @@ class Dba { //Facilita el acceso a la base de datos
   }
 
 
-
-public static function displayParams(array $params, $key = "display") { //deprecated?
-  /**
-   * Desde el cliente se recibe un Display, es una objeto similar a Render pero con algunas caracteristicas adicionales
-   */
-  $data = null;
-
-  //data es utilizado debido a la facilidad de comunicacion entre el cliente y el servidor. Se coloca todo el json directamente en una variable data que es convertida en el servidor.
-  if(isset($params[$key])) {
-    $data = $params[$key];
-    unset($params[$key]);
-  }
-
-  $f_ = json_decode($data);
-  $display = stdclass_to_array($f_);
-  if(empty($display["size"])) $display["size"] = 100;
-  if(empty($display["page"])) $display["page"] = 1;
-  if(!isset($display["order"])) $display["order"] = [];
-  if(!isset($display["filters"])) $display["filters"] = [];
-
-  foreach($params as $key => $value) {
-    /**
-     * Los parametros fuera de display, se priorizan y reasignan a Display
-     * Si los atributos son desconocidos se agregan como filtros
-     */
-    switch($key){
-      case "size": case "page": case "search": //pueden redefinirse ciertos parametros la prioridad la tiene los que estan fuera del elemento data (parametros definidos directamente)
-        $display[$key] = $value;
-      break;
-      case "order": //ejemplo http://localhost/programacion/curso/all?order={%22horario%22:%22asc%22}
-        $f_ = json_decode($value);
-        $display["order"] = stdclass_to_array($f_); //ordenamiento ascendente (se puede definir ordenamiento ascendente de un solo campo indicandolo en el parametro order, ejemplo order=campo)
-      break;
-
-
-      default: array_push($display["filters"], [$key,"=",$params[$key]]);
-    }
-  }
-
-  return $display;
-}
-
-public static function renderParams(array $params){ //deprecated? generar display
-  $display = self::displayParams($params);
-  return self::renderDisplay($display);
-}
-
-public static function renderDisplay(array $display = null) { //deprecated? instancia de render a partir de un display
-  /**
-   * @todo El ordenamiento por defecto no deberia ser una caracteristica de entity sino de las clases de generacion de sql
-   */
-  $render = new Render();
-
-  $render->setPagination($display["size"], $display["page"]);
-  $render->setOrder($display["order"]);
-
-  if(!empty($display["search"])) $render->setSearch($display["search"]);
-  if(!empty($display["filters"])) $render->setCondition($display["filters"]);
-  if(!empty($display["params"])) $render->setParams($display["params"]);
-
-  return $render;
-}
 }
