@@ -31,9 +31,10 @@ class Render {
     return $r;
   }
 
-  public static function getInstanceArray(array $render = null){
-    $r = new Render();
-    
+  public static function getInstanceDisplay(array $display = null){
+    $className = get_called_class();
+    $render = new $className;
+
     if(!empty($display["size"])) $render->setSize($display["size"]);
     if(!empty($display["page"])) $render->setPage($display["page"]);
     if(!empty($display["order"])) $render->setOrder($display["order"]);
@@ -42,6 +43,44 @@ class Render {
     if(!empty($display["params"])) $render->setParams($display["params"]);
 
     return $render;
+  }
+
+  public static function getInstanceParams(array $params, $key = "display"){
+    $data = null;
+
+    //data es utilizado debido a la facilidad de comunicacion entre el cliente y el servidor. Se coloca todo el json directamente en una variable data que es convertida en el servidor.
+    if(isset($params[$key])) {
+      $data = $params[$key];
+      unset($params[$key]);
+    }
+
+    $f_ = json_decode($data);
+    $display = stdclass_to_array($f_);
+    if(empty($display["size"])) $display["size"] = 100;
+    if(empty($display["page"])) $display["page"] = 1;
+    if(!isset($display["order"])) $display["order"] = [];
+    if(!isset($display["condition"])) $display["condition"] = [];
+
+    foreach($params as $key => $value) {
+      /**
+       * Los parametros fuera de display, se priorizan y reasignan a Display
+       * Si los atributos son desconocidos se agregan como filtros
+       */
+      switch($key) {
+        case "size": case "page": case "search": //pueden redefinirse ciertos parametros la prioridad la tiene los que estan fuera del elemento data (parametros definidos directamente)
+          $display[$key] = $value;
+        break;
+        case "order": //ejemplo http://localhost/programacion/curso/all?order={%22horario%22:%22asc%22}
+          $f_ = json_decode($value);
+          $display["order"] = stdclass_to_array($f_); //ordenamiento ascendente (se puede definir ordenamiento ascendente de un solo campo indicandolo en el parametro order, ejemplo order=campo)
+        break;
+
+
+        default: array_push($display["condition"], [$key,"=",$params[$key]]);
+      }
+    }
+
+    return self::getInstanceDisplay($display);
   }
 
 

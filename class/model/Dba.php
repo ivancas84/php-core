@@ -7,15 +7,15 @@
 require_once("function/snake_case_to.php");
 require_once("class/db/My.php");
 require_once("class/db/Pg.php");
-require_once("function/toString.php");
 require_once("class/model/Transaction.php");
 require_once("class/model/SqlFormat.php");
 require_once("class/model/Sqlo.php");
 require_once("class/model/Entity.php");
-
+require_once("class/model/RenderAux.php");
 
 require_once("function/stdclass_to_array.php");
 require_once("function/array_combine_concat.php");
+require_once("function/toString.php");
 
 class Dba { //Facilita el acceso a la base de datos
   /**
@@ -82,10 +82,15 @@ class Dba { //Facilita el acceso a la base de datos
     return $sqlo->sql->isInsertable($row); //3) Si 1 no dio resultado, verificar si es insertable
   }
 
-  public static function count($entity, $render = null){ //cantidad
-    $sql = EntitySqlo::getInstanceRequire($entity)->count($render);
+  public static function count($entity, $render = null){
+    /**
+     * cantidad
+     */
+    if(!$render) $render = new RenderAux();
+    $render->setAggregate(["_count"]);
+    $sql = EntitySqlo::getInstanceRequire($entity)->advanced($render);
     $row = self::fetchAssoc($sql);
-    return intval($row["num_rows"]);
+    return intval($row["_count"]);
   }
 
   public static function _unique($entity, array $params, $render = null){ //busqueda estricta por campos unicos

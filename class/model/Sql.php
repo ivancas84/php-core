@@ -91,7 +91,7 @@ abstract class EntitySql { //Definir SQL
   
   public function _mappingFieldDefined($field){ //traduccion local de campos generales
     switch ($field) {
-      case "_cantidad": return "COUNT(*)";
+      case "_count": return "COUNT(*)";
       case "_identifier":
         if(empty($this->entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->entity->getName()); 
         $identifier = [];
@@ -364,7 +364,7 @@ abstract class EntitySql { //Definir SQL
         return "({$f1} {$option} {$f2})";
       break;
 
-      case "_cantidad": //campo de agregacion general: "_cantidad" (no debería ser estructural?)
+      case "_count": //campo de agregacion general: "_count" (no debería ser estructural?)
         $f = $this->mappingField($field);
         return $this->format->conditionNumber($f, $value, $option);
       break;

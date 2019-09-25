@@ -109,7 +109,9 @@ abstract class EntitySqlo { //SQL object
 
 
   public function deleteSubSql($render = null){
-    //se recomienda no utilizar este metodo
+    /**
+     * no utilizar este metodo, solo para pruebas
+     */
     return "
 DELETE " . $this->entity->a_() . "*
 FROM " . $this->entity->sna_() . "
@@ -125,6 +127,38 @@ WHERE id IN (SELECT id
 ";              
   }
 
+  public function advanced(RenderAux $render) { //consulta avanzada
+    $fields = array_merge($render->getGroup(), $render->getAggregate());
+
+    $fieldsQuery_ = [];
+    foreach($fields as $field){
+      $f = $this->sql->mappingField($field);
+      array_push($fieldsQuery_, "{$f} AS {$field}");
+    }
+
+    $fieldsQuery = implode(', ', $fieldsQuery_);
+
+    $group_ = $render->getGroup();
+    $group = empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
+";
+
+    $having_ = $this->sql->having($render);
+    $having = empty($having_) ? "" : "HAVING {$having_}
+";
+
+    $sql = "SELECT DISTINCT
+{$fieldsQuery}
+{$this->sql->fromSubSql($render)}
+{$this->sql->join($render)}
+" . concat($this->sql->condition($render), 'WHERE ') . "
+{$group}
+{$having}
+{$this->sql->order($render->getOrder())}
+{$this->sql->limit($render->getPage(), $render->getSize())}
+";
+
+    return $sql;
+  }
 
 
 
@@ -217,17 +251,6 @@ WHERE id IN ({$ids_});
     return $this->deleteAll($ids);
   }
 
-  public function count($render = NULL) { //sql cantidad de valores
-    $r = Render::getInstance($render);
-
-    return "
-SELECT count(DISTINCT " . $this->sql->fieldId() . ") AS \"num_rows\"
-{$this->sql->from()}
-{$this->sql->join()}
-" . concat($this->sql->condition($r), 'WHERE ') . "
-";
-  }
-
   public function _unique(array $row){ //busqueda auxiliar por campos unicos
     /**
      * Unique puede restringir el acceso a datos dependiendo del rol y la condicion auxiliar
@@ -260,37 +283,6 @@ WHERE
 ";
   }
 
-  public function advanced(RenderAux $render) { //consulta avanzada
-    $fields = array_merge($render->getGroup(), $render->getAggregate());
-
-    $fieldsQuery_ = [];
-    foreach($fields as $field){
-      $f = $this->sql->mappingField($field);
-      array_push($fieldsQuery_, "{$f} AS {$field}");
-    }
-
-    $fieldsQuery = implode(', ', $fieldsQuery_);
-
-    $group_ = $render->getGroup();
-    $group = empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
-";
-
-    $having_ = $this->sql->having($render);
-    $having = empty($having_) ? "" : "HAVING {$having_}
-";
-
-    $sql = "SELECT DISTINCT
-{$fieldsQuery}
-{$this->sql->fromSubSql($render)}
-{$this->sql->join($render)}
-" . concat($this->sql->condition($render), 'WHERE ') . "
-{$group}
-{$having}
-{$this->sql->order($render->getOrder())}
-{$this->sql->limit($render->getPage(), $render->getSize())}
-";
-
-    return $sql;
-  }
+  
 
 }
