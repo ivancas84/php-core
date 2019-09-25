@@ -4,8 +4,8 @@ require_once("class/Filter.php");
 require_once("class/model/Dba.php");
 
 try{
-  $params = Filter::jsonPostRequired();
-  $render = RenderAux::getInstanceParams($params);
+  $display = Filter::jsonPostRequired();
+  $render = RenderAux::getInstanceDisplay($display);
   $rows = Dba::all(ENTITY, $render);
   echo json_encode(EntitySqlo::getInstanceRequire("sede")->jsonAll($rows));
 

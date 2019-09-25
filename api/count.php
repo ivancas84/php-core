@@ -6,9 +6,8 @@ require_once("class/model/RenderAux.php");
 
 require_once("function/stdclass_to_array.php");
 try{
-
-  $params = Filter::jsonPostRequired();
-  $render = RenderAux::getInstanceParams($params);
+  $display = Filter::jsonPostRequired();
+  $render = RenderAux::getInstanceDisplay($display);
   $count = Dba::count(ENTITY, $render);
   echo json_encode($count);
 
