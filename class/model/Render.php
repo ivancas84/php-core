@@ -39,7 +39,7 @@ class Render {
     if(!empty($display["page"])) $render->setPage($display["page"]);
     if(!empty($display["order"])) $render->setOrder($display["order"]);
     if(!empty($display["search"])) $render->setSearch($display["search"]);
-    if(!empty($display["condition"])) $render->setCondition($display["filters"]);
+    if(!empty($display["condition"])) $render->setCondition($display["condition"]);
     if(!empty($display["params"])) $render->setParams($display["params"]);
 
     return $render;
