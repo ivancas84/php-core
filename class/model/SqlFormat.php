@@ -23,64 +23,57 @@ class SqlFormat { //Formato SQL
     return self::$instance;
   }
 
+  protected function conditionDateTime($field, $value, $option, $my, $pg){
+    switch($option){
+      case "=~": case "!=~":
+        $o = ($option == "!=~") ? "NOT " : "";
+        if($this->db->getDbms() == "mysql") return "(CAST(DATE_FORMAT({$field}, '{$my}') AS CHAR) {$o}LIKE '%{$value}%' )";
+        else return "(TO_CHAR({$field}, '{$pg}') {$o}LIKE '%{$value}%' )";
+      break;
 
-  public function _conditionTextApprox($field, $option, $value) {
-    $option = ($option == "=~") ? "LIKE" : "NOT LIKE";
-    return "(lower({$field}) {$option} lower('%{$value}%'))";
-  }
+      case "=":
+        if($value === false) return "({$field} IS NULL) ";
+        if($value === true) return "({$field} IS NOT NULL) ";
 
-  public function _conditionDateApprox($field, $value){
-    if($this->db->getDbms() == "mysql") return "(CAST(DATE_FORMAT(" . $field . ", '%d/%m/%Y') AS CHAR) LIKE '%" . $value . "%' )";
-    else return "(TO_CHAR(" . $field . ", 'DD/MM/YYYY') LIKE '%" . $value . "%' )";
-  }
+      case "!=":
+        if($value === true) return "({$field} IS NULL) ";
+        if($value === false) return "({$field} IS NOT NULL) ";
 
-  public function _conditionNumberApprox($field, $value){
-    if($this->db->getDbms() == "mysql") return "(CAST(" . $field . " AS CHAR) LIKE '%" . $value . "%' )";
-    else return "(trim(both ' ' from to_char(" . $field . ", '99999999999999999999')) LIKE '%" . $value . "%' ) ";
-  }
-
-  public function _conditionTimestampApprox($field, $value){
-    if($this->db->getDbms() == "mysql") return "(CAST(DATE_FORMAT(" . $field . ", '%d/%m/%Y %H:%i') AS CHAR) LIKE '%" . $value . "%' )";
-    else return "(TO_CHAR(" . $field . ", 'DD/MM/YYYY HH:MI') LIKE '%" . $value . "%' )";
-  }
-
-  public function _conditionYearApprox($field, $value){
-    if($this->db->getDbms() == "mysql") return "(CAST(DATE_FORMAT(" . $field . ", '%Y') AS CHAR) LIKE '%" . $value . "%' )";
-    else return "(TO_CHAR(" . $field . ", 'YYYY') LIKE '%" . $value . "%' )";
+      default:
+        if($this->db->getDbms() == "mysql") return "({$field} {$option} '{$value}')";
+        else return "({$field} {$option} TO_TIMESTAMP('{$value}', '{$pg}') )";
+    }
   }
 
   public function conditionText($field, $value, $option = "="){
-    if($value === false) return "(" . $field . " IS NULL) ";
-    if($value === true) return "(" . $field . " IS NOT NULL) ";
+    if($value === false) return "({$field} IS NULL) ";
+    if($value === true) return "({$field} IS NOT NULL) ";
     if($option == "=~") return "(lower({$field}) LIKE lower('%{$value}%'))";
     if($option == "!=~") return "(lower({$field}) NOT LIKE lower('%{$value}%'))";
     return "(lower({$field}) {$option} lower('{$value}')) ";
   }
 
-  public function conditionDate($field, $value, $option = "="){
-    if($value === false) return "(" . $field . " IS NULL) ";
-    if($value === true) return "(" . $field . " IS NOT NULL) ";
-
-    if($this->db->getDbms() == "mysql") return "(" . $field . " " . $option. " '" . $value . "')";
-    else return "(" . $field . " " . $option. " TO_DATE('" . $value . "', 'YYYY-MM-DD') )";;
+  public function conditionTimestamp($field, $value, $option = "="){
+    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d %H:%i:%s", "YYYY-MM-DD HH24:MI:SS");  
   }
 
-  public function conditionTimestamp($field, $value, $option = "="){
-    if($value === false) return "(" . $field . " IS NULL) ";
-    if($value === true) return "(" . $field . " IS NOT NULL) ";
+  public function conditionYear($field, $value, $option = "="){
+    return $this->conditionDateTime($field, $value, $option, "%Y", "YYYY");  
+  }
 
-    if($this->db->getDbms() == "mysql") return "(" . $field . " " . $option. " '" . $value . "')";
-    else return "(" . $field . " " . $option. " TO_TIMESTAMP('" . $value . "', 'YYYY-MM-DD HH24:MI:SS') )";
+  public function conditionDate($field, $value, $option = "="){
+    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d", "YYYY-MM-DD");  
   }
 
   public function conditionTime($field, $value, $option = "="){
-    if($value === false) return "(" . $field . " IS NULL) ";
-    if($value === true) return "(" . $field . " IS NOT NULL) ";
-
-    if($this->db->getDbms() == "mysql") return "(" . $field . " " . $option. " '" . $value . "')";
-    else return "(" . $field . " " . $option. " TO_TIMESTAMP('" . $value . "', 'HH24:MI:SS') )";
+    return $this->conditionDateTime($field, $value, $option, "%H:%i:%s", "HH24:MI:SS");  
   }
 
+  public function conditionBoolean($field, $value = NULL){ //definir condicion de busqueda de booleano
+    $v = (settypebool($value)) ? "true" : "false";
+    return "({$field} = " . $v . ") ";
+  }
+  
   public function conditionNumber($field, $value, $option = "="){
     if($value === true) return "(" . $field . " IS NOT NULL) ";
     switch($option) {
@@ -88,15 +81,12 @@ class SqlFormat { //Formato SQL
         if($value === false) return "(" . $field . " IS NULL) ";
         if($value === true) return "(" . $field . " IS NOT NULL) "; 
         return "(" . $field . " " . $option . " " . $value . ") ";
-      case "=~": return $this->_conditionNumberApprox($field, $value);
+      case "=~": 
+        if($this->db->getDbms() == "mysql") return "(CAST(" . $field . " AS CHAR) LIKE '%" . $value . "%' )";
+        else return "(trim(both ' ' from to_char(" . $field . ", '99999999999999999999')) LIKE '%" . $value . "%' ) ";
       default: return "(" . $field . " " . $option . " " . $value . ") ";
     }
     
-  }
-
-  public function conditionBoolean($field, $value = NULL){ //definir condicion de busqueda de booleano
-    $v = (settypebool($value)) ? "true" : "false";
-    return "(" . $field . " = " . $v . ") ";
   }
 
   public function numeric($value){
@@ -175,7 +165,7 @@ class SqlFormat { //Formato SQL
     if(is_null($value) || ($value === 'null')) return 'null';
 
     if (!is_string($value)) throw new Exception('Valor de caracteres incorrecto: ' . $value);
-    else return "'" . $value . "'";
+    else return "'{$value}'";
   }
 
   public function escapeString($value){
