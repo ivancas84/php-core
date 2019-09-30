@@ -2,15 +2,12 @@
 
 require_once("class/Filter.php");
 require_once("class/model/Dba.php");
-require_once("function/stdclass_to_array.php");
 
-try{
-  $ids_ = Filter::post("ids");
-  if(empty($ids_)) throw new Exception("Identificadores no definidos");
-
-  $ids =  json_decode($ids_);
+try {
+  $ids = Filter::jsonPostRequired();
+  if(empty($ids)) throw new Exception("Identificadores no definidos");
   $rows = Dba::getAll(ENTITY, $ids);
-  echo json_encode($rows);
+  echo json_encode(EntitySqlo::getInstanceRequire("sede")->jsonAll($rows));
 
 } catch (Exception $ex) {
   error_log($ex->getTraceAsString());
