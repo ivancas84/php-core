@@ -20,8 +20,6 @@ abstract class Import { //comportamiento general para importar datos
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
     public $elements = []; //array de elementos a importar
     
-
-    
     public function main(){
         echo date("Y-m-d H:i:s") . " BEGIN " . $this->id . "<br>";
         $this->define();
@@ -78,8 +76,6 @@ abstract class Import { //comportamiento general para importar datos
         echo $informe;
     }
 
-    
-
     public function defineCsv(){
         if (($gestor = fopen("../../tmp/" . $this->source . ".csv", "r")) !== FALSE) {
             $encabezados = fgetcsv($gestor, 1000, ",");
@@ -98,8 +94,6 @@ abstract class Import { //comportamiento general para importar datos
     }
 
     public function defineTab(){
-        $source = preg_split('/\n+/', $this->source);
-
         $source = explode("\n", $this->source);
 
         if(empty($this->headers)) {
@@ -110,11 +104,13 @@ abstract class Import { //comportamiento general para importar datos
             $start = 0;
         }
             
-        for($i = $start; $i < count($source); $i++){   
+        for($i = $start; $i < count($source); $i++){
             if(empty($source[$i])) break;
             $datos = [];
-            foreach( preg_split('/\t+/', $source[$i]) as $d) array_push($datos, trim($d));
+                        
+            foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
             //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
+
             $e = array_combine($this->headers, $datos);
             
             $this->element($i, $e);                  
@@ -155,13 +151,12 @@ abstract class Import { //comportamiento general para importar datos
         echo "<pre>";
         echo $sql;
         //file_put_contents($this->pathSummary . ".sql", $sql);
-
     }
 
     public function identifyValue_($id, $value){
         if(!isset($this->ids[$id])) $this->ids[$id] = [];
         if(!in_array($value, $this->ids[$id])) array_push($this->ids[$id], $value); 
-      }
+    }
 
     public function queryEntityField_($name, $field, $id = null){
         if(!$id) $id = $name;
@@ -174,11 +169,11 @@ abstract class Import { //comportamiento general para importar datos
           $rows,
           $field
         );
-      }
+    }
 
-      public function queryEntityIdentifier_($name){
+    public function queryEntityIdentifier_($name){
         if(!empty($this->ids[$name])) $this->dbs[$name] = Dba::identifier($name, $this->ids[$name]);
-      }
+    }
     
 
     public function processSource_($name, &$source, $value, $id = null){
@@ -193,17 +188,16 @@ abstract class Import { //comportamiento general para importar datos
         }
         $this->dbs[$id][$value] = $source[$name]->_toArray();
         return $sql;
-      }
+    }
 
-      public function insertSource_(&$source, $name){
+    public function insertSource_(&$source, $name){
         $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->_toArray());
         $source[$name]->id = $persist["id"];
         return $persist["sql"];
-      }
+    }
       
-      public function updateSource_(&$source, $name, $existente){
+    public function updateSource_(&$source, $name, $existente){
         $source[$name]->id = $existente->id();
-        
     
         if(!$source[$name]->_equalTo($existente)) {
           $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
@@ -211,6 +205,6 @@ abstract class Import { //comportamiento general para importar datos
         }
     
         return "";
-      }
+    }
 
 }
