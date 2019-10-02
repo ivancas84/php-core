@@ -39,7 +39,7 @@ abstract class Import { //comportamiento general para importar datos
 
     abstract public function process();
 
-    public function summary(){
+    public function summary() {
         $informe = "<h3>Resultado " . $this->id . "</h3>";
         $informe .= "<p>Cantidad de filas procesadas: " . count($this->elements) . "</p>
 ";      
@@ -112,7 +112,6 @@ abstract class Import { //comportamiento general para importar datos
             //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
 
             $e = array_combine($this->headers, $datos);
-            
             $this->element($i, $e);                  
             //if($i==100) break;           
         }
@@ -137,7 +136,7 @@ abstract class Import { //comportamiento general para importar datos
             $db = Dba::dbInstance();
             try {
                 $sql .= $element->sql;
-                //$db->multiQueryTransaction($element->sql);
+                $db->multiQueryTransaction($element->sql);
             } catch(Exception $exception){
                 echo "<pre>";
                 echo $exception->getMessage();
@@ -150,7 +149,7 @@ abstract class Import { //comportamiento general para importar datos
         }
         echo "<pre>";
         echo $sql;
-        //file_put_contents($this->pathSummary . ".sql", $sql);
+        file_put_contents($this->pathSummary . ".sql", $sql);
     }
 
     public function identifyValue_($id, $value){
@@ -171,8 +170,11 @@ abstract class Import { //comportamiento general para importar datos
         );
     }
 
-    public function queryEntityIdentifier_($name){
-        if(!empty($this->ids[$name])) $this->dbs[$name] = Dba::identifier($name, $this->ids[$name]);
+    public function queryEntityIdentifier_($name){        
+        if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
+            Dba::identifier($name, $this->ids[$name]),
+            Entity::getInstanceRequire($name)->identifier
+        );;
     }
     
 
@@ -198,7 +200,6 @@ abstract class Import { //comportamiento general para importar datos
       
     public function updateSource_(&$source, $name, $existente){
         $source[$name]->id = $existente->id();
-    
         if(!$source[$name]->_equalTo($existente)) {
           $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
           return $persist["sql"];
