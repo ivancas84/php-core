@@ -48,5 +48,5 @@ class EntityAdminController { //controlador de administracion de entidad
     else { return $this->sqlo->insert($row); } //3
   }
 
-  public function persistValue(EntityValue $value){ return $this->persistRow($value->toArray()); }
+  public function persistValue(EntityValue $value){ return $this->persistRow($value->_toArray()); }
 }
