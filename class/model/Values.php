@@ -22,6 +22,8 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   public function _addError($error) { array_push($this->_errors, $error); }
 
   abstract public function _fromArray(array $row = NULL);
+  abstract public function _isEmpty();
+
 
   //abstract public function setDefault();
 
@@ -44,7 +46,7 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     
   }
 
-  public function _isUndefinedValue($value) { //esta vacio
+  public function _isUndefinedValue($value) { //es indefinido
     return ($value === UNDEFINED) ? true : false;
   }
 
