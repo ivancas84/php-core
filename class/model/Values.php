@@ -11,15 +11,68 @@ abstract class EntityValues { //manipulacion de valores de una entidad
    *  Ej. Para una fecha presenta dos metodos de seteo (setFecha y _setFecha), el primero recibe un string y el segundo un DateTime
    * Los metodos sin prefijo ni sufijo se utilizan para manipular campos
    * Se utiliza el prefijo _ en los atributos y metodos para indicar metodo auxiliar asociado a campos
-   * Se utiliza el sufijo _ en los atributos y metodos para indicar que son metodos de procesamiento
+   * Por defecto, en caso de incompatibilidad, define el valor como NULL.
+   *   Se puede utilizar el metodo _check para definir chequeos, solo deberá verificar los valores distintos de UNDEFINED.
+   *   Si se necesitan chequeos adicionales se puede verificar al setear campos y utilizar los métodos _addWarning, _addError y _addCheck.
    */
 
   public $_warnings = [];
+  /**
+   * @deprecated utilizar $_checks
+   */
   public $_errors = [];
+  /**
+   * @deprecated utilizar $_checks
+   */
+
   public $_identifier = UNDEFINED; //el identificador puede estar formado por campos de la tabla actual o relacionadas
   
+  public $_checks = [];
+  /**
+   * Chequeos
+   */
+
   public function _addWarning($warning) { array_push($this->_warnings, $warning); }
+  /**
+   * @deprecated utilizar $_checks
+   */
+
   public function _addError($error) { array_push($this->_errors, $error); }
+  /**
+   * @deprecated utilizar $_checks
+   */
+
+  public function _setCheck($id, $key, $status, $data){
+    if(!key_exists($id, $this->checks)) $this->checks[$id] = [];
+    $this->checks[$id][$key] = ["status" => $status, "data" => $data];
+  }
+
+  public function _checkStatus($id){
+    if(!key_exists($id, $this->checks)) return UNDEFINED;
+
+    $status = UNDEFINED;
+    
+    foreach($this->checks as $key => $value){
+      switch ($value["status"]) {
+        case "error": return "error"; 
+        default: $status = $value["status"];        
+      }              
+    }
+
+    return $status;
+  }
+
+  public function _check($id){
+    if(!key_exists($id, $this->checks)) return UNDEFINED;
+    return $this->checks[$id];
+
+  }
+
+  public function _checkKey($id, $key){
+    if(!key_exists($id, $this->checks)) return UNDEFINED;
+    if(!key_exists($key, $this->checks[$id])) return UNDEFINED;
+    return $this->checks[$id][$key];
+  }
 
   abstract public function _fromArray(array $row = NULL);
   abstract public function _isEmpty();
@@ -113,10 +166,4 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     return true;
   }
 
-  public function _check(){ //chequeo basico de campos
-    /**
-     * return true or {"field":"error"}
-     */
-    return true;
-  }
 }
