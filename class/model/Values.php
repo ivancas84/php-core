@@ -2,7 +2,7 @@
 
 require_once("function/snake_case_to.php");
 require_once("class/SpanishDateTime.php");
-
+require_once("class/Check.php");
 
 abstract class EntityValues { //manipulacion de valores de una entidad
   /**
@@ -18,67 +18,38 @@ abstract class EntityValues { //manipulacion de valores de una entidad
 
   public $_warnings = [];
   /**
-   * @deprecated utilizar $_checks
+   * @deprecated utilizar $_check
    */
   public $_errors = [];
   /**
-   * @deprecated utilizar $_checks
+   * @deprecated utilizar $_check
    */
 
-  public $_identifier = UNDEFINED; //el identificador puede estar formado por campos de la tabla actual o relacionadas
+  protected $_identifier = UNDEFINED; //el identificador puede estar formado por campos de la tabla actual o relacionadas
   
-  public $_checks = [];
+  protected $_validation;
   /**
    * Chequeos
    */
 
   public function _addWarning($warning) { array_push($this->_warnings, $warning); }
   /**
-   * @deprecated utilizar $_checks
+   * @deprecated utilizar $_validation
    */
 
   public function _addError($error) { array_push($this->_errors, $error); }
   /**
-   * @deprecated utilizar $_checks
+   * @deprecated utilizar $_validation
    */
 
-  public function _setCheck($id, $key, $status, $data){
-    if(!key_exists($id, $this->checks)) $this->checks[$id] = [];
-    $this->checks[$id][$key] = ["status" => $status, "data" => $data];
-  }
 
-  public function _checkStatus($id){
-    if(!key_exists($id, $this->checks)) return UNDEFINED;
-
-    $status = UNDEFINED;
-    
-    foreach($this->checks as $key => $value){
-      switch ($value["status"]) {
-        case "error": return "error"; 
-        default: $status = $value["status"];        
-      }              
-    }
-
-    return $status;
-  }
-
-  public function _check($id){
-    if(!key_exists($id, $this->checks)) return UNDEFINED;
-    return $this->checks[$id];
-
-  }
-
-  public function _checkKey($id, $key){
-    if(!key_exists($id, $this->checks)) return UNDEFINED;
-    if(!key_exists($key, $this->checks[$id])) return UNDEFINED;
-    return $this->checks[$id][$key];
+  public function __construct(){
+    $this->_check = new Check();
   }
 
   abstract public function _fromArray(array $row = NULL);
   abstract public function _isEmpty();
-
-
-  //abstract public function setDefault();
+  abstract public function _setDefault();
 
   public static function getInstance($values = NULL, $prefix = "") { //crear instancias de values
     $className = get_called_class();
@@ -99,56 +70,10 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     
   }
 
-  public function _isUndefinedValue($value) { //es indefinido
-    return ($value === UNDEFINED) ? true : false;
-  }
-
-  public function _isEmptyValue($value) { //esta vacio
-    return ($value === UNDEFINED || empty($value)) ? true : false;
-  }
-
-  protected function _formatDate($value, $format = 'd/m/Y'){
-    if($this->_isEmptyValue($value)) return null;
-    if(gettype($value) === "string") $value = SpanishDateTime::createFromFormat("Y-m-d", $value);
-    return ($value) ? $value->format($format) : null;
-  }
-
-  protected function _formatString($value, $format = null){
-    if($this->_isEmptyValue($value)) return null;
-    switch($format){
-      case "XxYy": return str_replace(" ", "", ucwords(mb_strtolower($value, "UTF-8")));
-      case "xxyy": case "xy": case "x": return str_replace(" ", "", mb_strtolower($value, "UTF-8"));
-      case "Xx Yy": return ucwords(mb_strtolower($value, "UTF-8"));
-      case "Xx yy": case "X y": return ucfirst(mb_strtolower($value, "UTF-8"));
-      case "xxYy": return str_replace(" ", "", lcfirst(ucwords(mb_strtolower($value, "UTF-8"))));
-      case "xx-yy": case "x-y": return mb_strtolower(str_replace(" ", "-", $value), "UTF-8");
-      case "XX YY": case "X Y": case "X": return mb_strtoupper($value, "UTF-8");
-      case "XY": case "XXYY": return str_replace(" ", "", mb_strtoupper($value, "UTF-8"));
-      case "xx yy": case "x y": return mb_strtolower($value, "UTF-8");
-
-      default: return $value;
-    }
-  }
-
-  protected function _formatBoolean($value, $format = null){
-
-    if($this->_isUndefinedValue($value)) return null;
-    switch($format){
-      case strpos(mb_strtolower($format), "si") !== false:
-      case strpos(mb_strtolower($format), "sí") !== false:
-      case strpos(mb_strtolower($format), "no") !== false:   
-        return (settypebool($value)) ? "Sí" : "No";
-      case strpos(mb_strtolower($format), "s") !== false:
-      case strpos(mb_strtolower($format), "n") !== false:              
-        return (settypebool($value)) ? "S" : "N";
-      default:         
-        return $value;
-    }
-  }
-
   public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
-  public function _identifier($format = null){ return $this->_formatString($this->_identifier, $format); }
-  
+  public function _identifier($format = null){ return $this->format->string($this->_identifier, $format); }
+  public function _validation(){ return $this->_validation; }
+
   public function _setValues($values, $prefix = ""){
     if(is_string($values) && ($values == DEFAULT_VALUE || $values == "DEFAULT") ) $this->_setDefault();
     elseif(is_array($values)) $this->_fromArray($values, $prefix);
@@ -165,5 +90,6 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     }
     return true;
   }
-
 }
+
+
