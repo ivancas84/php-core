@@ -6,13 +6,9 @@ require_once("class/Check.php");
 
 class Format {
 
-  static function isUndefined($value) { return ($value === UNDEFINED) ? true : false; }
-
-  static function isEmpty($value) { return ($value === UNDEFINED || empty($value)) ? true : false; }
-
   static function date($value, $format = null){
     if(empty($format)) return $value;  
-    if(self::isEmpty($value)) return null;
+    if(Validation::isEmpty($value)) return null;
     return SpanishDateTime::createFromFormat($format, $value);
   }
 

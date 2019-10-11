@@ -1,8 +1,33 @@
 <?php
-    require_once("class/Format.php");
-
+    
+    /**
+     * Validation 
+     *
+     * Semplice classe PHP per la validazione.
+     *
+     * @author Davide Cesarano <davide.cesarano@unipegaso.it>
+     * @copyright (c) 2016, Davide Cesarano
+     * @license https://github.com/davidecesarano/Validation/blob/master/LICENSE MIT License
+     * @link https://github.com/davidecesarano/Validation
+     */
+     
     class Validation {
 
+        public static function getInstanceValue($value){
+            $v = new Validation();
+            $v->value = $value;
+            return $v;
+        }
+
+        public static function getInstanceFile($value){
+            $v = new Validation();
+            $v->file = $value;
+            return $v;
+        }
+
+        /**
+         * @var array $patterns
+         */
         public $patterns = array(
             'uri'           => '[A-Za-z0-9-\/_?&=]+',
             'url'           => '[A-Za-z0-9-:.\/_?&=#]+',
@@ -20,123 +45,374 @@
             'date_ymd'      => '[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}',
             'email'         => '[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+[.]+[a-z-A-Z]'
         );
-     
-        public $logs = array();
-
-        public function logs(){ return $this->logs; }
-
-        public function addLog($status, $data){
-            if(!key_exists($this->key, $this->logs)) $this->logs[$this->key] = [];
-            array_push($this->logs[$this->key], ["status" => $status, "data"=>$data]);
-        }
-         
-        public function summary(){
-            $status = "success";
         
-            foreach($this->logs as $key => $value){
-                foreach($value as $check){
-                    switch ($check["status"]) {
-                        case "error": return "error"; 
-                        default: $status = $check["status"];        
-                    }    
-                }                      
-            }
+        /**
+         * @var array $errors
+         */
+        public $errors = array();
         
-            return $status;
-        }
-
-        public function status(){
-            if(!key_exists($this->key, $this->logs)) return "success";
-
-            foreach($this->logs[$this->key] as $value){
-                switch ($value["status"]) {
-                    case "error": return "error"; 
-                    default: $status = $value["status"];        
-                }              
-            }
-          
-            return $status;
-        }
+    
         
-        public function key($name){
-            //la asignacion de una nueva llave resetea los logs
-            if(key_exists($this->key, $this->logs)) unset($this->logs[$this->key]);
-            $this->key = $name;
-            return $this;
-        }
-        
+        /**
+         * Valore del campo
+         * 
+         * @param mixed $value
+         * @return this
+         */
         public function value($value){
+            
             $this->value = $value;
             return $this;
+        
         }
-
+        
+        /**
+         * File
+         * 
+         * @param mixed $value
+         * @return this
+         */
         public function file($value){
+            
             $this->file = $value;
-            return $this;        
+            return $this;
+        
         }
-
+        
+        /**
+         * Pattern da applicare al riconoscimento
+         * dell'espressione regolare
+         * 
+         * @param string $name nome del pattern
+         * @return this
+         */
         public function pattern($name){
-            $regex = '/^('.$this->patterns[$name].')$/u';
-            if($this->value != '' && !preg_match($regex, $this->value)) $this->addLog($this->key, "error", "Valor no válido");                                           
-            return $this;
-        }
-        
-        public function customPattern($pattern){
-            $regex = '/^('.$pattern.')$/u';
-            if($this->value != '' && !preg_match($regex, $this->value)) $this->addLog($this->key, "error", "Valor no válido");                                           
-            return $this;
-        }
-        
-        public function required(){
-            if((isset($this->file) && $this->file['error'] == 4) || ($this->value == '' || $this->value == null))
-                $this->addLog($this->key, "error", "Valor obligatorio sin definir");                           
-            return $this;            
-        }
-        
-        public function min($length){
-            $data = "El valor es inferior al mínimo permitido";
-
-            if(is_string($this->value)){                
-                if(strlen($this->value) < $length) $this->addLog($this->key, "error", $data);           
-            } else{
-                if($this->value < $length) $this->addLog($this->key, "error", $data);           
+            
+            if($name == 'array'){
+                
+                if(!is_array($this->value)){
+                    $this->errors[] = 'Formato no válido.';
+                }
+            
+            }else{
+            
+                $regex = '/^('.$this->patterns[$name].')$/u';
+                if($this->value != '' && !preg_match($regex, $this->value)){
+                    $this->errors[] = 'Formato no válido.';
+                }
+                
             }
-            return $this;
-        }
-
-        public function max($length){
-            $data = "El valor supera al máximo permitido";
-            if(is_string($this->value)){                
-                if(strlen($this->value) > $length) $this->addLog($this->key, "error", $data);
-            }else{                
-                if($this->value > $length) $this->addLog($this->key, "error", $data);
-            }
-            return $this;            
-        }
-        
-        public function equal($value){        
-            if($this->value != $value)
-                $this->addLog($this->key, "error", "El valor no coincide con {$value}");
-            return $this;            
-        }
-        
-        public function maxSize($size){        
-            if($this->file['error'] != 4 && $this->file['size'] > $size)
-                $this->addLog($this->key, "error", 'El archivo supera el tamaño máximo '.number_format($size / 1048576, 2).' MB.');            
-            return $this;            
-        }
-        
-        public function ext($extension){
-            if($this->file['error'] != 4 && pathinfo($this->file['name'], PATHINFO_EXTENSION) != $extension && strtoupper(pathinfo($this->file['name'], PATHINFO_EXTENSION)) != $extension)              
-              $this->addLog($this->key, "error", "El archivo no es no es {$extension} MB");              
             return $this;
             
         }
-          
-        public function string(){ if(!Format::isEmpty($this->value) && !is_string($this->value)) $this->addLog($key, "error", "El valor no es una cadena de caracteres"); }
-        public function integer(){ if(!Format::isEmpty($this->value) && !is_integer($this->value)) $this->addLog($key, "error", "El valor no es un entero"); }
-        public function float(){ if(!Format::isEmpty($this->value) && !is_float($this->value)) $this->addLog($key, "error", "El valor no es un flotante"); }
-        public function boolean(){ if(!Format::isEmpty($this->value) && !is_boolean($this->value)) $this->addLog($key, "error", "El valor no es un booleano"); }
-        public function date(){ if(!Format::isEmpty($this->value) && !is_a($value, 'DateTime')) $this->addLog($key, "error", "El valor no es una fecha"); }
+        
+        /**
+         * Pattern personalizzata
+         * 
+         * @param string $pattern
+         * @return this
+         */
+        public function customPattern($pattern){
+            
+            $regex = '/^('.$pattern.')$/u';
+            if($this->value != '' && !preg_match($regex, $this->value)){
+                $this->errors[] = 'Formato no válido.';
+            }
+            return $this;
+            
+        }
+        
+        /**
+         * Campo obbligatorio
+         * 
+         * @return this
+         */
+        public function required(){
+            
+            if((isset($this->file) && $this->file['error'] == 4) || ($this->value == '' || $this->value == null)){
+                $this->errors[] = 'Campo obligatorio.';
+            }            
+            return $this;
+            
+        }
+        
+        /**
+         * Lunghezza minima
+         * del valore del campo
+         * 
+         * @param int $min
+         * @return this
+         */
+        public function min($length){
+            
+            if(is_string($this->value)){
+                
+                if(strlen($this->value) < $length){
+                    $this->errors[] = 'Valor inferior al mínimo';
+                }
+           
+            }else{
+                
+                if($this->value < $length){
+                    $this->errors[] = 'Valor inferior al mínimo';
+                }
+                
+            }
+            return $this;
+            
+        }
+            
+        /**
+         * Lunghezza massima
+         * del valore del campo
+         * 
+         * @param int $max
+         * @return this
+         */
+        public function max($length){
+            
+            if(is_string($this->value)){
+                
+                if(strlen($this->value) > $length){
+                    $this->errors[] = 'Valor superior al máximo';
+                }
+           
+            }else{
+                
+                if($this->value > $length){
+                    $this->errors[] = 'Valor superior al máximo';
+                }
+                
+            }
+            return $this;
+            
+        }
+        
+        /**
+         * Confronta con il valore di
+         * un altro campo
+         * 
+         * @param mixed $value
+         * @return this
+         */
+        public function equal($value){
+        
+            if($this->value != $value){
+                $this->errors[] = 'Valore no correspondiente.';
+            }
+            return $this;
+            
+        }
+        
+        /**
+         * Dimensione massima del file 
+         *
+         * @param int $size
+         * @return this 
+         */
+        public function maxSize($size){
+            
+            if($this->file['error'] != 4 && $this->file['size'] > $size){
+                $this->errors[] = 'El archivo supera el tamaño máximo de '.number_format($size / 1048576, 2).' MB.';
+            }
+            return $this;
+            
+        }
+        
+        /**
+         * Estensione (formato) del file
+         *
+         * @param string $extension
+         * @return this 
+         */
+        public function ext($extension){
+
+            if($this->file['error'] != 4 && pathinfo($this->file['name'], PATHINFO_EXTENSION) != $extension && strtoupper(pathinfo($this->file['name'], PATHINFO_EXTENSION)) != $extension){
+                $this->errors[] = 'El archivo no es '.$extension.'.';
+            }
+            return $this;
+            
+        }
+        
+        /**
+         * Purifica per prevenire attacchi XSS
+         *
+         * @param string $string
+         * @return $string
+         */
+        public function purify($string){
+            return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+        }
+        
+        /**
+         * Campi validati
+         * 
+         * @return boolean
+         */
+        public function isSuccess(){
+            if(empty($this->errors)) return true;
+        }
+        
+        /**
+         * Errori della validazione
+         * 
+         * @return array $this->errors
+         */
+        public function getErrors(){
+            if(!$this->isSuccess()) return $this->errors;
+        }
+        
+        /**
+         * Visualizza errori in formato Html
+         * 
+         * @return string $html
+         */
+        public function displayErrors(){
+            
+            $html = '<ul>';
+                foreach($this->getErrors() as $error){
+                    $html .= '<li>'.$error.'</li>';
+                }
+            $html .= '</ul>';
+            
+            return $html;
+            
+        }
+        
+        /**
+         * Visualizza risultato della validazione
+         *
+         * @return booelan|string
+         */
+        public function result(){
+            
+            if(!$this->isSuccess()){
+               
+                foreach($this->getErrors() as $error){
+                    echo "$error\n";
+                }
+                exit;
+                
+            }else{
+                return true;
+            }
+        
+        }
+        
+        /**
+         * Verifica se il valore è
+         * un numero intero
+         *
+         * @param mixed $value
+         * @return boolean
+         */
+        public static function is_int($value){
+            if(filter_var($value, FILTER_VALIDATE_INT)) return true;
+        }
+        
+        /**
+         * Verifica se il valore è
+         * un numero float
+         *
+         * @param mixed $value
+         * @return boolean
+         */
+        public static function is_float($value){
+            if(filter_var($value, FILTER_VALIDATE_FLOAT)) return true;
+        }
+        
+        /**
+         * Verifica se il valore è
+         * una lettera dell'alfabeto
+         *
+         * @param mixed $value
+         * @return boolean
+         */
+        public static function is_alpha($value){
+            if(filter_var($value, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^[a-zA-Z]+$/")))) return true;
+        }
+        
+        /**
+         * Verifica se il valore è
+         * una lettera o un numero
+         *
+         * @param mixed $value
+         * @return boolean
+         */
+        public static function is_alphanum($value){
+            if(filter_var($value, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^[a-zA-Z0-9]+$/")))) return true;
+        }
+        
+        /**
+         * Verifica se il valore è
+         * un url
+         *
+         * @param mixed $value
+         * @return boolean
+         */
+        public static function is_url($value){
+            if(filter_var($value, FILTER_VALIDATE_URL)) return true;
+        }
+        
+        /**
+         * Verifica se il valore è
+         * un uri
+         *
+         * @param mixed $value
+         * @return boolean
+         */
+        public static function is_uri($value){
+            if(filter_var($value, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^[A-Za-z0-9-\/_]+$/")))) return true;
+        }
+        
+        /**
+         * Verifica se il valore è
+         * true o false
+         *
+         * @param mixed $value
+         * @return boolean
+         */
+        public static function is_bool($value){
+            if(is_bool(filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE))) return true;
+        }
+        
+        /**
+         * Verifica se il valore è
+         * un'e-mail
+         *
+         * @param mixed $value
+         * @return boolean
+         */
+        public static function is_email($value){
+            if(filter_var($value, FILTER_VALIDATE_EMAIL)) return true;
+        }
+
+        public static function is_empty($value){
+            return ($value === UNDEFINED || empty($value)) ? true : false;
+        }
+
+        public static function is_undefined($value) {
+            return ($value === UNDEFINED) ? true : false;
+        }        
+        
+        public function string(){ 
+            if(!self::is_empty($this->value) && !is_string($this->value)) $this->errors[] = "El valor no es una cadena de caracteres";
+        }
+        
+        public function integer(){ 
+            if(!self::is_empty($this->value) && !is_integer($this->value)) $this->errors[] =  "El valor no es un entero";
+        }
+        
+        public function float(){ 
+            if(!self::is_empty($this->value) && !is_float($this->value)) $this->errors[] =  "El valor no es un flotante";
+        }
+
+        public function boolean(){ 
+            if(!self::is_empty($this->value) && !is_boolean($this->value)) $this->errors[] =  "El valor no es un booleano";
+        }
+
+        public function date(){ 
+            if(!self::is_empty($this->value) && !is_a($value, 'DateTime')) $this->errors[] =  "El valor no es una fecha/hora";
+        }
 
     }

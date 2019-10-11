@@ -27,10 +27,11 @@ abstract class EntityValues { //manipulacion de valores de una entidad
 
   protected $_identifier = UNDEFINED; //el identificador puede estar formado por campos de la tabla actual o relacionadas
   
-  protected $_validation;
+  protected $_logs;
   /**
    * Chequeos
    */
+
 
   public function _addWarning($warning) { array_push($this->_warnings, $warning); }
   /**
@@ -70,9 +71,23 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     
   }
 
+  public function _resetLog($key){
+    if(key_exists($key, $this->logs[$key])) unset($this->logs[$key]);
+  }
+
+  public function _addLog($key, $status, $data){
+    if(!key_exists($key, $this->logs[$key])) $this->logs[$key] = [];
+    array_push($this->logs[$key], ["status"=>$status, "data"=>$data]);
+  }
+
+  public function _setLogsValidation($field, Validation $validation){
+    $this->_resetLog($field);
+    foreach($validation->getErrors() as $data){ $this->_addLog($field, $status, $data); }
+    return $v->isSuccess();
+  }
+
   public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
   public function _identifier($format = null){ return $this->format->string($this->_identifier, $format); }
-  public function _validation(){ return $this->_validation; }
 
   public function _setValues($values, $prefix = ""){
     if(is_string($values) && ($values == DEFAULT_VALUE || $values == "DEFAULT") ) $this->_setDefault();
