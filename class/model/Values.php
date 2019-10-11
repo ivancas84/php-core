@@ -82,8 +82,8 @@ abstract class EntityValues { //manipulacion de valores de una entidad
 
   public function _setLogsValidation($field, Validation $validation){
     $this->_resetLog($field);
-    foreach($validation->getErrors() as $data){ $this->_addLog($field, $status, $data); }
-    return $v->isSuccess();
+    foreach($validation->getErrors() as $data){ $this->_addLog($field, "error", $data); }
+    return $validation->isSuccess();
   }
 
   public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
