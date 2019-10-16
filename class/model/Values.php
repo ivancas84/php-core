@@ -4,17 +4,25 @@ require_once("function/snake_case_to.php");
 require_once("class/SpanishDateTime.php");
 require_once("class/Check.php");
 
-abstract class EntityValues { //manipulacion de valores de una entidad
+abstract class EntityValues {
   /**
    * Facilita la manipulacion de valores
    * Prioriza tipos básicos
-   * Ej. Para una fecha presenta dos metodos de seteo (setFecha y _setFecha), el primero recibe un string y el segundo un DateTime
-   * Los metodos sin prefijo ni sufijo se utilizan para manipular campos
-   * Se utiliza el prefijo _ en los atributos y metodos para indicar metodo auxiliar asociado a campos
-   * Se puede utilizar _logs para definir chequeos
-   * En caso de incompatibilidad, define el valor con la constante UNDEFINED.
-   * Los chequeos se realizan al setear campos
-   * Se ignoran los valores distintos de UNDEFINED
+   *   Ej. Para una fecha presenta dos metodos de seteo 
+   *     setFecha, recibe un string
+   *     _setFecha, recibe un DateTime
+   * 
+   * Define una estructura de firmas
+   *   Los metodos sin prefijo ni sufijo se utilizan para manipular campos
+   *   El prefijo _ en los atributos y metodos indica metodo auxiliar asociado a campos
+   * 
+   * Define una estructura de verificación
+   *   Se basa en el uso de Logs y Validations*   
+   *   Los chequeos se realizan principalmente al setear campos
+   *   Se definen dos tipos de metodos de verificación 
+   *     check, devuelve true en caso de error
+   *     inspect, no retorna valor, es utilizado solo para logs, no define errores
+   *   Se ignoran los valores distintos de UNDEFINED
    */
 
   /**
@@ -27,11 +35,14 @@ abstract class EntityValues { //manipulacion de valores de una entidad
    * @deprecated utilizar $_logs
    */
 
-  protected $_identifier = UNDEFINED; //el identificador puede estar formado por campos de la tabla actual o relacionadas
+  protected $_identifier = UNDEFINED; 
+  /** 
+   * El identificador puede estar formado por campos de la tabla actual o relacionadas
+   */
   
   protected $_logs;
   /**
-   * Chequeos
+   * Logs de verificaciones
    */
 
   /**
@@ -73,7 +84,6 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   final public static function getInstanceRequire($entity, $values = null, $prefix = "") {
     require_once("class/model/values/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
     return self::getInstanceString($entity, $values, $prefix);
-    
   }
 
   public function _setLogsValidation($field, Validation $validation){
@@ -81,7 +91,6 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     foreach($validation->getErrors() as $data){ $this->_logs->add($field, "error", $data); }
     return $validation->isSuccess();
   }
-
 
   public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
   public function _identifier($format = null){ return $this->format->string($this->_identifier, $format); }
