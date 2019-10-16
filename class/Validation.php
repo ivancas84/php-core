@@ -412,7 +412,10 @@
         }
 
         public function date(){ 
-            if(!self::is_empty($this->value) && !is_a($value, 'DateTime')) $this->errors[] =  "El valor no es una fecha/hora";
+            if(!self::is_undefined($this->value) 
+            && !is_null($this->value) 
+            && !is_a($this->value, 'DateTime')) 
+                $this->errors[] =  "El valor no es una fecha/hora";
         }
 
     }

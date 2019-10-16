@@ -8,21 +8,23 @@ abstract class EntityValues { //manipulacion de valores de una entidad
   /**
    * Facilita la manipulacion de valores
    * Prioriza tipos básicos
-   *  Ej. Para una fecha presenta dos metodos de seteo (setFecha y _setFecha), el primero recibe un string y el segundo un DateTime
+   * Ej. Para una fecha presenta dos metodos de seteo (setFecha y _setFecha), el primero recibe un string y el segundo un DateTime
    * Los metodos sin prefijo ni sufijo se utilizan para manipular campos
    * Se utiliza el prefijo _ en los atributos y metodos para indicar metodo auxiliar asociado a campos
-   * Por defecto, en caso de incompatibilidad, define el valor como NULL.
-   *   Se puede utilizar el metodo _check para definir chequeos, solo deberá verificar los valores distintos de UNDEFINED.
-   *   Si se necesitan chequeos adicionales se puede verificar al setear campos y utilizar los métodos _addWarning, _addError y _addCheck.
+   * Se puede utilizar _logs para definir chequeos
+   * En caso de incompatibilidad, define el valor con la constante UNDEFINED.
+   * Los chequeos se realizan al setear campos
+   * Se ignoran los valores distintos de UNDEFINED
    */
 
+  /**
   public $_warnings = [];
-  /**
-   * @deprecated utilizar $_check
+   * @deprecated utilizar $_logs
    */
-  public $_errors = [];
+  
   /**
-   * @deprecated utilizar $_check
+  public $_errors = [];
+   * @deprecated utilizar $_logs
    */
 
   protected $_identifier = UNDEFINED; //el identificador puede estar formado por campos de la tabla actual o relacionadas
@@ -32,25 +34,28 @@ abstract class EntityValues { //manipulacion de valores de una entidad
    * Chequeos
    */
 
-
+  /**
   public function _addWarning($warning) { array_push($this->_warnings, $warning); }
   /**
-   * @deprecated utilizar $_validation
+   * @deprecated utilizar $_logs
    */
 
+  /**
   public function _addError($error) { array_push($this->_errors, $error); }
   /**
-   * @deprecated utilizar $_validation
+   * @deprecated utilizar $_logs
    */
 
 
   public function __construct(){
-    $this->_check = new Check();
+    $this->_logs = new Logs();
   }
 
   abstract public function _fromArray(array $row = NULL);
   abstract public function _isEmpty();
   abstract public function _setDefault();
+  public function _logs(){ return $this->_logs; }
+
 
   public static function getInstance($values = NULL, $prefix = "") { //crear instancias de values
     $className = get_called_class();
@@ -71,20 +76,12 @@ abstract class EntityValues { //manipulacion de valores de una entidad
     
   }
 
-  public function _resetLog($key){
-    if(key_exists($key, $this->logs[$key])) unset($this->logs[$key]);
-  }
-
-  public function _addLog($key, $status, $data){
-    if(!key_exists($key, $this->logs[$key])) $this->logs[$key] = [];
-    array_push($this->logs[$key], ["status"=>$status, "data"=>$data]);
-  }
-
   public function _setLogsValidation($field, Validation $validation){
-    $this->_resetLog($field);
-    foreach($validation->getErrors() as $data){ $this->_addLog($field, "error", $data); }
+    $this->_logs->reset($field);
+    foreach($validation->getErrors() as $data){ $this->_logs->add($field, "error", $data); }
     return $validation->isSuccess();
   }
+
 
   public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
   public function _identifier($format = null){ return $this->format->string($this->_identifier, $format); }
