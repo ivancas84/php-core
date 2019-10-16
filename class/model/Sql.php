@@ -358,8 +358,9 @@ abstract class EntitySql { //Definir SQL
     $p = $this->prf();
 
     switch($field){
-      case "_compare": //no define prefijo, los prefijos pueden definirse en los valores y comparar campos de diferentes entidades
-        $f1 = $this->mappingField($value[0]);
+      case "_compare": 
+      /** USO SOLO COMO CONDICION GENERAL */  
+      $f1 = $this->mappingField($value[0]);
         $f2 = $this->mappingField($value[1]);
         return "({$f1} {$option} {$f2})";
       break;
