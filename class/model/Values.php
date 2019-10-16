@@ -17,12 +17,12 @@ abstract class EntityValues {
    *   El prefijo _ en los atributos y metodos indica metodo auxiliar asociado a campos
    * 
    * Define una estructura de verificación
-   *   Se basa en el uso de Logs y Validations*   
+   *   Se basa en el uso de Logs y Validations
+   *   Se ignoran los valores distintos de UNDEFINED
    *   Los chequeos se realizan principalmente al setear campos
    *   Se definen dos tipos de metodos de verificación 
    *     check, devuelve true en caso de error
    *     inspect, no retorna valor, es utilizado solo para logs, no define errores
-   *   Se ignoran los valores distintos de UNDEFINED
    */
 
   /**
