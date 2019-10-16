@@ -1,25 +1,22 @@
 <?php
 
-require_once("class/model/Values.php");
-abstract class ImportElement { //elemento a importar
+require_once("class/Logs.php");
+
+abstract class ImportElement {
     public $index;
-    public $warnings = [];
-    public $errors = [];
+    public $logs;
     public $process = true;
     public $sql = "";
     public $entities = [];
 
     public function __construct($i, $data){
         $this->index = $i;
+        $this->logs = new Logs();
         $this->setEntities($data);
     }
 
+    public function logs() { return $this->logs(); }
     abstract function setEntities($data);
+    abstract function logsEntities();
 
-    public function setEntity_($name, $row){
-        $this->entities[$name] = EntityValues::getInstanceRequire($name, $row, $name . "_");
-      }
-
-    public function addWarning($warning) { array_push($this->warnings, $warning); }
-    public function addError($error) { array_push($this->errors, $error); }
 }

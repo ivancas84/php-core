@@ -44,14 +44,13 @@ abstract class Import { //comportamiento general para importar datos
         $informe .= "<p>Cantidad de filas procesadas: " . count($this->elements) . "</p>
 ";      
     
-        //las etapas asociadas a una inscripcion, si existen, se eliminan y se vuelven a cargar
         $i = 0;
         foreach($this->elements as $element) {
             $i++;
             $errores = [];
             $advertencias = [];
-            if(!empty($element->warnings)) $advertencias = array_merge($advertencias, $element->warnings);
-            if(!empty($element->errors)) $errores = array_merge($errores, $element->errors);
+            if(!empty($element->logs())) $errores = array_merge($errores, $element->logs());
+            if(!empty($element->logsEntities())) $advertencias = array_merge($advertencias, $element->logsEntities());
             
             if(count($errores) || count($advertencias)){
                 $informe .= "
@@ -61,9 +60,9 @@ abstract class Import { //comportamiento general para importar datos
 ";                
                 if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
 ";
-                foreach($errores as $error) $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $error."</li>
+                foreach($errores as $error) $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $error["data"]."</li>
 ";
-                foreach($advertencias as $advertencia) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $advertencia. "</li>
+                foreach($advertencias as $advertencia) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $advertencia["data"]. "</li>
 ";
                 $informe .= "    </ul>
     </div>
@@ -128,10 +127,9 @@ abstract class Import { //comportamiento general para importar datos
     }
 
     public function persist(){
-        //las etapas asociadas a una inscripcion, si existen, se eliminan y se vuelven a cargar
         $sql = "";
         foreach($this->elements as $element) {
-            if(!$element->process) continue;
+            if(!$element->logs->isError()) continue;
             
             $db = Dba::dbInstance();
             try {
@@ -141,8 +139,7 @@ abstract class Import { //comportamiento general para importar datos
                 echo "<pre>";
                 echo $exception->getMessage();
                 echo "<br>";
-                $element->process = false;
-                $element->addError($exception->getMessage());
+                $element->logs->add("persist","error",$exception->getMessage());
             } finally {
                 Dba::dbClose();
             }
