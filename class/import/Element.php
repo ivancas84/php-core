@@ -17,6 +17,11 @@ abstract class ImportElement {
 
     public function logs() { return $this->logs(); }
     abstract function setEntities($data);
-    abstract function logsEntities();
+    
+    public function logsEntities(){
+        $logs = [];
+        foreach($this->entities as $entity) $logs = array_merge($logs, $entity->_logs()->getLogs());
+        return $logs;
+    }
 
 }

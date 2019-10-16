@@ -2,7 +2,7 @@
 
 require_once("function/snake_case_to.php");
 require_once("class/SpanishDateTime.php");
-require_once("class/Check.php");
+require_once("class/Validation.php");
 
 abstract class EntityValues {
   /**
@@ -111,6 +111,7 @@ abstract class EntityValues {
     }
     return true;
   }
+
 }
 
 

@@ -3,11 +3,11 @@
 class Logs {
   protected $logs = [];
   
-  public function reset($key){
+  public function resetLogs($key){
     if(key_exists($key, $this->logs[$key])) unset($this->logs[$key]);
   }
 
-  public function add($key, $status, $data){
+  public function addLog($key, $status, $data){
     /**
      * los errores se agregan al inicio de los logs, el resto al final.
      */
@@ -24,11 +24,12 @@ class Logs {
     return false;
   }
   
-  public function logs(){
+  public function getLogs(){
     return $this->logs;
   }
   
-  public function logsStatus($status){
+
+  /*public function getLogsStatus($status){
     $logs = [];
     foreach($this->logs as $key => $value){
       foreach($value as $v) {
@@ -39,6 +40,6 @@ class Logs {
       } 
     }
     return $logs;
-  }
+  }*/
 
 }

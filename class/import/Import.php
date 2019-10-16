@@ -109,7 +109,6 @@ abstract class Import { //comportamiento general para importar datos
                         
             foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
             //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
-
             $e = array_combine($this->headers, $datos);
             $this->element($i, $e);                  
             //if($i==100) break;           
