@@ -5,7 +5,11 @@ require_once("class/model/Dba.php");
 
 require_once("function/array_combine_key.php");
 
-abstract class Import { //comportamiento general para importar datos
+abstract class Import {
+    /**
+     * Importacion de elementos
+     */
+    
     public $id; //identificacion de los datos a procear
     public $source; //fuente de los datos a procesar
     public $pathSummary; //directorio donde se almacena el resumen del procesamiento
@@ -138,7 +142,7 @@ abstract class Import { //comportamiento general para importar datos
                 echo "<pre>";
                 echo $exception->getMessage();
                 echo "<br>";
-                $element->logs->add("persist","error",$exception->getMessage());
+                $element->logs->addLog("persist","error",$exception->getMessage());
             } finally {
                 Dba::dbClose();
             }

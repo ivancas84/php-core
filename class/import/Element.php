@@ -3,6 +3,10 @@
 require_once("class/Logs.php");
 
 abstract class ImportElement {
+    /**
+     * Elemento a importar
+     */
+    
     public $index;
     public $logs;
     public $process = true;

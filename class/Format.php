@@ -2,14 +2,15 @@
 
 require_once("function/settypebool.php");
 require_once("class/SpanishDateTime.php");
-require_once("class/Check.php");
+require_once("class/Validation.php");
+
 
 class Format {
 
-  static function date($value, $format = null){
+  static function date(SpanishDateTime $value, $format = null){
     if(empty($format)) return $value;  
-    if(Validation::isEmpty($value)) return null;
-    return SpanishDateTime::createFromFormat($format, $value);
+    if(Validation::is_empty($value)) return null;
+    return $value->format($format);
   }
 
   static function convertCase($value, $format = null){

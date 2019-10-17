@@ -3,6 +3,8 @@
 require_once("function/snake_case_to.php");
 require_once("class/SpanishDateTime.php");
 require_once("class/Validation.php");
+require_once("class/Format.php");
+
 
 abstract class EntityValues {
   /**
@@ -87,13 +89,13 @@ abstract class EntityValues {
   }
 
   public function _setLogsValidation($field, Validation $validation){
-    $this->_logs->reset($field);
-    foreach($validation->getErrors() as $data){ $this->_logs->add($field, "error", $data); }
+    $this->_logs->resetLogs($field);
+    foreach($validation->getErrors() as $data){ $this->_logs->addLog($field, "error", $data); }
     return $validation->isSuccess();
   }
 
   public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
-  public function _identifier($format = null){ return $this->format->string($this->_identifier, $format); }
+  public function _identifier($format = null){ return Format::convertCase($this->_identifier, $format); }
 
   public function _setValues($values, $prefix = ""){
     if(is_string($values) && ($values == DEFAULT_VALUE || $values == "DEFAULT") ) $this->_setDefault();
