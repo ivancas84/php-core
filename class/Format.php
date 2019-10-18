@@ -1,13 +1,12 @@
 <?php
 
 require_once("function/settypebool.php");
-require_once("class/SpanishDateTime.php");
 require_once("class/Validation.php");
 
 
 class Format {
 
-  static function date(SpanishDateTime $value, $format = null){
+  static function date(DateTime $value, $format = null){
     if(empty($format)) return $value;  
     if(Validation::is_empty($value)) return null;
     return $value->format($format);
@@ -15,7 +14,7 @@ class Format {
 
   static function convertCase($value, $format = null){
     if(empty($format)) return $value;  
-    if(self::isEmpty($value)) return null;
+    if(Validation::is_empty($value)) return null;
     switch($format){
       case "XxYy": return str_replace(" ", "", ucwords(mb_strtolower($value, "UTF-8")));
       case "xxyy": case "xy": case "x": return str_replace(" ", "", mb_strtolower($value, "UTF-8"));
@@ -33,7 +32,7 @@ class Format {
 
   static function boolean($value, $format = null){
     if(empty($format)) return $value;  
-    if(self::isUndefined($value)) return null;
+    if(Validation::is_undefined($value)) return null;
     switch($format){
       case strpos(mb_strtolower($format), "si") !== false:
       case strpos(mb_strtolower($format), "sí") !== false:

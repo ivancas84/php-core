@@ -25,7 +25,7 @@ class Logs {
   }
 
   public function isErrorKey($key){
-    if(!key_exists($key, $this->logs)) return true;
+    if(!key_exists($key, $this->logs)) return false;
     foreach($this->logs[$key] as $v) if($v["status"]=="error") return true;
     return false;
   }

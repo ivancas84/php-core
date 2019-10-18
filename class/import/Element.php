@@ -19,7 +19,7 @@ abstract class ImportElement {
         $this->setEntities($data);
     }
 
-    public function logs() { return $this->logs(); }
+    public function logs() { return $this->logs; }
     abstract function setEntities($data);
     
     public function logsEntities(){

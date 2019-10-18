@@ -194,12 +194,12 @@ abstract class Import {
 
     public function insertSource_(&$source, $name){
         $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->_toArray());
-        $source[$name]->id = $persist["id"];
+        $source[$name]->setId($persist["id"]);
         return $persist["sql"];
     }
       
     public function updateSource_(&$source, $name, $existente){
-        $source[$name]->id = $existente->id();
+        $source[$name]->setId($existente->id());
         if(!$source[$name]->_equalTo($existente)) {
           $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
           return $persist["sql"];
