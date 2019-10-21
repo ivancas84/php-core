@@ -16,7 +16,7 @@ class SpanishDateTime extends DateTime{
 
    static function createFromDate(string $time){
     if(empty($time)) return false;
-    $fecha = trim(str_replace("-", " ", str_replace("/", " ", $fecha)));
+    $fecha = trim(str_replace("-", " ", str_replace("/", " ", $time)));
     $fechas = explode(" ",$fecha);
     if(count($fechas) != 3) return false;
 
@@ -63,7 +63,7 @@ class SpanishDateTime extends DateTime{
         $anio = $pre.$anio;
       }
   
-      return $this->createFromFormat("dmY",  $dia.$mes.$anio);
+      return self::createFromFormat("dmY",  $dia.$mes.$anio);
   }
 
 
