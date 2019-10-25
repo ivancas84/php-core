@@ -192,6 +192,7 @@ abstract class Import {
         if(empty($id)) $id = $name;
         
         if(key_exists($value, $this->dbs[$id])){
+            
           $existente = EntityValues::getInstanceRequire($name);
           $existente->_fromArray($this->dbs[$id][$value]);
           $sql = $this->updateSource_($source, $name, $existente);
