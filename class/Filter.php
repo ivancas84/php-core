@@ -70,7 +70,6 @@ class Filter {
     return $var;
   }
 
-
   public static function file($name){
      $args = array($name => array('filter'=> FILTER_DEFAULT,  'flags' => FILTER_REQUIRE_ARRAY));
      $files = filter_var_array($_FILES, $args);
@@ -82,7 +81,6 @@ class Filter {
     if(!isset($file)) throw new Exception("Archivo " . $name . " sin definir");
     return $file;
   }
-
     
   public static function jsonPost(){ 
     $data = file_get_contents("php://input");
@@ -94,7 +92,5 @@ class Filter {
     if(empty($r)) throw new Exception("No existen parametros");
     return $r;
   }
-
-
 
 }
