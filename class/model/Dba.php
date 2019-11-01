@@ -121,10 +121,13 @@ class Dba { //Facilita el acceso a la base de datos
     return null;
   }
 
-  public static function ids($entity, $render = null){ //devolver ids
+  public static function ids($entity, $render = null){
     $sql = EntitySqlo::getInstanceRequire($entity)->all($render);
     $ids = self::fetchAllColumns($sql, 0);
-    array_walk($ids, "toString"); //los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
+    array_walk($ids, "toString"); 
+    /**
+     * los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
+     */
     return $ids;
   }
 
