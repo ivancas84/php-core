@@ -14,9 +14,59 @@ class SpanishDateTime extends DateTime{
      return $spanishDateTime;
    }
 
-   /**
-    * @Override
-    */ 
+   static function createFromDate(string $time){
+    if(empty($time)) return false;
+    $fecha = trim(str_replace("-", " ", str_replace("/", " ", $time)));
+    $fechas = explode(" ",$fecha);
+    if(count($fechas) != 3) return false;
+
+    for($i = 0; $i < 2; $i++){
+      /**
+       * No conocemos como esta definida la fecha
+       * Se van a realizar dos iteraciones para intentar definir la fecha
+       */      
+        $error = false;
+        $mes = intval($fechas[1]);
+        if($i===0){
+          $dia = intval($fechas[0]);
+          $anio = $fechas[2];
+        } else {
+          $dia = intval($fechas[2]);
+          $anio = $fechas[0];
+        }
+      
+        if(($dia < 1) || ($dia > 31)) { 
+          $error = true;          
+          continue;
+        }
+  
+        if(($mes < 1) || ($mes > 12)) {
+          $error = true;          
+          continue;
+        }
+  
+        if((strlen($anio) != 2) && (strlen($anio) != 4)) {
+          $error = true;          
+          continue;
+        }
+  
+        if(!$error) break;
+      }
+  
+      if($error) return false;
+  
+      if($dia < 10) $dia = "0".$dia;
+      if($mes < 10) $mes = "0".$mes;
+  
+      if(strlen($anio) == 2) {
+        $pre = ((intval($anio) >= 0) && (intval($anio) < intval(date("y")))) ? "20" : "19";
+        $anio = $pre.$anio;
+      }
+  
+      return self::createFromFormat("dmY",  $dia.$mes.$anio);
+  }
+
+
    static function createFromFormat($format, $time, $timezone = null){
      if(!isset($timezone)){
        $dateTime = DateTime::createFromFormat($format, $time);
@@ -33,12 +83,7 @@ class SpanishDateTime extends DateTime{
     
      return $spanishDateTime;
    }
-   
-   
-   
-   /**
-    * @Override
-    */
+
   function format($format){
 
      $english = array(

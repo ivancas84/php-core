@@ -4,6 +4,7 @@ require_once("class/model/Sqlo.php");
 require_once("class/model/Dba.php");
 
 require_once("function/array_combine_key.php");
+require_once("function/error_handler.php");
 
 abstract class Import {
     /**
@@ -53,7 +54,7 @@ abstract class Import {
             $i++;
             $errores = [];
             $advertencias = [];
-            if(!empty($element->logs())) $errores = array_merge($errores, $element->logs());
+            if(!empty($element->logs()->getLogs())) $errores = array_merge($errores, $element->logs()->getLogs());
             if(!empty($element->logsEntities())) $advertencias = array_merge($advertencias, $element->logsEntities());
             
             if(count($errores) || count($advertencias)){
@@ -62,12 +63,16 @@ abstract class Import {
     <ul class=\"list-group list-group-flush\">
         <li class=\"list-group-item active\">FILA " . $i . ": " . $element->entities["persona"]->nombre() . " " . $element->entities["persona"]->numeroDocumento() . "</li>
 ";                
-                if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
+                if($element->logs()->isError()) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
 ";
-                foreach($errores as $error) $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $error["data"]."</li>
+                foreach($errores as $key => $logs) {
+                    foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . ": " .$log["data"]."</li>
 ";
-                foreach($advertencias as $advertencia) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $advertencia["data"]. "</li>
+                }
+                foreach($advertencias as $key => $logs) {   
+                    foreach($logs as $log) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $key . ": " .$log["data"]. "</li>
 ";
+                }
                 $informe .= "    </ul>
     </div>
     <br><br>";                          
@@ -97,6 +102,7 @@ abstract class Import {
     }
 
     public function defineTab(){
+
         $source = explode("\n", $this->source);
 
         if(empty($this->headers)) {
@@ -113,8 +119,12 @@ abstract class Import {
                         
             foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
             //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
+            // echo "<pre>";
+            // print_r($this->headers);
+            // print_r($datos);
             $e = array_combine($this->headers, $datos);
             $this->element($i, $e);                  
+
             //if($i==100) break;           
         }
     }
@@ -132,7 +142,7 @@ abstract class Import {
     public function persist(){
         $sql = "";
         foreach($this->elements as $element) {
-            if(!$element->logs->isError()) continue;
+            if($element->logs->isError()) continue;
             
             $db = Dba::dbInstance();
             try {
@@ -182,6 +192,7 @@ abstract class Import {
         if(empty($id)) $id = $name;
         
         if(key_exists($value, $this->dbs[$id])){
+            
           $existente = EntityValues::getInstanceRequire($name);
           $existente->_fromArray($this->dbs[$id][$value]);
           $sql = $this->updateSource_($source, $name, $existente);
@@ -194,12 +205,12 @@ abstract class Import {
 
     public function insertSource_(&$source, $name){
         $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->_toArray());
-        $source[$name]->id = $persist["id"];
+        $source[$name]->setId($persist["id"]);
         return $persist["sql"];
     }
       
     public function updateSource_(&$source, $name, $existente){
-        $source[$name]->id = $existente->id();
+        $source[$name]->setId($existente->id());
         if(!$source[$name]->_equalTo($existente)) {
           $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
           return $persist["sql"];

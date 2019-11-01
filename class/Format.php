@@ -1,13 +1,12 @@
 <?php
 
 require_once("function/settypebool.php");
-require_once("class/SpanishDateTime.php");
 require_once("class/Validation.php");
 
 
 class Format {
 
-  static function date(SpanishDateTime $value, $format = null){
+  static function date(DateTime $value, $format = null){
     if(empty($format)) return $value;  
     if(Validation::is_empty($value)) return null;
     return $value->format($format);
@@ -15,7 +14,7 @@ class Format {
 
   static function convertCase($value, $format = null){
     if(empty($format)) return $value;  
-    if(self::isEmpty($value)) return null;
+    if(Validation::is_empty($value)) return null;
     switch($format){
       case "XxYy": return str_replace(" ", "", ucwords(mb_strtolower($value, "UTF-8")));
       case "xxyy": case "xy": case "x": return str_replace(" ", "", mb_strtolower($value, "UTF-8"));
@@ -33,7 +32,7 @@ class Format {
 
   static function boolean($value, $format = null){
     if(empty($format)) return $value;  
-    if(self::isUndefined($value)) return null;
+    if(Validation::is_undefined($value)) return null;
     switch($format){
       case strpos(mb_strtolower($format), "si") !== false:
       case strpos(mb_strtolower($format), "sí") !== false:
@@ -45,6 +44,46 @@ class Format {
       default:         
         return $value;
     }
+  }
+
+  static function removeSpecialCharacters($value){
+    $value = str_replace(
+      array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'),
+      array('a', 'a', 'a', 'a', 'a', 'A', 'A', 'A', 'A'),
+      $value 
+    );
+  
+    $value = str_replace(
+      array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'),
+      array('e', 'e', 'e', 'e', 'E', 'E', 'E', 'E'),
+      $value 
+    ); 
+  
+    $value = str_replace(
+      array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'),
+      array('i', 'i', 'i', 'i', 'I', 'I', 'I', 'I'),
+      $value 
+    );
+  
+    $value = str_replace(
+      array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'),
+      array('o', 'o', 'o', 'o', 'O', 'O', 'O', 'O'),
+      $value 
+    );
+  
+    $value = str_replace(
+      array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'),
+      array('u', 'u', 'u', 'u', 'U', 'U', 'U', 'U'),
+      $value 
+    );
+  
+    $value = str_replace(
+        array('ñ', 'Ñ', 'ç', 'Ç'),
+        array('n', 'N', 'c', 'C'),
+        $value
+    );
+    
+    return $value;
   }
 
 }
