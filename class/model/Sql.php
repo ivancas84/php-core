@@ -74,6 +74,7 @@ abstract class EntitySql { //Definir SQL
      * Recorre relaciones (si existen)
      */
     if($field_ = $this->_mappingFieldStruct($field)) return $field_;
+    echo "<br>_mappingField.".$field.":" . $this->_mappingFieldStruct($field) . "<br>";
     if($field_ = $this->_mappingFieldAggregate($field)) return $field_;
     if($field_ = $this->_mappingFieldDefined($field)) return $field_;
   }
@@ -244,7 +245,8 @@ abstract class EntitySql { //Definir SQL
     
     if(!is_array($value)) {
       $condition = $this->conditionFieldStruct($field, $option, $value);
-      
+      echo $field.$option.$value . "<br>";
+      echo $condition;
       if(!$condition) {
         $condition = $this->conditionFieldHaving($field, $option, $value);
         if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");

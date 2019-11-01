@@ -4,7 +4,7 @@ require_once("function/snake_case_to.php");
 require_once("class/SpanishDateTime.php");
 require_once("class/Validation.php");
 require_once("class/Format.php");
-
+require_once("class/Logs.php");
 
 abstract class EntityValues {
   /**
