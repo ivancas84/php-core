@@ -1,0 +1,1 @@
+Las clases del modelo se construyen a partir de los metadatos definidos en la base de datos
