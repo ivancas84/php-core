@@ -48,7 +48,7 @@ abstract class EntitySql { //Definir SQL
   }
 
   final public static function getInstanceRequire($entity, $prefix = null) {    
-    require_once("class/model/sql/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");    $className = snake_case_to("XxYy", $entity) . "Sql";
+    require_once("class/model/sql/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
     $className = snake_case_to("XxYy", $entity) . "Sql";
     return call_user_func_array("{$className}::getInstance", [$prefix]);
   }
@@ -60,7 +60,10 @@ abstract class EntitySql { //Definir SQL
   public function format(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //formato de sql
   public function _json(array $row) { throw new BadMethodCallException("No implementado"); }
 
-  public function formatIds(array $ids = []) { //formato sql de ids
+  public function formatIds(array $ids = []) {
+    /**
+     * Formato sql de ids
+     */
     $ids_ = [];
     for($i = 0; $i < count($ids); $i++) {
       $r = $this->format(["id"=>$ids[$i]]);
@@ -69,8 +72,9 @@ abstract class EntitySql { //Definir SQL
     return implode(', ', $ids_);
   }
 
-  public function _mappingField($field) { //mapeo de fields de la entidad (todos los fields)
+  public function _mappingField($field) {
     /**
+     * Mapeo de fields de la entidad (todos los fields)
      * Recorre relaciones (si existen)
      */
     if($field_ = $this->_mappingFieldStruct($field)) return $field_;
@@ -78,8 +82,9 @@ abstract class EntitySql { //Definir SQL
     if($field_ = $this->_mappingFieldDefined($field)) return $field_;
   }
 
-  public function mappingField($field){ //Traducir campo para ser interpretado correctamente por el SQL
+  public function mappingField($field){
     /**
+     * Traducir campo para ser interpretado correctamente por el SQL
      * Recorre relaciones (si existen)
      */
     if($field_ = $this->_mappingField($field)) return $field_;
@@ -89,7 +94,10 @@ abstract class EntitySql { //Definir SQL
   public function _mappingFieldStruct($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
   public function _mappingFieldAggregate($field){ return null; } //traduccion local de campos de agregacion
   
-  public function _mappingFieldDefined($field){ //traduccion local de campos generales
+  public function _mappingFieldDefined($field){
+    /**
+     * Traduccion local de campos generales
+     */
     switch ($field) {
       case "_count": return "COUNT(*)";
       case "_identifier":
@@ -101,7 +109,10 @@ abstract class EntitySql { //Definir SQL
     }
   }
 
-  public function condition(Render $render) { //busqueda avanzada considerando relaciones
+  public function condition(Render $render) { 
+    /**
+     * busqueda avanzada considerando relaciones
+     */
     $condition = array_merge($render->condition, $render->generalCondition);
 
     /**
@@ -123,8 +134,9 @@ abstract class EntitySql { //Definir SQL
     return $conditionMode["condition"];
   }
 
-  public function _condition(Render $render) { //busqueda avanzada sin considerar relaciones
+  public function _condition(Render $render) {
     /**
+     * Busqueda avanzada sin considerar relaciones
      * A diferencia del metodo que recorre relaciones, _condition no genera error si la condicion no existe
      */
     if(empty($render->getCondition())) return "";
@@ -133,8 +145,9 @@ abstract class EntitySql { //Definir SQL
     return $conditionMode["condition"];
   }
 
-  private function conditionRecursive(array $condition){ //metodo recursivo para definir condiciones avanzada (considera relaciones)
+  private function conditionRecursive(array $condition){
     /**
+     * Metodo recursivo para definir condiciones avanzada (considera relaciones)
      * Para facilitar la definicion de condiciones, retorna un array con dos elementos:
      * "condition": SQL
      * "mode": Concatenacion de condiciones "AND" | "OR"
@@ -160,8 +173,9 @@ abstract class EntitySql { //Definir SQL
     return ["condition" => $condicion, "mode" => $mode];
   }
 
-  private function _conditionRecursive(array $advanced){ //metodo recursivo para definir condicines avanzadas (no considera relaciones)
+  private function _conditionRecursive(array $advanced){
     /**
+     * Metodo recursivo para definir condicines avanzadas (no considera relaciones)
      * Para facilitar la definicion de condiciones, retorna un array con dos elementos:
      * "condition": SQL
      * "mode": Concatenacion de condiciones "AND" | "OR"
@@ -188,7 +202,10 @@ abstract class EntitySql { //Definir SQL
     return ["condition" => $condicion, "mode" => $mode];
   }
 
-  private function conditionIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (considera relaciones)
+  private function conditionIterable(array $advanced) { 
+    /**
+     * metodo de iteracion para definir condiciones avanzadas (considera relaciones)
+     */
     $conditionModes = array();
 
     for($i = 0; $i < count($advanced); $i++){
@@ -208,7 +225,10 @@ abstract class EntitySql { //Definir SQL
     return ["condition"=>"(".$condition.")", "mode"=>$modeReturn];
   }
 
-  private function _conditionIterable(array $advanced) { //metodo de iteracion para definir condiciones avanzadas (no considera relaciones)
+  private function _conditionIterable(array $advanced) {
+    /**
+     * metodo de iteracion para definir condiciones avanzadas (no considera relaciones)
+     */
     $conditionModes = array();
 
     for($i = 0; $i < count($advanced); $i++){
@@ -237,8 +257,10 @@ abstract class EntitySql { //Definir SQL
   }
 
   protected function conditionField($field, $option, $value){
-    //se verifica inicialmente la condicion auxiliar.
-    //las condiciones auxiliares no siguen la estructura definida de condicion
+    /**
+     * se verifica inicialmente la condicion auxiliar. 
+     * las condiciones auxiliares no siguen la estructura definida de condicion
+     */    
     $condition = $this->conditionFieldAux($field, $option, $value);
     if($condition) return $condition;
     
@@ -270,8 +292,10 @@ abstract class EntitySql { //Definir SQL
   }
 
   protected function _conditionField($field, $option, $value) {
-    //se verifica inicialmente la condicion auxiliar.
-    //las condiciones auxiliares no siguen la estructura definida de condicion
+    /**
+     * se verifica inicialmente la condicion auxiliar
+     * las condiciones auxiliares no siguen la estructura definida de condicion
+     */
     $condition = $this->_conditionFieldAux($field, $option, $value);
     if($condition) return $condition;
     
@@ -304,8 +328,9 @@ abstract class EntitySql { //Definir SQL
     $p = $this->prf();
 
     switch($field){
-      case "_identifier": //utilizar solo como condicion general
+      case "_identifier":
         /**
+         * utilizar solo como condicion general
          * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
          * No utilizar prefijo para su definicion
          */
@@ -328,8 +353,9 @@ abstract class EntitySql { //Definir SQL
     return (empty($field))? "" : $this->format->conditionNumber($field, $value, $option);
   }
 
-  protected function conditionFieldHaving($field, $option, $value){ //condicion de agregacionavanzada principal
+  protected function conditionFieldHaving($field, $option, $value){
     /**
+     * Condicion de agregacionavanzada principal
      * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
@@ -337,8 +363,9 @@ abstract class EntitySql { //Definir SQL
     if($c = $this->_conditionFieldHaving($field, $option, $value)) return $c;
   }
   
-  protected function conditionFieldStruct($field, $option, $value){ //condicion avanzada principal
+  protected function conditionFieldStruct($field, $option, $value){
     /**
+     * Condicion avanzada principal
      * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
@@ -346,8 +373,9 @@ abstract class EntitySql { //Definir SQL
     if($c = $this->_conditionFieldStruct($field, $option, $value)) return $c;
   }
   
-  protected function conditionFieldAux($field, $option, $value) { //condicion de field auxiliar (considera relaciones si existen)
+  protected function conditionFieldAux($field, $option, $value) {
     /**
+     * Condicion de field auxiliar (considera relaciones si existen)
      * Se sobrescribe si tiene relaciones
      */
     if($c = $this->_conditionFieldAux($field, $option, $value)) return $c;
@@ -422,8 +450,9 @@ abstract class EntitySql { //Definir SQL
     return implode(" OR ", $conditions);
   }
 
-  public function conditionUniqueFields(array $params){ //filtrar campos unicos y definir condicion
+  public function conditionUniqueFields(array $params){
     /**
+     * Filtrar campos unicos y definir condicion
      * $params
      *   array("nombre_field" => "valor_field", ...)
      * campos unicos compuestos:
@@ -454,8 +483,9 @@ abstract class EntitySql { //Definir SQL
     return $this->condition($render);
   }
 
-  public function fields(){ //Definir sql de campos
+  public function fields(){
     /**
+     * Definir sql de campos
      * Sobrescribir si existen relaciones
      */
     return $this->_fields(); 
@@ -465,8 +495,9 @@ abstract class EntitySql { //Definir SQL
 
   public function join(Render $render){ return ""; } //Sobrescribir si existen relaciones fk u_
 
-  public function _join($field, $fromTable, Render $render){ //definir relacion como subconsulta
+  public function _join($field, $fromTable, Render $render){
     /**
+     * Definir relacion como subconsulta
      * En funcion del campo pasado como parametro define una relacion
      * Por defecto define una relacion simple utilizando LEFT JOIN
      * Este método puede ser sobrescrito para dar soporte a campos derivados

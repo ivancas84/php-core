@@ -227,6 +227,21 @@ class Dba { //Facilita el acceso a la base de datos
     else { return $sqlo->insert($row); } //3
   }
 
+  public static function persistAll($entity, array $rows){
+    $sql = "";
+    $detail = [];
+    $ids = [];
+
+    foreach($rows as $row){
+      $persist = self::persist($entity, $row);
+      $sql .= $persist["sql"];
+      array_push($ids, $persist["id"]);
+      $detail = array_merge($detail, $persist["detail"]);
+    }
+
+    return ["entity"=>$entity, "sql" => $sql, "detail"=>$detail, "ids"=>$ids];
+  }
+
   /*
   public static function field($entity, $field, $render = null){ //devuelve un array correspondiente al field
     //DEPRECATED

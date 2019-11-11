@@ -7,8 +7,10 @@ class Transaction {
 
   public static $id = null; //las transacciones se guardan en sesion mientras se estan ejecutando para poderlas administrar tambien desde el cliente
 
-  //begin transaction
   public static function begin($id = null){
+    /**
+     * begin transaction
+     */
     if(self::$id) throw new Exception("Ya existe una transaccion iniciada");
 
     if(!empty($id)){
@@ -30,8 +32,10 @@ class Transaction {
     return self::$id;
   }
 
-  //actualizar transaccion
   public static function update(array $data){
+    /**
+     * update transaction
+     */
     if(empty(self::$id)) throw new UnexpectedValueException("Id de transaccion no definido");
 
     if(!empty($data["descripcion"])){
@@ -51,11 +55,14 @@ class Transaction {
     return self::$id;
   }
 
-  //estado de la cache
-  //CLEAR debe limpiarse toda la cache
-  //false no debe ejecutarse ninguna accion
-  //timestamp Se han ejecutado transacciones posteriores a la fecha indicada
+
   public static function checkStatus(){
+    /**
+     * Estado de la cache
+     * CLEAR debe limpiarse toda la cache
+     * false no debe ejecutarse ninguna accion
+     * timestamp Se han ejecutado transacciones posteriores a la fecha indicada
+     */
     $timestampCheck = (!empty($_SESSION["check_transaction"])) ? $_SESSION["check_transaction"] : null;
     $_SESSION["check_transaction"] = date("Y-m-d H:i:s");
 
@@ -64,8 +71,10 @@ class Transaction {
     return ($timestampCheck < $timestampTransaction) ? $timestampCheck : false;
   }
 
-  //detalle de la cache
   public static function checkDetails() {
+    /**
+     * cache detail
+     */
     $status = self::checkStatus();
     if(!$status || $status == "CLEAR") return $status;
 
@@ -92,14 +101,19 @@ LIMIT 20;
     }
   }
 
-  //rollback transaction
   public static function rollback(){
+    /**
+     * Rollback transaction
+     */
     if(empty(self::$id)) throw new UnexpectedValueException("Id de transaccion no definido");
     unset($_SESSION["transaction"][self::$id]);
     self::$id = null;
   }
 
-  public static function commit() {  //commit transaction
+  public static function commit() {
+    /**
+     * Commit transaction
+     */
     if(empty(self::$id)) throw new UnexpectedValueException("Id de transaccion no definido");
 
     $db = Dba::dbInstance();
