@@ -4,15 +4,15 @@
  * @todo Implementar render en el getall
  */
 
-require_once("function/snake_case_to.php");
-require_once("class/db/My.php");
-require_once("class/db/Pg.php");
-require_once("class/model/Transaction.php");
+require_once("class/model/db/My.php");
+require_once("class/model/db/Pg.php");
 require_once("class/model/SqlFormat.php");
 require_once("class/model/Sqlo.php");
 require_once("class/model/Entity.php");
 require_once("class/model/RenderAux.php");
+require_once("class/controller/Transaction.php");
 
+require_once("function/snake_case_to.php");
 require_once("function/stdclass_to_array.php");
 require_once("function/array_combine_concat.php");
 require_once("function/toString.php");

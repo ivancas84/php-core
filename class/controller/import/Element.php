@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/Logs.php");
+require_once("class/tools/Logs.php");
 
 abstract class ImportElement {
     /**

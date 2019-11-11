@@ -1,8 +1,9 @@
 <?php
 
 
-class SqlFormat { //Formato SQL
+class SqlFormat {
   /**
+   * Formato SQL
    * Para simplificar las clases del modelo, los metodos de formato sql basicos se reunen en esta clase
    */
 

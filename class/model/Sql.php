@@ -3,7 +3,7 @@
 require_once("function/snake_case_to.php");
 require_once("function/concat.php");
 require_once("function/settypebool.php");
-require_once("class/db/Interface.php");
+require_once("class/model/db/Interface.php");
 
 /**
  * Se define el prefijo _ para indicar que el metodo no define relaciones

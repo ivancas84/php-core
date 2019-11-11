@@ -1,6 +1,5 @@
 <?php
 
-//Presentacion de datos
 class Render {
 
   public $condition = array(); //array multiple cuya raiz es [field,option,value], 

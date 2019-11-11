@@ -1,7 +1,7 @@
 <?php
 
 require_once("function/settypebool.php");
-require_once("class/Validation.php");
+require_once("class/tools/Validation.php");
 
 
 class Format {

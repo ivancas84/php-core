@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/db/Interface.php");
+require_once("class/model/db/Interface.php");
 
 class DbSqlPg implements DbInterface {
 	

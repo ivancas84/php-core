@@ -2,10 +2,12 @@
 
 require_once("function/snake_case_to.php");
 require_once("class/model/Sql.php");
-require_once("class/db/Interface.php");
-require_once("function/settypebool.php");
+require_once("class/model/db/Interface.php");
 require_once("class/model/Render.php");
 require_once("class/model/RenderAux.php");
+
+require_once("function/settypebool.php");
+
 
 
 abstract class EntitySqlo { //SQL object
@@ -239,16 +241,6 @@ WHERE id IN ({$ids_});
     $detail = $ids;
     array_walk($detail, function(&$item) { $item = $this->entity->getName().$item; });
     return ["ids"=>$ids, "sql"=>$sql, "detail"=>$detail];
-  }
-
-  public function deleteRequiredAll($ids, $params){ //eliminacion relacionada a clave foranea
-    /**
-     * En su caso mas general, este metodo es similar a deleteAll
-     * Esta pensado para facilitar la reimplementacion en el caso de que se lo requiera
-     * En muchos casos, una entidad A puede requerir la eliminacion de otra entidad B,
-     * dependiendo de las restricciones de B puede ser necesario una eliminacion o nulificacion
-     */
-    return $this->deleteAll($ids);
   }
 
   public function _unique(array $row){ //busqueda auxiliar por campos unicos

@@ -1,7 +1,7 @@
 <?
 
 require_once("class/model/Dba.php");
-require_once("class/FileCache.php");
+require_once("class/tools/FileCache.php");
 
 class Transaction {
 

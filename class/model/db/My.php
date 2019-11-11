@@ -1,7 +1,7 @@
 <?php
 
 require_once ( "function/settypebool.php" );
-require_once("class/db/Interface.php");
+require_once("class/model/db/Interface.php");
 
 class DbSqlMy extends mysqli implements DbInterface {
 
