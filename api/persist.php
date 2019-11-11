@@ -5,13 +5,19 @@ require_once("class/controller/Persist.php");
 require_once("class/controller/Transaction.php");
 
 try {
-  $data = Filter::jsonPostRequired();
-  $logs = Persist::getInstanceRequire(ENTITY)->main($data);
-  
+  //$data = Filter::jsonPostRequired();
+  $data = [
+    ["action"=>"persist", "entity"=>"sede", "row"=>["numero"=>"20", "nombre"=>"Prueba"]],
+    ["action"=>"persist", "entity"=>"asignatura", "row"=>["nombre"=>"Matemática"]]
+  ];
+  $persist = Persist::getInstanceRequire(ENTITY);
+  $logs = $persist->main($data);
+
   Transaction::begin();
-  Transaction::update(["descripcion"=> $logs["sql"], "detalle" => implode(",",$logs["detail"])]);
+  Transaction::update(["descripcion"=> $persist->getSql(), "detalle" => implode(",",$persist->getDetail())]);
   Transaction::commit();
-  echo json_encode($response);
+
+  echo json_encode($persist->getLogsKeys(["entity","ids","detail"]));
 
 } catch (Exception $ex) {
   error_log($ex->getTraceAsString());

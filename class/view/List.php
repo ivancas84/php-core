@@ -3,7 +3,7 @@
 require_once("class/view/View.php");
 require_once("class/model/Sqlo.php");
 require_once("class/model/Render.php");
-require_once("class/model/Dba.php");
+require_once("class/controller/Dba.php");
 
 class EntityViewList extends View {
 

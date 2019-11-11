@@ -1,7 +1,7 @@
 <?php
 
 require_once("function/snake_case_to.php");
-require_once("class/model/Dba.php");
+require_once("class/controller/Dba.php");
 require_once("class/model/Values.php");
 
 class EntityInitializeController { //controlador de inicializacion de entidad

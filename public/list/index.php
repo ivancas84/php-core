@@ -1,5 +1,5 @@
 <?php
-require_once("class/Filter.php");
+require_once("class/tools/Filter.php");
 require_once("class/view/List.php");
 
 $params = Filter::requestAll();

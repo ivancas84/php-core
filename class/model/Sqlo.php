@@ -243,10 +243,12 @@ WHERE id IN ({$ids_});
     return ["ids"=>$ids, "sql"=>$sql, "detail"=>$detail];
   }
 
-  public function _unique(array $row){ //busqueda auxiliar por campos unicos
+  public function _unique(array $row){
     /**
+     * Busqueda auxiliar por campos unicos
      * Unique puede restringir el acceso a datos dependiendo del rol y la condicion auxiliar
      */
+    $r = new Render();
     $conditionUniqueFields = $this->sql->conditionUniqueFields($row);
     if(empty($conditionUniqueFields)) return null;
 

@@ -1,8 +1,8 @@
 <?php
 
 
-require_once("class/Filter.php");
-require_once("class/model/Dba.php");
+require_once("class/tools/Filter.php");
+require_once("class/controller/Dba.php");
 
 require_once("class/model/Sqlo.php");
 require_once("function/stdclass_to_array.php");
@@ -18,6 +18,33 @@ abstract class Persist {
    */
   protected $logs = [];
 
+  public function getSql() {
+    $sql = "";
+    foreach($this->logs as $log) {
+      if (!empty($log["sql"])) $sql .= $log["sql"];
+    }
+    return $sql;
+  }
+
+  public function getDetail() {
+    $detail = [];
+    foreach($this->logs as $log) {
+      if (!empty($log["detail"])) $detail = array_merge($detail, $log["detail"]);
+    }
+    return $detail;
+  }
+
+  public function getLogsKeys($keys){
+    $logs = [];
+    foreach($this->logs as $log) {
+      $l = [];
+      foreach($keys as $key) $l[$key] = $log[$key];
+      array_push($logs, $l);
+    }
+    return $logs;
+
+  }
+
   final public static function getInstance() {
     $className = get_called_class();
     return new $className;
@@ -26,7 +53,7 @@ abstract class Persist {
   final public static function getInstanceRequire($entity) {
     require_once("class/controller/persist/" . snake_case_to("XxYy", $entity) . ".php");
     $className = snake_case_to("XxYy", $entity) . "Persist";
-    return call_user_func_array("{$className}::getInstance");
+    return call_user_func("{$className}::getInstance");
   }
   
   public function delete($entity, array $ids, array $params = null){
@@ -107,7 +134,7 @@ abstract class Persist {
         $detail = $persist["detail"];
       }
 
-      array_push($this->logs, ["action"=>"persist",  "entity"=>$entity, "ids"=>$ids, $sql=>"sql", "detail"=>$detail]);
+      array_push($this->logs, ["action"=>"persist",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
   }
 
   public function main($data){
@@ -127,9 +154,8 @@ abstract class Persist {
       if(isset($rows)) $this->row($entity, $row, $params);
       if(isset($id)) $this->delete($entity, [$id], $params);
       if(isset($ids)) $this->delete($entity, $ids, $params);
-
-      return $this->logs;
     }
+    return $this->logs;
   }
 }
 

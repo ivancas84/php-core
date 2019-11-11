@@ -2,7 +2,7 @@
 
 require_once("class/Transaction_.php");
 require_once("class/Controller.php");
-require_once("class/Filter.php");
+require_once("class/tools/Filter.php");
 require_once("function/stdclass_to_array.php");
 
     

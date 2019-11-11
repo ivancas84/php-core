@@ -2,7 +2,7 @@
     require_once("config/modelClasses.php");
     require_once("config/entityClasses.php");
     require_once("class/Transaction.php");
-    require_once("class/Filter.php");
+    require_once("class/tools/Filter.php");
     try{
       //Inicializar
       $filter = new Filter();

@@ -1,7 +1,7 @@
 <?php
 
 require_once("class/model/Sqlo.php");
-require_once("class/model/Dba.php");
+require_once("class/controller/Dba.php");
 
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
