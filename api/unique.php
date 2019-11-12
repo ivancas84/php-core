@@ -6,7 +6,7 @@ require_once("class/controller/Dba.php");
 try{
 
   $params = Filter::jsonPostRequired();
-  //$params = ["nombre"=>"Matemática"];
+  //$params = ["domicilio"=>"1543133270054093"];
   $row = Dba::unique(ENTITY, $params);
   echo json_encode($row);
 

@@ -71,7 +71,7 @@ class Dba { //Facilita el acceso a la base de datos
   }
 
   public static function isPersistible($entity, array $row){ //es persistible?
-    $row_ = self::_unique($entity, $row); //1) Consultar valores a partir de los datos
+    $row_ = self::unique($entity, $row); //1) Consultar valores a partir de los datos
     $sqlo = EntitySqlo::getInstanceRequire($entity);
 
     if (count($row_)){
@@ -91,20 +91,6 @@ class Dba { //Facilita el acceso a la base de datos
     $sql = EntitySqlo::getInstanceRequire($entity)->advanced($render);
     $row = self::fetchAssoc($sql);
     return intval($row["_count"]);
-  }
-
-  public static function _unique($entity, array $params, $render = null){ //busqueda estricta por campos unicos
-    /**
-     * $params
-     *   array("nombre_field" => "valor_field", ...)
-     */
-    $sql = EntitySqlo::getInstanceRequire($entity)->_unique($params, $render);
-    if(!$sql) return null;
-    $rows = self::fetchAll($sql);
-
-    if(count($rows) > 1) throw new Exception("La busqueda estricta por campos unicos de {$entity} retorno mas de un resultado");
-    if(count($rows) == 1) return EntitySqlo::getInstanceRequire($entity)->json($rows[0]);
-    return null;
   }
 
   public static function unique($entity, array $params, $render = null){ //busqueda por campos unicos
@@ -217,7 +203,7 @@ class Dba { //Facilita el acceso a la base de datos
      *     "detail": array de elementos, cada elemento es un string concatenado de la forma entidadId, ejemplo "persona1234567890"
      */
     $sqlo = EntitySqlo::getInstanceRequire($entity);
-    $row_ = self::_unique($entity, $row); //1
+    $row_ = self::unique($entity, $row); //1
 
     if (!empty($row_)){ //2
       $row["id"] = $row_["id"];

@@ -7,7 +7,7 @@ try {
   $ids = Filter::jsonPostRequired();
   if(empty($ids)) throw new Exception("Identificadores no definidos");
   $rows = Dba::getAll(ENTITY, $ids);
-  echo json_encode(EntitySqlo::getInstanceRequire("sede")->jsonAll($rows));
+  echo json_encode(EntitySqlo::getInstanceRequire(ENTITY)->jsonAll($rows));
 
 } catch (Exception $ex) {
   error_log($ex->getTraceAsString());

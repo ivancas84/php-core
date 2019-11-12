@@ -243,25 +243,11 @@ WHERE id IN ({$ids_});
     return ["ids"=>$ids, "sql"=>$sql, "detail"=>$detail];
   }
 
-  public function _unique(array $row){
+
+  public function unique(array $row, $render = NULL){
     /**
-     * Busqueda auxiliar por campos unicos
-     * Unique puede restringir el acceso a datos dependiendo del rol y la condicion auxiliar
+     * busqueda por campos unicos
      */
-    $r = new Render();
-    $conditionUniqueFields = $this->sql->conditionUniqueFields($row);
-    if(empty($conditionUniqueFields)) return null;
-
-    return "SELECT DISTINCT
-{$this->sql->fields()}
-{$this->sql->fromSubSql($r)}
-{$this->sql->join($r)}
-WHERE
-{$conditionUniqueFields}
-";
-  }
-
-  public function unique(array $row, $render = NULL){ //busqueda por campos unicos
     $r = Render::getInstance($render);
 
     $conditionUniqueFields = $this->sql->conditionUniqueFields($row);
@@ -275,8 +261,9 @@ WHERE
 {$conditionUniqueFields}
 " . concat($this->sql->condition($r), 'AND ') . "
 ";
-  }
 
+
+  }
   
 
 }

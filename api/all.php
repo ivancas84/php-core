@@ -7,7 +7,7 @@ try{
   $display = Filter::jsonPostRequired();
   $render = RenderAux::getInstanceDisplay($display);
   $rows = Dba::all(ENTITY, $render);
-  echo json_encode(EntitySqlo::getInstanceRequire("sede")->jsonAll($rows));
+  echo json_encode(EntitySqlo::getInstanceRequire(ENTITY)->jsonAll($rows));
 
 } catch (Exception $ex) {
   error_log($ex->getTraceAsString());
