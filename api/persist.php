@@ -5,11 +5,11 @@ require_once("class/controller/Persist.php");
 require_once("class/controller/Transaction.php");
 
 try {
-  //$data = Filter::jsonPostRequired();
-  $data = [
+  $data = Filter::jsonPostRequired();
+  /*$data = [
     ["action"=>"persist", "entity"=>"sede", "row"=>["numero"=>"20", "nombre"=>"Prueba"]],
     ["action"=>"persist", "entity"=>"asignatura", "row"=>["nombre"=>"Matemática"]]
-  ];
+  ];*/
   $persist = Persist::getInstanceRequire(ENTITY);
   $logs = $persist->main($data);
 
