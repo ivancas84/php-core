@@ -6,15 +6,17 @@ require_once("class/tools/Validation.php");
 
 class Format {
 
-  static function date(DateTime $value, $format = null){
-    if(empty($format)) return $value;  
+  static function date($value, $format = null){
+    if(Validation::is_undefined($value)) return null;
     if(Validation::is_empty($value)) return null;
+    if(empty($format)) return $value;  
     return $value->format($format);
   }
 
   static function convertCase($value, $format = null){
-    if(empty($format)) return $value;  
+    if(Validation::is_undefined($value)) return null;
     if(Validation::is_empty($value)) return null;
+    if(empty($format)) return $value;  
     switch($format){
       case "XxYy": return str_replace(" ", "", ucwords(mb_strtolower($value, "UTF-8")));
       case "xxyy": case "xy": case "x": return str_replace(" ", "", mb_strtolower($value, "UTF-8"));
