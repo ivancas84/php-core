@@ -52,8 +52,8 @@ class Dba { //Facilita el acceso a la base de datos
     //if(isset($_SESSION["uniqid"])) $_SESSION["uniqid"]++;
     //else $_SESSION["uniqid"] = intval(date("Ymdhis"));
     //return $_SESSION["uniqid"];
-    //return uniqid();
-    return hexdec(uniqid());
+    return uniqid();
+    //return hexdec(uniqid());
 
     //sleep(1);
     //return strtotime("now");

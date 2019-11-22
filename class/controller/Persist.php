@@ -135,6 +135,7 @@ abstract class Persist {
       }
 
       array_push($this->logs, ["action"=>"persist",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
+      return $id;
   }
 
   public function main($data){

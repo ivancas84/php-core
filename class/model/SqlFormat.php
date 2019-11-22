@@ -1,6 +1,5 @@
 <?php
 
-
 class SqlFormat {
   /**
    * Formato SQL
@@ -25,6 +24,8 @@ class SqlFormat {
   }
 
   protected function conditionDateTime($field, $value, $option, $my, $pg){
+    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+
     switch($option){
       case "=~": case "!=~":
         $o = ($option == "!=~") ? "NOT " : "";
@@ -46,9 +47,20 @@ class SqlFormat {
     }
   }
 
-  public function conditionText($field, $value, $option = "="){
+  protected function conditionIsNull($field, $option, $value) {
+    if(is_null($value)) {
+      switch($option){
+        case "=": return "({$field} IS NULL) ";
+        case "!=": return "({$field} IS NOT NULL) "; 
+        default: throw new Exception("La combinacion field-option-value no está permitida");
+      }
+    }
     if($value === false) return "({$field} IS NULL) ";
     if($value === true) return "({$field} IS NOT NULL) ";
+  }
+
+  public function conditionText($field, $value, $option = "="){
+    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
     if($option == "=~") return "(lower({$field}) LIKE lower('%{$value}%'))";
     if($option == "!=~") return "(lower({$field}) NOT LIKE lower('%{$value}%'))";
     return "(lower({$field}) {$option} lower('{$value}')) ";
@@ -76,12 +88,9 @@ class SqlFormat {
   }
   
   public function conditionNumber($field, $value, $option = "="){
-    if($value === true) return "(" . $field . " IS NOT NULL) ";
+    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+
     switch($option) {
-      case "=": 
-        if($value === false) return "(" . $field . " IS NULL) ";
-        if($value === true) return "(" . $field . " IS NOT NULL) "; 
-        return "(" . $field . " " . $option . " " . $value . ") ";
       case "=~": 
         if($this->db->getDbms() == "mysql") return "(CAST(" . $field . " AS CHAR) LIKE '%" . $value . "%' )";
         else return "(trim(both ' ' from to_char(" . $field . ", '99999999999999999999')) LIKE '%" . $value . "%' ) ";
