@@ -196,7 +196,7 @@ WHERE id IN (SELECT id
 WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
 ";
 
-    return array("id" => $r_["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$r["id"]]);
+    return array("id" => $r["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$r["id"]]);
   }
 
   public function updateAll($row, array $ids) { //sql de actualizacion para un conjunto de ids

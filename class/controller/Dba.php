@@ -103,7 +103,7 @@ class Dba { //Facilita el acceso a la base de datos
 
     $rows = self::fetchAll($sql);
     if(count($rows) > 1) throw new Exception("La busqueda por campos unicos de {$entity} retorno mas de un resultado");
-    if(count($rows) == 1) return EntitySqlo::getInstanceRequire($entity)->json($rows[0]);
+    if(count($rows) == 1) return $rows[0];
     return null;
   }
 
@@ -161,7 +161,7 @@ class Dba { //Facilita el acceso a la base de datos
   public static function one($entity, $render = null) { //un solo valor
     $rows = self::all($entity, $render);
     if(count($rows) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
-    elseif(count($rows) == 1) return EntitySqlo::getInstanceRequire($entity)->json($rows[0]);
+    elseif(count($rows) == 1) return $rows[0];
     else throw new Exception("La consulta no arrojó resultados");
   }
 

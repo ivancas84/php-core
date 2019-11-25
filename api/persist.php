@@ -11,12 +11,7 @@ try {
     ["action"=>"persist", "entity"=>"asignatura", "row"=>["nombre"=>"Matemática"]]
   ];*/
   $persist = Persist::getInstanceRequire(ENTITY);
-  $logs = $persist->main($data);
-
-  Transaction::begin();
-  Transaction::update(["descripcion"=> $persist->getSql(), "detalle" => implode(",",$persist->getDetail())]);
-  Transaction::commit();
-
+  $persist->main($data);
   echo json_encode($persist->getLogsKeys(["entity","ids","detail"]));
 
 } catch (Exception $ex) {
