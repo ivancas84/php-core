@@ -3,23 +3,9 @@ require_once("class/controller/Dba.php");
 require_once("class/model/RenderAux.php");
 require_once("class/tools/Filter.php");
 
-abstract class Count {
+abstract class CountApi {
   protected $entityName;
 
-  /**
-   * Comportamiento general de count
-   */
-  final public static function getInstance() {
-    $className = get_called_class();
-    return new $className;
-  }
-
-  final public static function getInstanceRequire($entity) {
-    require_once("class/controller/count/" . snake_case_to("XxYy", $entity) . ".php");
-    $className = snake_case_to("XxYy", $entity) . "Count";
-    return call_user_func("{$className}::getInstance");
-  }
-  
   public function main() {
     try{
       $display = Filter::jsonPostRequired();

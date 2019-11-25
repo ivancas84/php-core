@@ -8,7 +8,7 @@ require_once("class/controller/Transaction.php");
 require_once("class/model/Sqlo.php");
 require_once("function/stdclass_to_array.php");
 
-abstract class Persist {
+class Persist {
   /**
    * Comportamiento general de persistencia
    * El objetivo de este script es procesar un conjunto de entidades evitando multiples accesos a la base de datos
@@ -137,36 +137,6 @@ abstract class Persist {
       return $id;
   }
 
-  public function main($data){
-    $this->persist($data);
-    $this->updateTransaction();
-  }
-
-  public function persist($data){
-    foreach($data as $d) {
-      $entity = $d["entity"]; //entidad
-      $row = (isset($d["row"])) ? $d["row"]: null; //row a procesar
-      $rows = (isset($d["rows"])) ? $d["rows"]: null; //rows a procesar
-      $id = (isset($d["id"])) ? $d["id"] : null; //id a eliminar
-      $ids =  (isset($d["ids"])) ? $d["ids"] : null; //ids a eliminar
-      $params = (isset($d["params"])) ? $d["params"] : null; //campos relacionados para identificacion
-      /**
-       * $params["name"]: Nombre de la clave foranea
-       * $params["value]: Valor de la clave foranea
-       */
-  
-      if(isset($row)) $this->row($entity, $row);
-      if(isset($rows)) $this->row($entity, $row, $params);
-      if(isset($id)) $this->delete($entity, [$id], $params);
-      if(isset($ids)) $this->delete($entity, $ids, $params);
-    }
-  }
-
-  public function updateTransaction(){
-    Transaction::begin();
-    Transaction::update(["descripcion"=> $this->getSql(), "detalle" => implode(",",$this->getDetail())]);
-    Transaction::commit();
-  }
 }
 
 
