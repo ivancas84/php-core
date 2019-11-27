@@ -25,7 +25,7 @@ abstract class PersistApi {
       ];*/
       $this->persist($data);
       $this->updateTransaction();  
-      echo json_encode($this->persist->getLogsKeys(["entity","ids","detail"]));
+      echo json_encode($this->persist->getDetail());
     
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());
