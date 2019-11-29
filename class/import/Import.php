@@ -1,7 +1,8 @@
 <?php
 
 require_once("class/model/Sqlo.php");
-require_once("class/controller/Dba.php");
+require_once("class/model/Ma.php");
+require_once("class/model/db/Dba.php");
 
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
@@ -172,7 +173,7 @@ abstract class Import {
         $this->dbs[$id] = [];
         if(empty($this->ids[$id])) return;
 
-        $rows = Dba::all($name, [$field,"=",$this->ids[$id]]);
+        $rows = Ma::all($name, [$field,"=",$this->ids[$id]]);
     
         $this->dbs[$id] = array_combine_key(
           $rows,
@@ -182,7 +183,7 @@ abstract class Import {
 
     public function queryEntityIdentifier_($name){        
         if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
-            Dba::identifier($name, $this->ids[$name]),
+            Ma::identifier($name, $this->ids[$name]),
             Entity::getInstanceRequire($name)->identifier
         );;
     }

@@ -1,7 +1,7 @@
 <?php
 
 require_once("class/tools/Filter.php");
-require_once("class/controller/Dba.php");
+require_once("class/model/Ma.php");
 require_once("function/stdclass_to_array.php");
 
 
@@ -9,7 +9,7 @@ try{
   $id_ = Filter::postRequired("id");
   $id =  json_decode($id_);
 
-  $isd = Dba::isDeletable(ENTITY, [$id]);
+  $isd = Ma::isDeletable(ENTITY, [$id]);
 
   if($isd !== true) {
     echo json_encode(["status" => false, "message" => $isd, "id" => $id]);

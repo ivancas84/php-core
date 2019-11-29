@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/controller/Dba.php");
+require_once("class/controller/Transaction.php");
 
 try{
   $details = Transaction::checkDetails();

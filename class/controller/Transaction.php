@@ -1,6 +1,6 @@
 <?
 
-require_once("class/controller/Dba.php");
+require_once("class/model/db/Dba.php");
 require_once("class/model/db/My.php");
 require_once("class/model/db/Pg.php");
 require_once("class/tools/FileCache.php");

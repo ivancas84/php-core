@@ -17,55 +17,24 @@ require_once("function/stdclass_to_array.php");
 require_once("function/array_combine_concat.php");
 require_once("function/toString.php");
 
-class Dba { //Facilita el acceso a la base de datos
+class Ma {
   /**
+   * Facilita el acceso al modelo
+   * Interfaz opcional entre el modelo y la base de datos para ser utilizada con los métodos de uso general
    * Prefijos y sufijos en el nombre de metodos:
    *   get: Utiliza id como parametro principal de busqueda
    *   all: Se refiere a un conjunto de valores
    *   one: Debe retornar un unico valor
    *   OrNull: Puede retornar valores nulos
    */
-  public static $dbInstance = NULL; //conexion con una determinada db
-  public static $dbCount = 0;
-
-  public static function dbInstance() { //singleton db
-    /**
-     * Cuando se abren varios recursos de db instance se incrementa un contador, al cerrarse recursos se decrementa. Si el contador llega a 0 se cierra la instancia de la base
-     */
-    if (!self::$dbCount) {
-      (DATA_DBMS == "pg") ?
-        self::$dbInstance = new DbSqlPg(DATA_HOST, DATA_USER, DATA_PASS, DATA_DBNAME, DATA_SCHEMA) :
-        self::$dbInstance = new DbSqlMy(DATA_HOST, DATA_USER, DATA_PASS, DATA_DBNAME, DATA_SCHEMA);
-    }
-    self::$dbCount++;
-    return self::$dbInstance;
-  }
-
-  public static function dbClose() { //cerrar conexiones a la base de datos
-    self::$dbCount--;
-    if(!self::$dbCount) self::$dbInstance->close(); //cuando todos los recursos liberan la base de datos se cierra
-    return self::$dbInstance;
-  }
-
-  public static function uniqId(){ //identificador unico
-    //usleep(1); //con esto se evita que los procesadores generen el mismo id
-    //if(isset($_SESSION["uniqid"])) $_SESSION["uniqid"]++;
-    //else $_SESSION["uniqid"] = intval(date("Ymdhis"));
-    //return $_SESSION["uniqid"];
-    return uniqid();
-    //return hexdec(uniqid());
-
-    //sleep(1);
-    //return strtotime("now");
-  }
 
   public static function nextId($entity) { //siguiente identificador
-    return self::uniqId(); //uniq id
+    return Dba::uniqId(); //uniq id
 
     //postgresql
     /**
      * $sql = "select nextval('" . self::entity($entity)->sn_() . "_id_seq')";
-     * $row = self::fetchRow($sql);
+     * $row = Dba::fetchRow($sql);
      * return $row[0];
      */
   }
@@ -89,7 +58,7 @@ class Dba { //Facilita el acceso a la base de datos
     if(!$render) $render = new RenderAux();
     $render->setAggregate(["_count"]);
     $sql = EntitySqlo::getInstanceRequire($entity)->advanced($render);
-    $row = self::fetchAssoc($sql);
+    $row = Dba::fetchAssoc($sql);
     return intval($row["_count"]);
   }
 
@@ -101,7 +70,7 @@ class Dba { //Facilita el acceso a la base de datos
     $sql = EntitySqlo::getInstanceRequire($entity)->unique($params);
     if(empty($sql)) return null;
 
-    $rows = self::fetchAll($sql);
+    $rows = Dba::fetchAll($sql);
     if(count($rows) > 1) throw new Exception("La busqueda por campos unicos de {$entity} retorno mas de un resultado");
     if(count($rows) == 1) return $rows[0];
     return null;
@@ -109,7 +78,7 @@ class Dba { //Facilita el acceso a la base de datos
 
   public static function ids($entity, $render = null){
     $sql = EntitySqlo::getInstanceRequire($entity)->all($render);
-    $ids = self::fetchAllColumns($sql, 0);
+    $ids = Dba::fetchAllColumns($sql, 0);
     array_walk($ids, "toString"); 
     /**
      * los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
@@ -117,15 +86,15 @@ class Dba { //Facilita el acceso a la base de datos
     return $ids;
   }
 
-  public static function id($render = null) { //devolver id
-    $ids = self::ids($render);
+  public static function id($entity, $render = null) { //devolver id
+    $ids = self::ids($entity, $render);
     if(count($ids) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
     elseif(count($ids) == 1) return (string)$ids[0];//los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
     else throw new Exception("La consulta no arrojó resultados");
   }
 
-  public static function idOrNull($render = null) { //devolver id o null
-    $ids = self::ids($render);
+  public static function idOrNull($entity, $render = null) { //devolver id o null
+    $ids = self::ids($entity, $render);
     if(count($ids) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
     elseif(count($ids) == 1) return (string)$ids[0]; //los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
     else return null;
@@ -134,7 +103,7 @@ class Dba { //Facilita el acceso a la base de datos
   public static function all($entity, $render = null){ //devolver todos los valores
     $sqlo = EntitySqlo::getInstanceRequire($entity);
     $sql = $sqlo->all($render);
-    return self::fetchAll($sql);
+    return Dba::fetchAll($sql);
   }
 
   public static function get($entity, $id, $render = null) { //busqueda por id
@@ -155,7 +124,7 @@ class Dba { //Facilita el acceso a la base de datos
     if(!is_array($ids)) $ids = [$ids];
     $sqlo = EntitySqlo::getInstanceRequire($entity);
     $sql = $sqlo->getAll($ids, $render);
-    return self::fetchAll($sql);
+    return Dba::fetchAll($sql);
   }
 
   public static function one($entity, $render = null) { //un solo valor
@@ -228,60 +197,7 @@ class Dba { //Facilita el acceso a la base de datos
     return ["entity"=>$entity, "sql" => $sql, "detail"=>$detail, "ids"=>$ids];
   }
 
-  /*
-  public static function field($entity, $field, $render = null){ //devuelve un array correspondiente al field
-    //DEPRECATED
-    $sqlo = EntitySqlo::getInstanceRequire($entity);
-    $sql = $sqlo->all($render);
-    $rows = self::fetchAll($sql);
-    return array_values(array_unique(array_column ($rows ,$field)));
-  }*/
 
-  public static function fetchRow($sql){
-    $db = self::dbInstance();
-    try {
-      $result = $db->query($sql);
-      return $db->fetchRow($result);
-    } finally { self::dbClose(); }
-  }
-
-  public static function fetchAssoc($sql){
-    $db = self::dbInstance();
-    try {
-      $result = $db->query($sql);
-      try { return $db->fetchAssoc($result); }
-      finally { $result->close(); }
-    } finally { self::dbClose(); }
-  }
-
-  public static function fetchAll($sql){
-    $db = self::dbInstance();
-    try {
-      $result = $db->query($sql);
-
-      try { return $db->fetchAll($result); }
-      finally { $result->close(); }
-    } finally { self::dbClose(); }
-  }
-
-  public static function fetchAllTimeAr($sql){
-    $db = self::dbInstance();
-    try {
-      $db->query("SET lc_time_names = 'es_AR';");
-      $result = $db->query($sql);
-      try { return $db->fetchAll($result); }
-      finally { $result->close(); }
-    } finally { self::dbClose(); }
-  }
-
-  public static function fetchAllColumns($sql, $column = 0){ //query and fetch result
-    $db = self::dbInstance();
-    try {
-      $result = $db->query($sql);
-      try { return $db->fetchAllColumns($result, $column); }
-      finally { $result->close(); }
-    } finally { self::dbClose(); }
-  }
 
   public static function identifier($entity, $identifier){
     $render = new Render();

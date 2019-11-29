@@ -2,7 +2,7 @@
 
 
 require_once("class/tools/Filter.php");
-require_once("class/controller/Dba.php");
+require_once("class/model/Ma.php");
 require_once("class/controller/Transaction.php");
 
 require_once("class/model/Sqlo.php");
@@ -89,7 +89,7 @@ class Persist {
        *      b) Comparar $row["id"] con $id, si es igual, eliminar $id del array
        */
       $idsActuales = [];
-      if(!empty($params)) $idsActuales = Dba::ids($entity, [$params["name"], '=', $params["value"]]);
+      if(!empty($params)) $idsActuales = Ma::ids($entity, [$params["name"], '=', $params["value"]]);
 
       foreach($rows as $row){
           if(!empty($params["name"])) $row[$params["name"]] = $params["value"];
@@ -104,7 +104,7 @@ class Persist {
           }
       }
 
-      $persist = Dba::persistAll($entity, $rows, $params);
+      $persist = Ma::persistAll($entity, $rows, $params);
       $this->delete($entity, $idsActuales);        
       array_push($this->logs, [
         "action"=>"persist", 
@@ -127,7 +127,7 @@ class Persist {
       $detail = [];
       
       if(!empty($row)) {
-        $persist = Dba::persist($entity, $row);
+        $persist = Ma::persist($entity, $row);
         $id = $persist["id"];
         $sql = $persist["sql"];
         $detail = $persist["detail"];

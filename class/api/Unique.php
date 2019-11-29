@@ -1,5 +1,5 @@
 <?php
-require_once("class/controller/Dba.php");
+require_once("class/model/Ma.php");
 require_once("class/model/RenderAux.php");
 require_once("class/tools/Filter.php");
 
@@ -14,7 +14,7 @@ abstract class UniqueApi {
     try{
       $params = Filter::jsonPostRequired();
       //$params = ["domicilio"=>"1543133270054093"];
-      $row = Dba::unique($this->entityName, $params);
+      $row = Ma::unique($this->entityName, $params);
       echo json_encode($row);
 
     } catch (Exception $ex) {
