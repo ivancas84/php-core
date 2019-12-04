@@ -15,7 +15,7 @@ abstract class UniqueApi {
       $params = Filter::jsonPostRequired();
       //$params = ["domicilio"=>"1543133270054093"];
       $row = Ma::unique($this->entityName, $params);
-      echo json_encode($row);
+      echo json_encode(EntitySqlo::getInstanceRequire($this->entityName)->json($row));
 
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());
