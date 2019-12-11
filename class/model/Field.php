@@ -12,7 +12,10 @@ abstract class Field {
   public $default; //valor por defecto definido en base de datos (puede ser null)
     //false: El dato no tiene definido valor por defecto
 
-  public $length; //longitud del field
+  public $length; //longitud maxima del field
+    //false: El dato no tiene definida longitud
+
+  public $minLength = false; //longitud minima del field
     //false: El dato no tiene definida longitud
 
   public $notNull; //flag para indicar si es un campo no nulo
@@ -100,6 +103,7 @@ abstract class Field {
   public function getDefault(){ return $this->default; }
   public function getFieldType(){ return $this->fieldType; }
   public function getLength(){ return $this->length; }
+  public function getMinLength(){ return $this->minLength; }
   public function getSubtype(){ return $this->subtype; }
   public function getDataType(){ return $this->dataType; }
   public function getSelectValues(){ return $this->selectValues; }
