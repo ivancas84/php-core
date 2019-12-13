@@ -111,11 +111,17 @@ abstract class Field {
   public function isHidden(){ return $this->hidden; }
   public function isMain(){ return $this->main; }
   public function isNotNull(){ return $this->notNull; }
-  public function isUnique(){ return $this->unique; }
+  public function isUnique(){ return $this->unique; }  
   public function isAdmin(){ return $this->admin; }
   public function isDb(){ return $this->db; }
-
-
+  
+  public function isUniqueMultiple(){ 
+    $fields = $this->getEntity()->getFieldsUniqueMultiple();
+    foreach($fields as $field){
+      if($this->getName() == $field->getName()) return true;
+    }
+    return false;
+  }
 
   public function getAlias($format = null) {
     switch($format){
