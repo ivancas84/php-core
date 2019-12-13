@@ -451,34 +451,50 @@ abstract class EntitySql { //Definir SQL
 
   public function conditionUniqueFields(array $params){
     /**
-     * Filtrar campos unicos y definir condicion
-     * $params
+     * definir condicion para campos unicos
+     * $params:
      *   array("nombre_field" => "valor_field", ...)
-     * campos unicos compuestos:
-     *   cada campo unico compuesto poseera una entrada en el array $params con una llave (identificacion) y un valor que sera un array de valores
-     *   si se desea trabajar con campos unicos compuestos, es necesario sobrescribir este metodo
-     *   no definir campos unicos compuestos en la entidad en el metodo getFieldsUnique de Entity. El resto de las funciones que lo utilizan, pueden no estar preparados para soportarla
-     *   if($key == "identificacion_campo_unico_compuesto")
-     *     if(!empty($value)) {
-     *       $advancedSearhCompound = []
-     *       foreachconditionUniqueFields ($value as $k => $v) array_push($advancedSearhCompound, [$k, "=", $v]);
-     *       array_push($advancedSearch, $advancedSearhCompound);
-     *     }
-     *   }
+     * los campos unicos simples se definen a traves del atributo Field::$unique
+     * los campos unicos multiples se definen a traves del meotodo Entity::getFieldsUniqueMultiple();
      */
     $uniqueFields = $this->entity->getFieldsUnique();
+    $uniqueFieldsMultiple = $this->entity->getFieldsUniqueMultiple();
 
-    $advancedSearch = array();
-    foreach($params as $key => $value){
-      foreach($uniqueFields as $field){
+    $condition = array();
+
+    foreach($uniqueFields as $field){
+      foreach($params as $key => $value){
+        if($key == "id" && empty($value)) continue; //para el id no se permiten valores nulos
         if($key == $field->getName()) {
-          if(!empty($value)) array_push($advancedSearch, [$key, "=", $value, "or"]);
+          array_push($condition, [$key, "=", $value, "or"]);
         }
       }
     }
 
+    if($uniqueFieldsMultiple) {
+      $conditionMultiple = [];
+      $first = true;
+      $count = 0;
+      foreach($uniqueFieldsMultiple as $field){
+        foreach($params as $key => $value){
+          if($key == $field->getName()) {
+            $count++;
+            if($first) {
+              $con = "or";
+              $first = false;
+            } else {
+              $con = "and";
+            }
+            array_push($conditionMultiple, [$key, "=", $value, $con]);
+          }
+        }
+      }
+
+      if($count == count($uniqueFieldsMultiple)) array_push($condition, $conditionMultiple);
+    }
+
     $render = new Render();
-    $render->setCondition($advancedSearch);
+    $render->setCondition($condition);
     return $this->condition($render);
   }
 

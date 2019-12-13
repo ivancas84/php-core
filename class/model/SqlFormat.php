@@ -48,15 +48,21 @@ class SqlFormat {
   }
 
   protected function conditionIsNull($field, $option, $value) {
-    if(is_null($value)) {
+    if(is_null($value) || $value === false) {
       switch($option){
         case "=": return "({$field} IS NULL) ";
         case "!=": return "({$field} IS NOT NULL) "; 
-        default: throw new Exception("La combinacion field-option-value no está permitida");
       }
     }
-    if($value === false) return "({$field} IS NULL) ";
-    if($value === true) return "({$field} IS NOT NULL) ";
+
+    if($value === true) {
+      switch($option){
+        case "!=": return "({$field} IS NULL) ";
+        case "=": return "({$field} IS NOT NULL) ";       
+      }
+    }
+
+    throw new Exception("La combinacion field-option-value no está permitida");
   }
 
   public function conditionText($field, $value, $option = "="){

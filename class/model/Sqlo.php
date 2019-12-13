@@ -44,10 +44,14 @@ abstract class EntitySqlo { //SQL object
 
   final public function __wakeup(){ trigger_error('Unserializing is not allowed.', E_USER_ERROR); } //singleton
 
-
   public function nextPk(){ return $this->db->uniqId(); } //siguiente identificador unico
-  public function json(array $row) { return $this->sql->_json($row); }
+  
   public function jsonAll(array $rows){ foreach($rows as &$row) $row = $this->json($row); return $rows; }
+  
+  public function json(array $row) { return $this->sql->_json($row); }
+
+  public function valuesAll(array $rows){ foreach($rows as &$row) $row = $this->values($row); return $rows; }
+
   public function values(array $row){ //retornar instancias de EntityValues
     /**
      * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
@@ -62,9 +66,7 @@ abstract class EntitySqlo { //SQL object
     $json = ($row && !is_null($row['id'])) ? $this->sql->_json($row) : null;
     $row_[$this->entity->getName()] = EntityValues::getInstanceString($this->entity->getName(), $json);
   }
-  public function valuesAll(array $rows){ foreach($rows as &$row) $row = $this->values($row); return $rows; }
 
- 
   public function all($render = NULL) {
     $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
@@ -107,8 +109,6 @@ abstract class EntitySqlo { //SQL object
 
     return $sql;
   }
-
-
 
   public function deleteSubSql($render = null){
     /**
@@ -161,16 +161,6 @@ WHERE id IN (SELECT id
 
     return $sql;
   }
-
-
-
-
-
-
-
-
-
-
 
   protected function _insert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de insercion
   protected function _update(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de actualizacion
@@ -244,13 +234,17 @@ WHERE id IN ({$ids_});
   }
 
 
-  public function unique(array $row, $render = NULL){
+  public function unique(array $params, $render = NULL){
     /**
-     * busqueda por campos unicos
+     * filtrar campos unicos
+     * $params:
+     *   array("nombre_field" => "valor_field", ...)
+     * los campos unicos simples se definen a traves del atributo Field::$unique
+     * los campos unicos multiples se definen a traves del meotodo Entity::getFieldsUniqueMultiple();
      */
     $r = Render::getInstance($render);
 
-    $conditionUniqueFields = $this->sql->conditionUniqueFields($row);
+    $conditionUniqueFields = $this->sql->conditionUniqueFields($params);
     if(empty($conditionUniqueFields)) return null;
 
     return "SELECT DISTINCT

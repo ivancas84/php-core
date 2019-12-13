@@ -113,38 +113,54 @@ abstract class Entity {
   }
 
   public function getFieldsNf(){ return array(); }
-  public function getFieldsFk(){ return array_merge($this->getFieldsMu(), $this->getFields_U()); } //fk (mu y _u)
-  public function getFieldsMu(){ return array(); } //mu
-  public function getFields_U(){ return array(); } //_u
-  public function getFieldsRef(){ return array_merge($this->getFieldsUm(), $this->getFieldsU_()); } //ref (um y u_)
 
-  public function getFieldsUm(){ //um
+  public function getFieldsFk(){ return array_merge($this->getFieldsMu(), $this->getFields_U()); }
+  /**
+   * fk (mu y _u)
+   */
+
+  public function getFieldsMu(){ return array(); }
+  /**
+   * sobrescribir si existen mu
+   */
+  
+   public function getFields_U(){ return array(); }
+  /**
+   * sobrescribir si existen _u
+   */
+
+  public function getFieldsRef(){ return array_merge($this->getFieldsUm(), $this->getFieldsU_()); }
+  /**
+   * ref (um y u_)
+   */
+
+  public function getFieldsUm(){
     if(self::getStructure() == NULL) throw new Exception("Debe setearse la estructura");
     $fields = array();
     foreach(self::getStructure() as $entity){
-      foreach($entity->getFieldsMu() as $fieldConfig){
-        if($fieldConfig->getEntityRef()->getName() == $this->getName()){
-          array_push($fields, $fieldConfig);
+      foreach($entity->getFieldsMu() as $field){
+        if($field->getEntityRef()->getName() == $this->getName()){
+          array_push($fields, $field);
         }
       }
     }
     return $fields;
   }
 
-  public function getFieldsU_(){ //u_
+  public function getFieldsU_(){
     if(self::getStructure() == NULL) throw new Exception("Debe setearse la estructura");
     $fields = array();
     foreach(self::getStructure() as $entity){
-      foreach($entity->getFields_U() as $fieldConfig){
-        if($fieldConfig->getEntityRef()->getName() == $this->getName()){
-          array_push($fields, $fieldConfig);
+      foreach($entity->getFields_U() as $field){
+        if($field->getEntityRef()->getName() == $this->getName()){
+          array_push($fields, $field);
         }
       }
     }
     return $fields;
   }
 
-  public function getFieldsFkNotReferenced(array $referencedNames){ //fk no referenciadas
+  public function getFieldsFkNotReferenced(array $referencedNames){
     /**
      * Fields fk cuyo nombre de tabla referenciada no se encuentre en el parametro
      */
@@ -160,7 +176,7 @@ abstract class Entity {
     return $fields;
   }
 
-  public function getFieldsU_NotReferenced(array $referencedNames){ //u_ no referenciadas
+  public function getFieldsU_NotReferenced(array $referencedNames){
     /**
      * Fields u_ cuyo nombre de tabla no se encuentre en el parametro)
      */
@@ -176,7 +192,10 @@ abstract class Entity {
     return $fields;
   }
 
-  public function getFieldsByType(array $types){ //fields por tipo
+  public function getFieldsByType(array $types){
+    /**
+     * filtrar campos por tipo
+     */
     $fields = array();
 
     foreach($types as $type){
@@ -195,14 +214,22 @@ abstract class Entity {
     return $fields;
   }
 
-  public function getFieldsUnique(){ //devolver campos unicos
-    //solo se pueden definir campos unicos simples
+  public function getFieldsUnique(){
+    /**
+     * campos unicos simples
+     */
     $unique = array();
     foreach($this->getFields() as $field){
       if($field->isUnique()) array_push($unique, $field);
     }
     return $unique;
   }
+
+  public function getFieldsUniqueMultiple(){ return []; }
+  /**
+   * campos unicos multiples
+   * sobrescribir si existen campos unicos multiples
+   */
 
 
   /**
@@ -212,15 +239,7 @@ abstract class Entity {
   public function hasRelations(){ return ($this->hasRelationsFk() || $this->hasRelationsU_()) ? true : false; }
   public function hasRelationsFk(){ return (count($this->getFieldsFk())) ? true : false; }
   public function hasRelationsU_(){ return (count($this->getFieldsU_())) ? true : false; }
-
-  public function hasRelationsFk_(){
-    $fk = $this->getFieldsFk();
-    foreach($fk as $field ) {
-      if($field->getEntityRef()->getName() != $this->getName()) return true;
-    }
-    return false;
-  }
-
+  public function hasRelationsRef(){ return (count($this->getFieldsRef())) ? true : false; }
 }
 
 require_once("class/model/entity/structure.php");
