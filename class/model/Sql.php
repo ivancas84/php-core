@@ -17,11 +17,28 @@ abstract class EntitySql { //Definir SQL
    * Algunos métodos que requieren una conexion abierta a la base de datos, como por ejemplo "escapar caracteres"
    */
 
-  public $prefix = ''; //string. prefijo de identificacion
-  public $entity; //Entity. Configuracion de la tabla
-  public $format; //FormatSql
-  public $db; //DB. Conexion con la bse de datos
+  public $prefix = '';
   /**
+   * Prefijo de identificacion
+   * Tipo: string
+   */
+  
+  public $entity;
+  /**
+   * Configuracion de la entidad
+   * Tipo: Entity
+   */
+
+  public $format; 
+  /**
+   * Tipo: FormatSql
+   */
+
+  public $db;
+  /**
+   * Conexion con la base de datos
+   * Tipo: Db
+   * 
    * Para definir el sql es necesaria la existencia de una clase de acceso abierta, ya que ciertos metodos, como por ejemplo "escapar caracteres" lo requieren.
    * Ademas, ciertos metodos requieren determinar el motor de base de datos para definir la sintaxis SQL adecuada
    */
@@ -72,29 +89,18 @@ abstract class EntitySql { //Definir SQL
     return implode(', ', $ids_);
   }
 
-  public function _mappingField($field) {
-    /**
-     * Mapeo de fields de la entidad (todos los fields)
-     * Recorre relaciones (si existen)
-     */
-    if($field_ = $this->_mappingFieldStruct($field)) return $field_;
-    if($field_ = $this->_mappingFieldAggregate($field)) return $field_;
-    if($field_ = $this->_mappingFieldDefined($field)) return $field_;
-  }
-
   public function mappingField($field){
     /**
      * Traducir campo para ser interpretado correctamente por el SQL
      * Recorre relaciones (si existen)
      */
     if($field_ = $this->_mappingField($field)) return $field_;
-    //throw new Exception("Campo no reconocido");
+    throw new Exception("Campo no reconocido para {$this->entity->getName()}: {$field}");
   }
 
-  public function _mappingFieldStruct($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
-  public function _mappingFieldAggregate($field){ return null; } //traduccion local de campos de agregacion
+  public function _mappingField($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
   
-  public function _mappingFieldDefined($field){
+  protected function _mappingFieldMain($field){
     /**
      * Traduccion local de campos generales
      */
@@ -106,6 +112,7 @@ abstract class EntitySql { //Definir SQL
         foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->mappingField($id));
         return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
 ";
+      default: return null;
     }
   }
 
@@ -528,38 +535,43 @@ abstract class EntitySql { //Definir SQL
 ";
   }
 
-  //inner join basico (este metodo esta pensado para armar consultas desde la entidad actual)
+  /* DEPRECATED
+  inner join basico (este metodo esta pensado para armar consultas desde la entidad actual)
   public function innerJoin($field, $table){
     $p = $this->prf();
     $t = $this->prt();
     return "INNER JOIN {$table} AS {$p}{$table} ON ({$p}{$table}.$field = $t.{$this->entity->getPk()->getName()})
 ";
-  }
+  }*/
 
-  //inner join basico desde la tabla actual (este metodo esta pensado para armar consultas desde otra entidad)
+  /* DEPRECATED 
+  inner join basico desde la tabla actual (este metodo esta pensado para armar consultas desde otra entidad)
   public function _innerJoin($field, $fromTable){
     $t = $this->prt();
     return "INNER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
 ";
-  }
+  }*/
 
-  //Por defecto define una relacion simple utilizando LEFT JOIN pero este metodo puede ser sobrescrito para definir relaciones mas complejas e incluso decidir la relacion a definir en funcion del prefijo
+  /* DEPRECATED
+  Por defecto define una relacion simple utilizando LEFT JOIN pero este metodo puede ser sobrescrito para definir relaciones mas complejas e incluso decidir la relacion a definir en funcion del prefijo
   public function _joinR($field, $fromTable){
     $t = $this->prt();
     return "LEFT OUTER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.{$this->entity->getPk()->getName()} = $t.$field)
 ";
-  }
+  }*/
 
-  //Por defecto define una relacion simple utilizando LEFT JOIN pero este metodo puede ser sobrescrito para definir relaciones mas complejas e incluso decidir la relacion a definir en funcion del prefijo
+  /* DEPRECATED
+  Por defecto define una relacion simple utilizando LEFT JOIN pero este metodo puede ser sobrescrito para definir relaciones mas complejas e incluso decidir la relacion a definir en funcion del prefijo
   public function _innerJoinR($field, $fromTable){
     $t = $this->prt();
     return "INNER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.{$this->entity->getPk()->getName()} = $t.$field)
 ";
-  }
+  }*/
 
   //Ordenamiento de cadena de relaciones
-  protected function orderDefault(){   //ordenamiento por defecto
+  protected function orderDefault(){
     /**
+     * Ordenamiento por defecto
      * por defecto se definen los campos principales nf de la tabla principal
      * Si se incluyen campos de relaciones, asegurarse de incluir las relaciones
      * TODO: El ordenamiento no deberia formar parte de las entidades de generacion de sql?
@@ -614,11 +626,12 @@ abstract class EntitySql { //Definir SQL
   }
 
 
-  //Ordenamiento de cadena de relaciones (metodo nuevo no independiente que reemplazara al orderBy, el orderBy sera redefinido en las subclases para facilitar el soporte a pg
+  /* DEPRECATED
+   * Ordenamiento de cadena de relaciones (metodo nuevo no independiente que reemplazara al orderBy, el orderBy sera redefinido en las subclases para facilitar el soporte a pg
   protected function _order($field, $value){
     $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
     return "{$field} IS NULL, {$field} {$value}";
-  }
+  }*/
 
 
 
