@@ -485,6 +485,7 @@ abstract class EntitySql { //Definir SQL
       foreach($uniqueFieldsMultiple as $field){
         foreach($params as $key => $value){
           if($key == $field->getName()) {
+            echo "estoy por " . $key;
             $count++;
             if($first) {
               $con = "or";

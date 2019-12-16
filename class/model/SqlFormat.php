@@ -53,6 +53,7 @@ class SqlFormat {
         case "=": return "({$field} IS NULL) ";
         case "!=": return "({$field} IS NOT NULL) "; 
       }
+      throw new Exception("La combinacion field-option-value no está permitida");
     }
 
     if($value === true) {
@@ -60,9 +61,9 @@ class SqlFormat {
         case "!=": return "({$field} IS NULL) ";
         case "=": return "({$field} IS NOT NULL) ";       
       }
+      throw new Exception("La combinacion field-option-value no está permitida");
     }
-
-    throw new Exception("La combinacion field-option-value no está permitida");
+    
   }
 
   public function conditionText($field, $value, $option = "="){
