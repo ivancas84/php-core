@@ -3,12 +3,12 @@ require_once("class/model/Ma.php");
 require_once("class/model/RenderAux.php");
 require_once("class/tools/Filter.php");
 
-abstract class IdsApi {
+class IdsApi {
   /**
    * Comportamiento general de api ids
    */
 
-  protected $entityName;
+  public $entityName;
 
   public function main() {
     try{

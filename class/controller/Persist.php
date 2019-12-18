@@ -19,6 +19,21 @@ class Persist {
    */
   protected $logs = [];
 
+  final public static function getInstance() {
+    $className = get_called_class();
+    return new $className;
+  }
+
+  final public static function getInstanceString($entity) {
+    $className = snake_case_to("XxYy", $entity) . "Persist";
+    return call_user_func("{$className}::getInstance");
+  }
+
+  final public static function getInstanceRequire($entity){
+    require_once("class/controller/persist/" . snake_case_to("XxYy", $entity) . ".php");
+    return self::getInstanceString($entity);
+  }
+
   public function getSql() {
     $sql = "";
     foreach($this->logs as $log) {
@@ -46,17 +61,6 @@ class Persist {
 
   }
 
-  final public static function getInstance() {
-    $className = get_called_class();
-    return new $className;
-  }
-
-  final public static function getInstanceRequire($entity) {
-    require_once("class/controller/persist/" . snake_case_to("XxYy", $entity) . ".php");
-    $className = snake_case_to("XxYy", $entity) . "Persist";
-    return call_user_func("{$className}::getInstance");
-  }
-  
   public function delete($entity, $id, array $params = null){
     $persist = EntitySqlo::getInstanceRequire($entity)->delete($id);
     array_push($this->logs, ["action"=>"delete", "entity"=>$entity, "ids"=>[$persist["id"]], "sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
@@ -135,6 +139,48 @@ class Persist {
 
       array_push($this->logs, ["action"=>"persist",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
       return $id;
+  }
+
+  public function insert($entity, $row) {
+    /**
+     * Persistir row
+     * $row:
+     *   Valores a persisitir
+     */
+
+    $id = null;
+    $sql ="";
+    $detail = [];
+    
+    if(!empty($row)) {
+      $persist = Sqlo::getInstanceRequire($entity)->insert($row);
+      $id = $persist["id"];
+      $sql = $persist["sql"];
+      $detail = $persist["detail"];
+    }
+
+    array_push($this->logs, ["action"=>"persist",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
+    return $id;
+  }
+
+  public function main($data){
+    foreach($data as $d) {
+      $entity = $d["entity"]; //entidad
+      $row = (isset($d["row"])) ? $d["row"]: null; //row a procesar
+      $rows = (isset($d["rows"])) ? $d["rows"]: null; //rows a procesar
+      $id = (isset($d["id"])) ? $d["id"] : null; //id a eliminar
+      $ids =  (isset($d["ids"])) ? $d["ids"] : null; //ids a eliminar
+      $params = (isset($d["params"])) ? $d["params"] : null; //campos relacionados para identificacion
+      /**
+       * $params["name"]: Nombre de la clave foranea
+       * $params["value]: Valor de la clave foranea
+       */
+  
+      if(isset($row)) $this->row($entity, $row);
+      if(isset($rows)) $this->row($entity, $row, $params);
+      if(isset($id)) $this->delete($entity, [$id], $params);
+      if(isset($ids)) $this->delete($entity, $ids, $params);
+    }
   }
 
 }
