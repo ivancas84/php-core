@@ -1,6 +1,5 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/RenderAux.php");
+require_once("class/controller/Ids.php");
 require_once("class/tools/Filter.php");
 
 class IdsApi {
@@ -13,9 +12,10 @@ class IdsApi {
   public function main() {
     try{
       $display = Filter::jsonPostRequired();
-      //$display = ["condition" => ["id","=",[18,35]]]; //prueba
-      $render = RenderAux::getInstanceDisplay($display);
-      $ids = Ma::ids($this->entityName, $render);
+
+      $controller = Ids::getInstanceRequire($this->entityName);
+      $ids = $controller->main($display);
+
       echo json_encode($ids);
     
     } catch (Exception $ex) {

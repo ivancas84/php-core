@@ -1,6 +1,6 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/RenderAux.php");
+require_once("class/controller/GetAll.php");
+require_once("class/model/Sqlo.php");
 require_once("class/tools/Filter.php");
 
 class GetAllApi {
@@ -13,8 +13,8 @@ class GetAllApi {
   public function main() {
     try{
       $ids = Filter::jsonPostRequired();
-      if(empty($ids)) throw new Exception("Identificadores no definidos");
-      $rows = Ma::getAll($this->entityName, $ids);
+      $controller = GetAll::getInstanceRequire($this->entityName);
+      $rows = $controller->main($ids);
       echo json_encode(EntitySqlo::getInstanceRequire($this->entityName)->jsonAll($rows));
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());

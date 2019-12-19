@@ -1,7 +1,8 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/RenderAux.php");
+require_once("class/controller/All.php");
 require_once("class/tools/Filter.php");
+require_once("class/model/Sqlo.php");
+
 
 class AllApi {
   /**
@@ -13,8 +14,8 @@ class AllApi {
   public function main() {
     try{
       $display = Filter::jsonPostRequired();
-      $render = RenderAux::getInstanceDisplay($display);
-      $rows = Ma::all($this->entityName, $render);
+      $controller = All::getInstanceRequire($this->entityName);
+      $rows = $controller->main($display);
       echo json_encode(EntitySqlo::getInstanceRequire($this->entityName)->jsonAll($rows));
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());

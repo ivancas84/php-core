@@ -1,6 +1,6 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/RenderAux.php");
+require_once("class/controller/Unique.php");
+require_once("class/model/Sqlo.php");
 require_once("class/tools/Filter.php");
 
 class UniqueApi {
@@ -13,8 +13,10 @@ class UniqueApi {
   public function main() {
     try{
       $params = Filter::jsonPostRequired();
-      //$params = ["domicilio"=>"1543133270054093"];
-      $row = Ma::unique($this->entityName, $params);
+      
+      $controller = Unique::getInstanceRequire($this->entityName);
+      $row = $controller->main($params);
+
       echo json_encode(EntitySqlo::getInstanceRequire($this->entityName)->json($row));
 
     } catch (Exception $ex) {
