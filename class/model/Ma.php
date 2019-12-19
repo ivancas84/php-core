@@ -68,6 +68,7 @@ class Ma {
      *   array("nombre_field" => "valor_field", ...)
      */
     $sql = EntitySqlo::getInstanceRequire($entity)->unique($params);
+
     if(empty($sql)) return null;
 
     $rows = Dba::fetchAll($sql);
