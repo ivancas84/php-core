@@ -147,19 +147,39 @@ class Persist {
      * $row:
      *   Valores a persisitir
      */
-
     $id = null;
     $sql ="";
     $detail = [];
     
     if(!empty($row)) {
-      $persist = Sqlo::getInstanceRequire($entity)->insert($row);
+      $persist = EntitySqlo::getInstanceRequire($entity)->insert($row);
       $id = $persist["id"];
       $sql = $persist["sql"];
       $detail = $persist["detail"];
     }
 
-    array_push($this->logs, ["action"=>"persist",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
+    array_push($this->logs, ["action"=>"insert",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
+    return $id;
+  }
+
+  public function update($entity, $row) {
+    /**
+     * Persistir row
+     * $row:
+     *   Valores a persisitir
+     */
+    $id = null;
+    $sql ="";
+    $detail = [];
+    
+    if(!empty($row)) {
+      $persist = EntitySqlo::getInstanceRequire($entity)->update($row);
+      $id = $persist["id"];
+      $sql = $persist["sql"];
+      $detail = $persist["detail"];
+    }
+
+    array_push($this->logs, ["action"=>"update",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
     return $id;
   }
 
