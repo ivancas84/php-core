@@ -53,19 +53,25 @@ abstract class Field {
     //si subtype = "select_text", deben asignarse valores "text"
     //si subtype = "select_int", deben asignarse valores "int"
 
-  public $admin = true; //administracion de campo, al desactivarlo, no se incluye el campo en los formularios de administracion
+  public $admin = true;
+  /** 
+   * Administracion
+   * al desactivarlo, no se incluye el campo en los formularios de administracion
+   */
 
   public $hidden = false;
     /**
+     * Campo oculto
+     * Utilizado principalmente como campos de agregacion
+     * Si hidden es true, por defecto se define admin = false
      * Los campos de agregacion definen al admin como false y no se incluyen en la consulta (solo pueden ser definidos en consultas avanzadas)
      * No se incluyen en la busqueda simple
      * Sí se definen en la búsqueda avanzada para ser utilizados en HAVING
      */
 
-  //public $typescriptType = null; //tipo de datos typescript
-
-  public $db = true; //flag para indicar si el campo es o no exclusivo
+  public $db = true;
   /**
+   * Campo exclusivo
    * Un campo exclusivo puede definirse internamente en la entidad.
    * Un campo no exlusivo debe definirse con alguna relación independiente. 
    */
