@@ -273,9 +273,6 @@ abstract class EntitySql { //Definir SQL
     
     if(!is_array($value)) {
       $condition = $this->conditionFieldStruct($field, $option, $value);
-      if($condition) return $condition;
-
-      $condition = $this->conditionFieldHaving($field, $option, $value);
       if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
       return $condition;
     }
@@ -307,7 +304,6 @@ abstract class EntitySql { //Definir SQL
     
     if(!is_array($value)) {
       $condition = $this->_conditionFieldStruct($field, $option, $value);
-      if(!$condition) $condition = $this->_conditionFieldHaving($field, $option, $value);
       return $condition;
     }
 
@@ -330,44 +326,41 @@ abstract class EntitySql { //Definir SQL
     return "(".$condition.")";
   }
 
-  protected function _conditionFieldStruct($field, $option, $value) { 
+  protected function _conditionFieldStructMain($field, $option, $value) { 
     $p = $this->prf();
 
     switch($field){
+      case $p."_search": 
+        /**
+         * define la misma condicion y valor para todos los campos de la entidad
+        */
+        return $this->_conditionSearch($option, $value);
+      break;
+
       case "_identifier":
         /**
          * utilizar solo como condicion general
          * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
          * No utilizar prefijo para su definicion
          */
-        $f = $this->mappingField("_identifier");
+        $f = $this->mappingField($field);
         return $this->format->conditionText($f, $value, $option);
       break;
       
-      case $p."_search": 
+      case "_count": 
         /**
-         * define la misma condicion y valor para todos los campos de la entidad
-        */
-        return $this->_conditionSearch($option, $value);;
+         * campo de agregacion general: "_count"
+         * utilizar solo como condicion general
+         * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
+         * No utilizar prefijo para su definicion
+         */
+        $f = $this->mappingField($field);
+        return $this->format->conditionNumber($f, $value, $option);
       break;
     }
   }
 
-  protected function _conditionFieldHaving($field, $option, $value) { 
-    //@TODO soporte para otro tipo de campos actualmente funciona con numeros
-    $field = $this->_mappingField($field);
-    return (empty($field))? "" : $this->format->conditionNumber($field, $value, $option);
-  }
 
-  protected function conditionFieldHaving($field, $option, $value){
-    /**
-     * Condicion de agregacionavanzada principal
-     * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
-     * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
-     * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
-     */
-    if($c = $this->_conditionFieldHaving($field, $option, $value)) return $c;
-  }
   
   protected function conditionFieldStruct($field, $option, $value){
     /**
@@ -388,6 +381,13 @@ abstract class EntitySql { //Definir SQL
   }
 
   protected function _conditionFieldAux($field, $option, $value){
+    return $this->_conditionFieldAuxMain($field, $option, $value);
+  }
+
+  protected function _conditionFieldAuxMain($field, $option, $value){
+    /**
+     * metodo principal de condition field aux
+     */
     $p = $this->prf();
 
     switch($field){
@@ -398,10 +398,6 @@ abstract class EntitySql { //Definir SQL
         return "({$f1} {$option} {$f2})";
       break;
 
-      case "_count": //campo de agregacion general: "_count" (no debería ser estructural?)
-        $f = $this->mappingField($field);
-        return $this->format->conditionNumber($f, $value, $option);
-      break;
     }
   }
 
