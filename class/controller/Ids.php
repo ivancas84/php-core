@@ -2,6 +2,7 @@
 require_once("class/model/Ma.php");
 require_once("class/model/RenderAux.php");
 require_once("class/tools/Filter.php");
+require_once("class/controller/DisplayRender.php");
 
 class Ids {
   /**
@@ -27,7 +28,8 @@ class Ids {
 
 
   public function main($display) {
-    $render = RenderAux::getInstanceDisplay($display);
+    $displayRender = DisplayRender::getInstanceRequire($this->entityName);
+    $render = $displayRender->main($display);
     return Ma::ids($this->entityName, $render);    
   }
 

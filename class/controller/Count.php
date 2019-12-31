@@ -2,6 +2,8 @@
 require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
+require_once("class/controller/DisplayRender.php");
+
 
 class Count {
   public $entityName;
@@ -22,7 +24,8 @@ class Count {
   }
 
   public function main($display) {
-    $render = RenderAux::getInstanceDisplay($display);
+    $displayRender = DisplayRender::getInstanceRequire($this->entityName);
+    $render = $displayRender->main($display);
     return Ma::count($this->entityName, $render);
   }
 }

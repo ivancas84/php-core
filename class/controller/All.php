@@ -2,6 +2,8 @@
 require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
+require_once("class/controller/DisplayRender.php");
+
 
 class All {
   /**
@@ -26,7 +28,8 @@ class All {
   }
 
   public function main($display) {
-    $render = Render::getInstanceDisplay($display);
+    $displayRender = DisplayRender::getInstanceRequire($this->entityName);
+    $render = $displayRender->main($display);
     return Ma::all($this->entityName, $render);
   }
 
