@@ -6,8 +6,9 @@ class SqlFormat {
    * Para simplificar las clases del modelo, los metodos de formato sql basicos se reunen en esta clase
    */
 
-  public $db; //DB. Conexion con la bse de
+  public $db;
   /**
+   * Conexión con la base de datos
    * Para definir el sql es necesaria la existencia de una clase de acceso abierta, ya que ciertos metodos, como por ejemplo "escapar caracteres" lo requieren.
    * Ademas, ciertos metodos requieren determinar el motor de base de datos para definir la sintaxis SQL adecuada
    */
@@ -18,7 +19,10 @@ class SqlFormat {
     $this->db = Dba::dbInstance();
   }
 
-  public static function getInstance() { //singleton sqlFormat
+  public static function getInstance() {
+    /**
+     * singleton
+     */
     if(is_null(self::$instance)) self::$instance = new SqlFormat();
     return self::$instance;
   }
@@ -48,7 +52,7 @@ class SqlFormat {
   }
 
   protected function conditionIsNull($field, $option, $value) {
-    if(is_null($value) || $value === false) {
+    if(empty($value)) {
       switch($option){
         case "=": return "({$field} IS NULL) ";
         case "!=": return "({$field} IS NOT NULL) "; 
@@ -63,7 +67,6 @@ class SqlFormat {
       }
       throw new Exception("La combinacion field-option-value no está permitida");
     }
-    
   }
 
   public function conditionText($field, $value, $option = "="){
@@ -89,7 +92,7 @@ class SqlFormat {
     return $this->conditionDateTime($field, $value, $option, "%H:%i:%s", "HH24:MI:SS");  
   }
 
-  public function conditionBoolean($field, $value = NULL){ //definir condicion de busqueda de booleano
+  public function conditionBoolean($field, $value = NULL){
     $v = (settypebool($value)) ? "true" : "false";
     return "({$field} = " . $v . ") ";
   }
