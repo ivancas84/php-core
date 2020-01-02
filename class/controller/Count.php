@@ -26,6 +26,7 @@ class Count {
   public function main($display) {
     $displayRender = DisplayRender::getInstanceRequire($this->entityName);
     $render = $displayRender->main($display);
+    //print_r($render);
     return Ma::count($this->entityName, $render);
   }
 }
