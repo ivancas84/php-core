@@ -273,7 +273,7 @@ abstract class EntitySql { //Definir SQL
     
     if(!is_array($value)) {
       $condition = $this->conditionFieldStruct($field, $option, $value);
-      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$field}");
+      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$this->entity->getName()}.{$field}");
       return $condition;
     }
 
