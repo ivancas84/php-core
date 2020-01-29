@@ -3,7 +3,7 @@ require_once("class/model/RenderAux.php");
 
 class DisplayRender {
   /**
-   * Comportamiento general de DisplayRender
+   * Transformar parametros (display) en presentacion (render)
    */
 
   public $entityName;
