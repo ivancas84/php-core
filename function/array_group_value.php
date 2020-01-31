@@ -46,7 +46,6 @@ $response = [
 ];
 */
 function array_group_value(array $array, $key){    
-    $value = null;
     $return = [];
     foreach($array as $subarray) {
         $v = $subarray[$key];
