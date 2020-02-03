@@ -696,7 +696,7 @@ abstract class EntitySql { //Definir SQL
   }
 
 
-  public function _subSql(Render $render){ //subconsulta sql (en construccion)
+  public function _subSql(Render $render){
  return "SELECT DISTINCT
 {$this->_fieldsDb()}
 {$this->_from($render)}
