@@ -19,6 +19,7 @@ require_once("function/toString.php");
 
 class Ma {
   /**
+   * Model access
    * Facilita el acceso al modelo
    * Interfaz opcional entre el modelo y la base de datos para ser utilizada con los métodos de uso general
    * Prefijos y sufijos en el nombre de metodos:
