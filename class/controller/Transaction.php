@@ -149,7 +149,7 @@ LIMIT 20;
 
     try {
       $id = $dbT->escapeString(self::$id);
-      if(empty($_SESSION["transaction"][self::$id]["descripcion"])) throw new Exception("Transaccion no definida");
+      if(empty($_SESSION["transaction"][self::$id]["descripcion"])) throw new Exception("Transaccion vacia");
       $descripcion = $_SESSION["transaction"][self::$id]["descripcion"];
       $descripcionEscaped = $dbT->escapeString($descripcion);  //se escapa para almacenarlo en la base de datos
       $detalle = $dbT->escapeString($_SESSION["transaction"][self::$id]["detalle"]);
