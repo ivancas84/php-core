@@ -4,14 +4,15 @@ require_once("function/snake_case_to.php");
 require_once("class/model/Sql.php");
 require_once("class/model/db/Interface.php");
 require_once("class/model/Render.php");
-require_once("class/model/RenderAux.php");
+require_once("class/model/RenderPlus.php");
 
 require_once("function/settypebool.php");
 
 
 
-abstract class EntitySqlo { //SQL object
+abstract class EntitySqlo {
   /**
+   * SQL Object
    * Definir SQL para ser ejecutado directamente por el motor de base de datos
    */
 
@@ -129,7 +130,7 @@ WHERE id IN (SELECT id
 ";              
   }
 
-  public function advanced(RenderAux $render) { //consulta avanzada
+  public function advanced(RenderPlus $render) { //consulta avanzada
     $fields = array_merge($render->getGroup(), $render->getAggregate());
 
     $fieldsQuery_ = [];
