@@ -9,7 +9,7 @@ require_once("class/model/db/Pg.php");
 require_once("class/model/SqlFormat.php");
 require_once("class/model/Sqlo.php");
 require_once("class/model/Entity.php");
-require_once("class/model/RenderAux.php");
+require_once("class/model/RenderPlus.php");
 require_once("class/controller/Transaction.php");
 
 require_once("function/snake_case_to.php");
@@ -56,8 +56,11 @@ class Ma {
     /**
      * cantidad
      */
-    if(!$render) $render = new RenderAux();
-    $render->setAggregate(["_count"]);
+    $r = RenderPlus::getInstance($render);
+    $r->setAggregate(["_count"]);
+    if(!$render) {
+
+    }
     $sql = EntitySqlo::getInstanceRequire($entity)->advanced($render);
     $row = Dba::fetchAssoc($sql);
     return intval($row["_count"]);
@@ -88,27 +91,42 @@ class Ma {
     return $ids;
   }
 
-  public static function id($entity, $render = null) { //devolver id
+  public static function id($entity, $render = null) {
+    /**
+     * id
+     */
     $ids = self::ids($entity, $render);
     if(count($ids) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
-    elseif(count($ids) == 1) return (string)$ids[0];//los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
+    elseif(count($ids) == 1) return (string)$ids[0];
+    /**
+     * los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
+     */
     else throw new Exception("La consulta no arrojó resultados");
   }
 
-  public static function idOrNull($entity, $render = null) { //devolver id o null
+  public static function idOrNull($entity, $render = null) {
+    /**
+     * id o null
+     */
     $ids = self::ids($entity, $render);
     if(count($ids) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
-    elseif(count($ids) == 1) return (string)$ids[0]; //los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
+    elseif(count($ids) == 1) return (string)$ids[0];
+    /**
+     * los ids son tratados siempre como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
+     */
     else return null;
   }
 
-  public static function all($entity, $render = null){ //devolver todos los valores
+  public static function all(string $entity, $render = null){
+    /**
+     * todos los valores
+     */
     $sqlo = EntitySqlo::getInstanceRequire($entity);
     $sql = $sqlo->all($render);
     return Dba::fetchAll($sql);
   }
 
-  public static function get($entity, $id, $render = null) { //busqueda por id
+  public static function get(string $entity, $id, $render = null) { //busqueda por id
     if(!$id) throw new Exception("No se encuentra definido el id");
     $rows = self::getAll($entity, [$id], $render);
     if (!count($rows)) throw new Exception("La búsqueda por id no arrojó ningun resultado");

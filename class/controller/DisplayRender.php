@@ -1,5 +1,5 @@
 <?php
-require_once("class/model/RenderAux.php");
+require_once("class/model/RenderPlus.php");
 
 class DisplayRender {
   /**
@@ -24,7 +24,7 @@ class DisplayRender {
   }
 
   public function main($display) {
-    return RenderAux::getInstanceDisplay($display);
+    return RenderPlus::getInstanceDisplay($display);
   }
 
 }
