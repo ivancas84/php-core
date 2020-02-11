@@ -29,15 +29,6 @@ abstract class EntityValues {
    *     inspect, no retorna valor, es utilizado solo para logs, no define errores
    */
 
-  /**
-  public $_warnings = [];
-   * @deprecated utilizar $_logs
-   */
-  
-  /**
-  public $_errors = [];
-   * @deprecated utilizar $_logs
-   */
 
   protected $_identifier = UNDEFINED; 
   /** 
@@ -49,17 +40,6 @@ abstract class EntityValues {
    * Logs de verificaciones
    */
 
-  /**
-  public function _addWarning($warning) { array_push($this->_warnings, $warning); }
-  /**
-   * @deprecated utilizar $_logs
-   */
-
-  /**
-  public function _addError($error) { array_push($this->_errors, $error); }
-  /**
-   * @deprecated utilizar $_logs
-   */
 
 
   public function __construct(){

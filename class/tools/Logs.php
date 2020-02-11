@@ -4,20 +4,27 @@ class Logs {
   protected $logs = [];
   
   public function resetLogs($key){
+    /**
+     * borrar todos los logs de una determinada llave
+     */
     if(key_exists($key, $this->logs)) unset($this->logs[$key]);
   }
 
   public function addLog($key, $status, $data){
     /**
-     * los errores se agregan al inicio de los logs, el resto al final.
+     * agregar log a una determinada llave
+     * los errores se agregan al inicio de los logs, el resto al final
      */
     if(!key_exists($key, $this->logs)) $this->logs[$key] = [];
-    ($status == "error") ? 
+    ($status == "error") ?
       array_unshift($this->logs[$key], ["status"=>$status, "data"=>$data]) :
       array_push($this->logs[$key], ["status"=>$status, "data"=>$data]);
   }
 
   public function isError(){
+    /**
+     * existen logs con estado error?
+     */
     foreach($this->logs as $value){
       foreach($value as $v) if($v["status"]=="error") return true;
     }
@@ -25,6 +32,9 @@ class Logs {
   }
 
   public function isErrorKey($key){
+    /**
+     * existen logs con estado error para una determinada llave?
+     */
     if(!key_exists($key, $this->logs)) return false;
     foreach($this->logs[$key] as $v) if($v["status"]=="error") return true;
     return false;
@@ -33,19 +43,5 @@ class Logs {
   public function getLogs(){
     return $this->logs;
   }
-  
-
-  /*public function getLogsStatus($status){
-    $logs = [];
-    foreach($this->logs as $key => $value){
-      foreach($value as $v) {
-        if($v["status"]==$status) {
-          if(!key_exists($key, $logs)) $logs[$key] = [];
-          array_push($logs[$key], $v);
-        }
-      } 
-    }
-    return $logs;
-  }*/
 
 }
