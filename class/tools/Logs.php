@@ -18,6 +18,9 @@ class Logs {
   }
 
   public function isError(){
+    /**
+     * Existe error?
+     */
     foreach($this->logs as $value){
       foreach($value as $v) if($v["status"]=="error") return true;
     }
@@ -25,6 +28,9 @@ class Logs {
   }
 
   public function isErrorKey($key){
+    /**
+     * Existe error para una llave particular?
+     */
     if(!key_exists($key, $this->logs)) return false;
     foreach($this->logs[$key] as $v) if($v["status"]=="error") return true;
     return false;

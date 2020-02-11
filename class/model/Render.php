@@ -17,6 +17,23 @@ class Render {
   public $page = 1;
   public $size = false;
 
+  protected $aggregate = array(); //campos a los que se aplicara funciones de agregacion
+  /**
+   * Deben estar definidos en el método mapping field, se realizará la traducción correspondiente
+   * Ej ["sum_horas_catedra", "avg_edad"]
+   */
+
+  protected $group = array(); //campos de agrupacion
+  /**
+   * Deben ser campos de consulta
+   * Ej ["profesor", "cur_horario"]
+   */
+
+  protected $having = array(); //condicion avanzada de agrupamiento, similiar a condicion avanzadas
+  /**
+   * array multiple cuya raiz es [field,option,value], ejemplo: [["nombre","=","unNombre"],[["apellido","=","unApellido"],["apellido","=","otroApellido","OR"]]]
+   */
+
   public static function getInstance($render = null){
     /**
      * @param String | Object | Array | Render En función del tipo de parámetro define el render
@@ -44,28 +61,23 @@ class Render {
   }
 
   public function setCondition (array $condition = null) { $this->condition = $condition; }
-
   public function addCondition ($condition = null) { if(!empty($condition)) array_push ( $this->condition, $condition ); }
-
+  public function getCondition(){ return $this->condition; }
   public function setParams (array $params = null) { foreach($params as $key => $value) array_push ( $this->condition, [$key, "=", $value] ); } //params es una forma corta de asignar filtros a traves de un array asociativo
 
   public function setGeneralCondition ($generalCondition = null) { $this->generalCondition = $generalCondition; }
-
   public function addGeneralCondition ($gc = null) { if(!empty($gc)) array_push ( $this->generalCondition, $gc ); }
+  public function getGeneralCondition(){ return $this->generalCondition; }
 
-  //Ordenamiento
-  //@param array $order Ordenamiento
-  //  array(
-  //    nombre_field => asc | desc,
-  //  )
-  //@param array $orderDefault Ordenamiento por defecto.
-  //  array(
-  //    nombre_field => asc | desc,
-  //  )
-  //Dependiendo del motor de base de datos utilizado, puede requerirse que el campo utilizado en el ordenamiento sea incluido en los campos de la consulta
-  public function setOrder (array $order) {
-    $this->order = $order;
-  }
+  public function setOrder (array $order) { $this->order = $order; }
+  /**
+   * Ordenamiento
+   * @param array $order Ordenamiento
+   *  array(
+   *    nombre_field => asc | desc,
+   *  )
+   */
+  public function getOrder(){ return $this->order; }
 
   public function setPagination($size, $page) {
     $this->size = $size;
@@ -73,17 +85,18 @@ class Render {
   }
 
   public function setSize($size) { $this->size = $size; }
-
-  public function setPage($page) { $this->page = $page; }
-
   public function getSize(){ return $this->size; }
 
+  public function setPage($page) { $this->page = $page; }
   public function getPage(){ return $this->page; }
+  
+  public function setAggregate (array $aggregate = null) { $this->aggregate = $aggregate; }
+  public function getAggregate () { return $this->aggregate; }
 
-  public function getCondition(){ return $this->condition; }
+  public function setGroup (array $group = null) { $this->group = $group; }
+  public function getGroup () { return $this->group; }
 
-  public function getGeneralCondition(){ return $this->generalCondition; }
-
-  public function getOrder(){ return $this->order; }
+  public function setHaving (array $having = null) { $this->having = $having; }
+  public function getHaving () { return $this->having; }
 
 }

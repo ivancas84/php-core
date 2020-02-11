@@ -9,7 +9,7 @@ require_once("class/model/db/Pg.php");
 require_once("class/model/SqlFormat.php");
 require_once("class/model/Sqlo.php");
 require_once("class/model/Entity.php");
-require_once("class/model/RenderPlus.php");
+require_once("class/model/Render.php");
 require_once("class/controller/Transaction.php");
 
 require_once("function/snake_case_to.php");
@@ -56,12 +56,10 @@ class Ma {
     /**
      * cantidad
      */
-    $r = RenderPlus::getInstance($render);
-    $r->setAggregate(["_count"]);
-    if(!$render) {
-
-    }
-    $sql = EntitySqlo::getInstanceRequire($entity)->advanced($render);
+    $r = Render::getInstance($render);
+    if(!in_array("_count", $r->getAggregate())) $r->setAggregate(["_count"]);
+    
+    $sql = EntitySqlo::getInstanceRequire($entity)->advanced($r);
     $row = Dba::fetchAssoc($sql);
     return intval($row["_count"]);
   }
