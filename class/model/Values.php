@@ -24,9 +24,6 @@ abstract class EntityValues {
    *   Se basa en el uso de Logs y Validations
    *   Se ignoran los valores distintos de UNDEFINED
    *   Los chequeos se realizan principalmente al setear campos
-   *   Se definen dos tipos de metodos de verificación 
-   *     check, devuelve true en caso de error
-   *     inspect, no retorna valor, es utilizado solo para logs, no define errores
    */
 
 
@@ -70,7 +67,7 @@ abstract class EntityValues {
     return self::getInstanceString($entity, $values, $prefix);
   }
 
-  public function _setLogsValidation($field, Validation $validation){
+  protected function _setLogsValidation($field, Validation $validation){
     $this->_logs->resetLogs($field);
     foreach($validation->getErrors() as $data){ $this->_logs->addLog($field, "error", $data); }
     return $validation->isSuccess();
