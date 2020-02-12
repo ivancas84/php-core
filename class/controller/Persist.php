@@ -17,7 +17,15 @@ class Persist {
    * Tener en cuenta que el id persistido, no siempre puede ser el id retornado (por ejemplo para el caso que se utilicen logs en la base de datos)
    * Es importante el orden de procesamiento, una entidad a procesar puede requerir una entidad previamente procesada
    */
+
   protected $logs = [];
+  /**
+   * Cada elemento de logs es un array con la siguiente informacion
+   * action
+   * entity
+   * ids
+   * detail
+   */
 
   final public static function getInstance() {
     $className = get_called_class();
@@ -119,7 +127,7 @@ class Persist {
       ]);
   }
 
-  public function row($entity, $row) {
+  public function persist($entity, $row) {
       /**
        * Persistir row
        * $row:
@@ -184,23 +192,7 @@ class Persist {
   }
 
   public function main($data){
-    foreach($data as $d) {
-      $entity = $d["entity"]; //entidad
-      $row = (isset($d["row"])) ? $d["row"]: null; //row a procesar
-      $rows = (isset($d["rows"])) ? $d["rows"]: null; //rows a procesar
-      $id = (isset($d["id"])) ? $d["id"] : null; //id a eliminar
-      $ids =  (isset($d["ids"])) ? $d["ids"] : null; //ids a eliminar
-      $params = (isset($d["params"])) ? $d["params"] : null; //campos relacionados para identificacion
-      /**
-       * $params["name"]: Nombre de la clave foranea
-       * $params["value]: Valor de la clave foranea
-       */
-  
-      if(isset($row)) $this->row($entity, $row);
-      if(isset($rows)) $this->row($entity, $row, $params);
-      if(isset($id)) $this->delete($entity, [$id], $params);
-      if(isset($ids)) $this->delete($entity, $ids, $params);
-    }
+    $this->persist($entity, $row);
   }
 
 }
