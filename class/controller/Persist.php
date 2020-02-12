@@ -20,12 +20,13 @@ class Persist {
 
   protected $logs = [];
   /**
-   * Cada elemento de logs es un array con la siguiente informacion
-   * action
-   * entity
-   * ids
+   * Cada elemento de logs es un array con la siguiente informacion 
+   * sql
    * detail
    */
+
+  protected $entityName = "comision";
+
 
   final public static function getInstance() {
     $className = get_called_class();
@@ -71,7 +72,7 @@ class Persist {
 
   public function delete($entity, $id, array $params = null){
     $persist = EntitySqlo::getInstanceRequire($entity)->delete($id);
-    array_push($this->logs, ["action"=>"delete", "entity"=>$entity, "ids"=>[$persist["id"]], "sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
+    array_push($this->logs, ["sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
   }
 
   public function deleteAll($entity, array $ids, array $params = null){
@@ -79,10 +80,10 @@ class Persist {
       $persist = EntitySqlo::getInstanceRequire($entity)->deleteAll($ids, $params);
     }
 
-    array_push($this->logs, ["action"=>"delete", "entity"=>$entity, "ids"=>$persist["ids"], "sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
+    array_push($this->logs, ["sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
   }
 
-  public function rows($entity, array $rows = [], array $params = null) {
+  public function save_($entity, array $rows = [], array $params = null) {
       /**
        * Procesar un conjunto de rows
        * $rows:
@@ -119,19 +120,15 @@ class Persist {
       $persist = Ma::persistAll($entity, $rows, $params);
       $this->delete($entity, $idsActuales);        
       array_push($this->logs, [
-        "action"=>"persist", 
-        "entity"=>$entity, 
-        "ids"=>$persist["ids"], 
         "sql"=>$persist["sql"], 
         "detail"=>$persist["detail"]
       ]);
   }
 
-  public function persist($entity, $row) {
+  public function save($entity, $row) {
       /**
-       * Persistir row
-       * $row:
-       *   Valores a persisitir
+       * inserta o actualiza (persiste)
+       * @param $row: Valores a persisitir
        */
 
       $id = null;
@@ -145,7 +142,7 @@ class Persist {
         $detail = $persist["detail"];
       }
 
-      array_push($this->logs, ["action"=>"persist",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
+      array_push($this->logs, ["sql"=>$sql, "detail"=>$detail]);
       return $id;
   }
 
@@ -166,7 +163,7 @@ class Persist {
       $detail = $persist["detail"];
     }
 
-    array_push($this->logs, ["action"=>"insert",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
+    array_push($this->logs, ["sql"=>$sql, "detail"=>$detail]);
     return $id;
   }
 
@@ -187,12 +184,12 @@ class Persist {
       $detail = $persist["detail"];
     }
 
-    array_push($this->logs, ["action"=>"update",  "entity"=>$entity, "ids"=>[$id], "sql"=>$sql, "detail"=>$detail]);
+    array_push($this->logs, ["sql"=>$sql, "detail"=>$detail]);
     return $id;
   }
 
   public function main($data){
-    $this->persist($entity, $data);
+    $this->save($this->entityName, $data);
   }
 
 }

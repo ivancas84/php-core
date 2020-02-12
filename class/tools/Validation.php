@@ -70,7 +70,7 @@
 
         public function required() {
             if ((isset($this->file) && $this->file['error'] == 4) 
-            || ($this->value == '' || $this->value == null)) {
+            || ($this->value === '' || $this->value === null)) {
                 $this->errors[] = 'Campo obligatorio.';
             }            
             return $this;
