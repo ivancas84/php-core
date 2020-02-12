@@ -192,7 +192,7 @@ class Persist {
   }
 
   public function main($data){
-    $this->persist($entity, $row);
+    $this->persist($entity, $data);
   }
 
 }
