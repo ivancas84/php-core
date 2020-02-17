@@ -5,10 +5,14 @@ require_once("class/tools/Filter.php");
 require_once("class/controller/DisplayRender.php");
 
 
-class All {
+abstract class Data {
   /**
    * Obtener todos los datos de una determinada entidad
-   */
+   * Data es un controlador abstracto
+   * el usuario puede retornar el valor que desee 
+   * Data esta pensado para ser llamado a traves de una api
+   * En el caso de que no se utilice una api, conviene utilizar directamente ModelTools
+   **/
 
   public $entityName;
 
@@ -23,15 +27,10 @@ class All {
   }
 
   final public static function getInstanceRequire($entity){
-    require_once("class/controller/all/" . snake_case_to("XxYy", $entity) . ".php");
+    require_once("class/controller/data/" . snake_case_to("XxYy", $entity) . ".php");
     return self::getInstanceString($entity);
   }
 
-  public function main($display) {
-    $displayRender = DisplayRender::getInstanceRequire($this->entityName);
-    $render = $displayRender->main($display);
-    $rows = Ma::all($this->entityName, $render);
-    EntitySqlo::getInstanceRequire($this->entityName)->jsonAll($rows);
-  }
+  abstract public function main($display);
 
 }

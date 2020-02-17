@@ -14,7 +14,6 @@ class CountApi {
 
       $controller = Count::getInstanceRequire($this->entityName);
       $count = $controller->main($display);
-
       echo json_encode($count);
 
     } catch (Exception $ex) {
