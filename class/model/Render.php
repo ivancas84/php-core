@@ -48,8 +48,7 @@ class Render {
   }
 
   public static function getInstanceDisplay(array $display = null){
-    $className = get_called_class();
-    $render = new $className;
+    $render = new Render;
 
     if(!empty($display["size"])) $render->setSize($display["size"]);
     if(!empty($display["page"])) $render->setPage($display["page"]);
@@ -57,6 +56,12 @@ class Render {
     if(!empty($display["condition"])) $render->setCondition($display["condition"]);
     if(!empty($display["params"])) $render->setParams($display["params"]);
 
+    return $render;
+  }
+
+  public static function getInstanceParams(array $params = null){
+    $render = new Render;
+    if(!empty($params)) $render->setParams($params);
     return $render;
   }
 
