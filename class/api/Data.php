@@ -4,9 +4,9 @@ require_once("class/tools/Filter.php");
 require_once("class/model/Sqlo.php");
 
 
-class AllApi {
+class DataApi {
   /**
-   * Api general de all
+   * Api general de data
    */
 
   public $entityName;
@@ -14,7 +14,7 @@ class AllApi {
   public function main() {
     try{
       $display = Filter::jsonPostRequired();
-      $controller = All::getInstanceRequire($this->entityName);
+      $controller = Data::getInstanceRequire($this->entityName);
       $data = $controller->main($display);
       echo json_encode($data);
     } catch (Exception $ex) {
