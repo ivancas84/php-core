@@ -11,11 +11,6 @@ require_once("function/stdclass_to_array.php");
 class Persist {
   /**
    * Comportamiento general de persistencia
-   * El objetivo de este script es procesar un conjunto de entidades evitando multiples accesos a la base de datos
-   * Recibe un array de objetos {entity:"entidad", row:objeto con valores} o {entity:"entidad", rows:Array de objetos con valores}
-   * Retorna el id principal de las entidades procesadas
-   * Tener en cuenta que el id persistido, no siempre puede ser el id retornado (por ejemplo para el caso que se utilicen logs en la base de datos)
-   * Es importante el orden de procesamiento, una entidad a procesar puede requerir una entidad previamente procesada
    */
 
   protected $logs = [];
@@ -25,7 +20,7 @@ class Persist {
    * detail
    */
 
-  protected $entityName = "comision";
+  protected $entityName;
 
 
   final public static function getInstance() {
@@ -67,7 +62,6 @@ class Persist {
       array_push($logs, $l);
     }
     return $logs;
-
   }
 
   public function delete($entity, $id, array $params = null){
@@ -85,7 +79,7 @@ class Persist {
 
   public function save_($entity, array $rows = [], array $params = null) {
       /**
-       * Procesar un conjunto de rows
+       * Procesar un conjunto de rows de una entidad
        * $rows:
        *   Valores a persisitir
        *
