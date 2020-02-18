@@ -183,7 +183,7 @@ class Persist {
   }
 
   public function main($data){
-    $this->save($this->entityName, $data);
+    return $this->save($this->entityName, $data);
   }
 
 }

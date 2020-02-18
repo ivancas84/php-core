@@ -139,6 +139,8 @@ LIMIT 20;
     self::$id = null;
   }
 
+
+
   public static function commit() {
     /**
      * Commit transaction

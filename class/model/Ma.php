@@ -121,6 +121,7 @@ class Ma {
      */
     $sqlo = EntitySqlo::getInstanceRequire($entity);
     $sql = $sqlo->all($render);
+    
     return Dba::fetchAll($sql);
   }
 
