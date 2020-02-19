@@ -31,7 +31,7 @@ class All {
     $displayRender = DisplayRender::getInstanceRequire($this->entityName);
     $render = $displayRender->main($display);
     $rows = Ma::all($this->entityName, $render);
-    EntitySqlo::getInstanceRequire($this->entityName)->jsonAll($rows);
+    return EntitySqlo::getInstanceRequire($this->entityName)->jsonAll($rows);
   }
 
 }

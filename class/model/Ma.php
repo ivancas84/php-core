@@ -64,6 +64,15 @@ class Ma {
     return intval($row["_count"]);
   }
 
+  public static function advanced($entity, Render $render){
+    /**
+     * consulta avanzada
+     */
+    $sql = EntitySqlo::getInstanceRequire($entity)->advanced($render);
+    echo "<pre>".$sql;
+    return Dba::fetchAll($sql);    
+  }
+
   public static function unique($entity, array $params, $render = null){ //busqueda por campos unicos
     /**
      * $params
@@ -119,9 +128,7 @@ class Ma {
     /**
      * todos los valores
      */
-    $sqlo = EntitySqlo::getInstanceRequire($entity);
-    $sql = $sqlo->all($render);
-    
+    $sql = EntitySqlo::getInstanceRequire($entity)->all($render);
     return Dba::fetchAll($sql);
   }
 
