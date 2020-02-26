@@ -55,8 +55,8 @@ class Transaction {
       "tipo" => "begin",
       "descripcion" => "",
       "detalle" => "",
-      "alta" => date("Y-m-d h:i:s"),
-      "actualizado" => date("Y-m-d h:i:s"),
+      "alta" => date("Y-m-d H:i:s"),
+      "actualizado" => date("Y-m-d H:i:s"),
     ];
     return self::$id;
   }
@@ -79,7 +79,7 @@ class Transaction {
 
     if(!empty($data["tipo"])) $_SESSION["transaction"][self::$id]["tipo"] .= $data["tipo"];
 
-    $_SESSION["transaction"][self::$id]["actualizado"] = date("Y-m-d h:i:s");
+    $_SESSION["transaction"][self::$id]["actualizado"] = date("Y-m-d H:i:s");
 
     return self::$id;
   }
