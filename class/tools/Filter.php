@@ -9,6 +9,8 @@ class Filter {
 
   public static function requestAll(){ return $_REQUEST; }
   public static function postAll(){ return $_POST; }
+  public static function getAll(){ return $_GET; }
+
   public static function post($name){ return filter_input(INPUT_POST, $name); }
   public static function get($name){ return filter_input(INPUT_GET, $name); }
 
@@ -17,6 +19,13 @@ class Filter {
     if(empty($r)) throw new Exception("No existen parametros");
     return $r;
   }
+
+  public static function getAllRequired(){
+    $r = self::getAll();
+    if(empty($r)) throw new Exception("No existen parametros");
+    return $r;
+  }
+
 
   public static function requestAllRequired(){
     $request = self::requestAll();
@@ -86,9 +95,21 @@ class Filter {
     $data = file_get_contents("php://input");
     return stdclass_to_array(json_decode($data));
   }
+
+  public static function jsonGet(){
+    $data = [];
+    foreach(self::getAll() as $key => $value) $data[$key] = json_decode($value);
+    return stdclass_to_array($data);
+  }
   
   public static function jsonPostRequired(){
     $r = self::jsonPost();
+    if(empty($r)) throw new Exception("No existen parametros");
+    return $r;
+  }
+
+  public static function jsonGetRequired(){
+    $r = self::jsonGet();
     if(empty($r)) throw new Exception("No existen parametros");
     return $r;
   }
