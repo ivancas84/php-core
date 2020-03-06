@@ -443,9 +443,10 @@ abstract class EntitySql { //Definir SQL
   protected function _conditionSearch($option, $value){
     if(($option != "=~") && ($option != "=")) throw new Exception("Opción no permitida para condición " . $this->entity->getName("XxYy") . "Sql._conditionSearch([\"_search\",\"{$option}\",\"{$value}\"]). Solo se admite opcion = o =~");
     $option = "=~";
-    //condicion estructurada de busqueda que involucra a todos los campos
+    //condicion estructurada de busqueda que involucra a todos los campos (excepto booleanos)
     $conditions = [];
     foreach($this->entity->getFields() as $field){
+      if($field->getDataType() == "boolean") continue;
       $c = $this->_conditionFieldStruct($this->prf().$field->getName(),$option,$value);
       array_push($conditions, $c);
     }
