@@ -69,7 +69,6 @@ class Ma {
      * consulta avanzada
      */
     $sql = EntitySqlo::getInstanceRequire($entity)->advanced($render);
-    echo "<pre>".$sql;
     return Dba::fetchAll($sql);    
   }
 
