@@ -1,5 +1,5 @@
 <?php
-require_once("class/controller/All.php");
+require_once("class/controller/Data.php");
 require_once("class/tools/Filter.php");
 require_once("class/model/Sqlo.php");
 

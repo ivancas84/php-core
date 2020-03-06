@@ -22,7 +22,7 @@ abstract class Data {
   }
 
   final public static function getInstanceString($entity) {
-    $className = snake_case_to("XxYy", $entity) . "All";
+    $className = snake_case_to("XxYy", $entity) . "Data";
     return call_user_func("{$className}::getInstance");
   }
 
@@ -31,6 +31,6 @@ abstract class Data {
     return self::getInstanceString($entity);
   }
 
-  abstract public function main($display);
+  abstract public function main($params);
 
 }
