@@ -11,7 +11,7 @@ class All {
    */
 
   public $entityName;
-
+  
   final public static function getInstance() {
     $className = get_called_class();
     return new $className;
