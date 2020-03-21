@@ -68,7 +68,13 @@ class Render {
   public function setCondition (array $condition = null) { $this->condition = $condition; }
   public function addCondition ($condition = null) { if(!empty($condition)) array_push ( $this->condition, $condition ); }
   public function getCondition(){ return $this->condition; }
-  public function setParams (array $params = null) { foreach($params as $key => $value) array_push ( $this->condition, [$key, "=", $value] ); } //params es una forma corta de asignar filtros a traves de un array asociativo
+  
+  public function setParams (array $params = []) { foreach($params as $key => $value) $this->addCondition([$key, "=", $value]); } 
+  public function addParam ($key, $value) { $this->addCondition([$key, "=", $value]); }
+  /**
+   * params es una forma corta de asignar condiciones a traves de un array asociativo
+   * solo define campo y valor, siempre toma la opcion como "="
+   */
 
   public function setGeneralCondition ($generalCondition = null) { $this->generalCondition = $generalCondition; }
   public function addGeneralCondition ($gc = null) { if(!empty($gc)) array_push ( $this->generalCondition, $gc ); }
