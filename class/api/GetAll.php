@@ -12,7 +12,7 @@ class GetAllApi {
 
   public function main() {
     try{
-      $ids = Filter::jsonPostRequired();
+      $ids = Filter::jsonPostRequired(); //siempre deben recibirse ids
       $controller = GetAll::getInstanceRequire($this->entityName);
       $rows = $controller->main($ids);
       echo json_encode(EntitySqlo::getInstanceRequire($this->entityName)->jsonAll($rows));

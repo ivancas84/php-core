@@ -13,7 +13,7 @@ class AllApi {
 
   public function main() {
     try{
-      $display = Filter::jsonPostRequired();
+      $display = Filter::jsonPostRequired(); //siempre se recibe al menos size y page
       $controller = All::getInstanceRequire($this->entityName);
       $data = $controller->main($display);
       echo json_encode($data);

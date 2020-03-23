@@ -10,7 +10,7 @@ class CountApi {
 
   public function main() {
     try{
-      $display = Filter::jsonPostRequired();
+      $display = Filter::jsonPost();
 
       $controller = Count::getInstanceRequire($this->entityName);
       $count = $controller->main($display);

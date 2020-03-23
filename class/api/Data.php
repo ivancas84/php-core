@@ -13,7 +13,7 @@ class DataApi {
 
   public function main() {
     try{
-      $display = Filter::jsonPostRequired();
+      $display = Filter::jsonPost();
       $controller = Data::getInstanceRequire($this->entityName);
       $data = $controller->main($display);
       echo json_encode($data);

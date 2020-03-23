@@ -11,7 +11,7 @@ class IdsApi {
 
   public function main() {
     try{
-      $display = Filter::jsonPostRequired();
+      $display = Filter::jsonPost();
 
       $controller = Ids::getInstanceRequire($this->entityName);
       $ids = $controller->main($display);
