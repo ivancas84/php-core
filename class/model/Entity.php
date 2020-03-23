@@ -105,13 +105,6 @@ abstract class Entity {
     return $merge;
   }
 
-  public function getFieldsByName($fieldName){
-    foreach($this->getFields() as $field){
-      if($field->getName() == $fieldName) return $field;
-    }
-    return null;
-  }
-
   public function getFieldsNf(){ return array(); }
 
   public function getFieldsFk(){ return array_merge($this->getFieldsMu(), $this->getFields_U()); }
@@ -230,6 +223,21 @@ abstract class Entity {
    * campos unicos multiples
    * sobrescribir si existen campos unicos multiples
    */
+
+  public function getFieldsByName($fieldName){
+    foreach($this->getFields() as $field){
+      if($field->getName() == $fieldName) return $field;
+    }
+    return null;
+  }
+
+  public function getFieldsBySubtype($subtype){
+    $fields = [];
+    foreach($this->getFields() as $field){
+      if($field->getSubtype() == $subtype) array_push($fields, $field);
+    }
+    return $fields;
+  }
 
 
   /**
