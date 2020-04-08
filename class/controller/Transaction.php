@@ -25,14 +25,11 @@ class Transaction {
   }
 
   public static function uniqId(){ //identificador unico
-    //usleep(1); //con esto se evita que los procesadores generen el mismo id
+    return uniqid();
     //if(isset($_SESSION["uniqid"])) $_SESSION["uniqid"]++;
     //else $_SESSION["uniqid"] = intval(date("Ymdhis"));
     //return $_SESSION["uniqid"];
-    //return uniqid();
-    return hexdec(uniqid());
-
-    //sleep(1);
+    //return hexdec(uniqid());
     //return strtotime("now");
   }
 
@@ -161,7 +158,7 @@ LIMIT 20;
 
       $queryTransaction = "
         INSERT INTO transaccion (id, actualizado, descripcion, detalle, tipo)
-        VALUES (" . $id . ", '" . $fecha . "', '" . $descripcionEscaped . "', '" .$detalle . "', '" . $tipo . "');
+        VALUES ('" . $id . "', '" . $fecha . "', '" . $descripcionEscaped . "', '" .$detalle . "', '" . $tipo . "');
       ";
 
       $dbT->query($queryTransaction);
@@ -169,7 +166,7 @@ LIMIT 20;
       try {
         $commitDate = date("Y-m-d H:i:s");
         $dbD->multiQueryTransaction($descripcion);
-        $dbT->query("UPDATE transaccion SET tipo = 'commit', actualizado = '" . $commitDate . "' WHERE id = " . $id . ";");
+        $dbT->query("UPDATE transaccion SET tipo = 'commit', actualizado = '" . $commitDate . "' WHERE id = '" . $id . "';");
         unset($_SESSION["transaction"][self::$id]);
         self::$id = null;
         FileCache::set("transaction", $commitDate);
