@@ -2,6 +2,21 @@
 
 class Logs {
   protected $logs = [];
+  /**
+   * Array asociativo de logs, cada elemento es tambien un array asociativo con los campos "status" y "data" y otros opcionales
+   * [
+   *   "asignatura" => [
+   *     ["status" => "error", "data" => "No puede estar vacío"]
+   *   ]
+   *   "plan" => [
+   *     ["status" => "warning", "data" => "No tiene cargas horarias asociadas"]
+   *   ]
+   *   "numero" => [
+   *     ["status" => "error", "data" => "No es unico"]
+   *     ["status" => "error", "data" => "Esta fuera del rango permitido"]
+   *   ]
+   * ]
+   */
   
   public function resetLogs($key){
     /**

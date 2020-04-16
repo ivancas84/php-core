@@ -24,6 +24,13 @@ abstract class EntityValues {
    *   Se basa en el uso de Logs y Validations
    *   Se ignoran los valores distintos de UNDEFINED
    *   Los chequeos se realizan principalmente al setear campos
+   *   IMPORTANTE: si el campo no se setea, no se chequea.
+   *   Para asegurarse de que todos los campos esten seteados, se puede utilizar el metodo _setDefault();
+   *   Se recomienda al instanciar asignar valores por defecto y luego valores adicionales
+   *     $v = EntityValues::getInstanceRequired("entity", DEFAULT_VALUES);
+   *     $v->_fromArray($somthing);
+   *   Una vez realizados los chequeos se puede utilizar el atributo logs para obtener el estado final
+   *     $this->_logs()->isError(), $this->_logs()->isErrorKey("campo"), $this->_logs()->getLogs(), 
    */
 
 
