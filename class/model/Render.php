@@ -78,8 +78,9 @@ class Render {
     }
   } 
   
-  public function addParam ($key, $value) { $this->addCondition([$key, "=", $value]); }
+  //public function addParam ($key, $value) { $this->addCondition([$key, "=", $value]); }
   /**
+   * este metodo permite ahorrar 5 caracteres, no se si es conveniente, setParams es valido porque facilita el envio de parametros
    * params es una forma corta de asignar condiciones a traves de un array asociativo
    * solo define campo y valor, siempre toma la opcion como "="
    */
