@@ -7,14 +7,14 @@ require_once("class/controller/DisplayRender.php");
 
 abstract class Data {
   /**
-   * Obtener todos los datos de una determinada entidad
+   * Obtener todos los datos de estructuras adicionales
    * Data es un controlador abstracto
    * el usuario puede retornar el valor que desee 
    * Data esta pensado para ser llamado a traves de una api
    * En el caso de que no se utilice una api, conviene utilizar directamente ModelTools
    **/
-
-  public $entityName;
+  
+  public $entityName; 
 
   final public static function getInstance() {
     $className = get_called_class();

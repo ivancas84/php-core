@@ -416,13 +416,13 @@ abstract class EntitySql { //Definir SQL
 
   public function fromSubSql(Render $render){
     $t = $this->prt();    
-    return " FROM (
+    return " FROM 
 
 
 " . $this->_subSql($render) . "
 
 
-) AS {$t}
+ AS {$t}
 ";
   }
 
@@ -523,13 +523,13 @@ abstract class EntitySql { //Definir SQL
      * Este método puede ser sobrescrito para dar soporte a campos derivados
      */
     $t = $this->prt();
-    return "LEFT OUTER JOIN (
+    return "LEFT OUTER JOIN 
 
 
       " . $this->_subSql($render) . "
 
 
-) AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
+ AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
 ";
   }
 
@@ -698,10 +698,12 @@ abstract class EntitySql { //Definir SQL
 
 
   public function _subSql(Render $render){
- return "SELECT DISTINCT
+    return $this->entity->sn_();
+ 
+ /*return "( SELECT DISTINCT
 {$this->_fieldsDb()}
 {$this->_from($render)}
-" . concat($this->_condition($render), 'WHERE ') . "
-";
+" . concat($this->_condition($render), 'WHERE ') . ")
+";*/
   }
 }
