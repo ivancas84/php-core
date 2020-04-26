@@ -23,10 +23,11 @@ class PersistApi {
       Transaction::begin();
       Transaction::update(["descripcion"=> $persistController->getSql(), "detalle" => implode(",",$persistController->getDetail())]);
       Transaction::commit();
-      echo json_encode(
-        ["status"=>"OK","message"=>"Registro realizado","data"=>$persistController->getDetail()]
-      );
-    
+
+      echo json_encode($persistController->getDetail());
+      /**
+       * se devuelve un array donde cada elemento es de la forma "entityId"
+       */
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());
       http_response_code(500);
