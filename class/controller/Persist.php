@@ -77,6 +77,15 @@ class Persist {
     array_push($this->logs, ["sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
   }
 
+  public function deleteSub($entity, $render){
+    /**
+     * Metodo muy peligroso
+     * Asegurarse de que se utiliza adecuadamente
+     */
+    $persist = EntitySqlo::getInstanceRequire($entity)->deleteSub($render);
+    array_push($this->logs, ["sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
+  }
+
   public function save_($entity, array $rows = [], array $params = null) {
       /**
        * Procesar un conjunto de rows de una entidad

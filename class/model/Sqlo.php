@@ -111,24 +111,6 @@ abstract class EntitySqlo {
     return $sql;
   }
 
-  public function deleteSubSql($render = null){
-    /**
-     * no utilizar este metodo, solo para pruebas
-     */
-    return "
-DELETE " . $this->entity->a_() . "*
-FROM " . $this->entity->sna_() . "
-WHERE id IN (SELECT id
-  FROM (
-
-
-" . $this->all($render) . "
-       
-
-  ) AS sub
-);
-";              
-  }
 
   public function advanced(Render $render) { //consulta avanzada
     $fields = array_merge($render->getGroup(), $render->getAggregate());
