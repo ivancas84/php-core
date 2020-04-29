@@ -111,7 +111,6 @@ abstract class EntitySqlo {
     return $sql;
   }
 
-
   public function advanced(Render $render) { //consulta avanzada
     $fields = array_merge($render->getGroup(), $render->getAggregate());
 
@@ -215,7 +214,6 @@ WHERE id IN ({$ids_});
     array_walk($detail, function(&$item) { $item = $this->entity->getName().$item; });
     return ["ids"=>$ids, "sql"=>$sql, "detail"=>$detail];
   }
-
 
   public function unique(array $params, $render = NULL){
     /**
