@@ -88,7 +88,7 @@ class Ma {
   }
 
   public static function ids($entity, $render = null){
-    $sql = EntitySqlo::getInstanceRequire($entity)->all($render);
+    $sql = EntitySqlo::getInstanceRequire($entity)->ids($render);
     $ids = Dba::fetchAllColumns($sql, 0);
     array_walk($ids, "toString"); 
     /**
