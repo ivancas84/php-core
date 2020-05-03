@@ -13,7 +13,7 @@ class SqlFormat {
    * Ademas, ciertos metodos requieren determinar el motor de base de datos para definir la sintaxis SQL adecuada
    */
 
-   private static $instance; //singleton
+  private static $instance; //singleton
 
   public function __construct() {
     $this->db = Dba::dbInstance();
@@ -25,6 +25,14 @@ class SqlFormat {
      */
     if(is_null(self::$instance)) self::$instance = new SqlFormat();
     return self::$instance;
+  }
+
+  public function isNull($value){
+    /**
+     * Implementacion local del metodo is_null
+     * Se verifica que el valor no sea igual al string null
+     */
+    return (is_null($value) || (strtolower($value) == 'null'));
   }
 
   protected function conditionDateTime($field, $value, $option, $my, $pg){
@@ -110,20 +118,20 @@ class SqlFormat {
   }
 
   public function numeric($value){
-    if(is_null($value) || ($value === 'null')) return 'null';
+    if($this->isNull($value)) return 'null';
 
     if ( !is_numeric($value) ) throw new Exception('Valor numerico incorrecto: ' . $value);
     else return $value;
   }
 
   public function positiveIntegerWithoutZerofill($value){
-    if(is_null($value) || ($value === 'null')) return 'null';
+    if($this->isNull($value)) return 'null';
     if ((!is_numeric($value)) && (!intval($value) > 0)) throw new Exception('Valor entero positivo sin ceros incorrecto: ' . $value);
     return $value;
   }
 
   public function timestamp($value){
-    if($value == 'null') return 'null';
+    if($this->isNull($value)) return 'null';
 
     if(is_object($value) && get_class($value) == "DateTime"){
       $datetime = $value;
@@ -136,7 +144,7 @@ class SqlFormat {
   }
 
   public function date($value){
-    if($value == 'null') return 'null';
+    if($this->isNull($value)) return 'null';
 
     if(is_object($value) && get_class($value) == "DateTime"){
       $datetime = $value;
@@ -149,7 +157,7 @@ class SqlFormat {
   }
 
   public function time($value){
-    if($value == 'null') return 'null';
+    if($this->isNull($value)) return 'null';
 
     if(is_object($value) && get_class($value) == "DateTime"){
       $datetime = $value;
@@ -163,7 +171,7 @@ class SqlFormat {
   }
 
   public function year($value){
-    if($value == 'null') return 'null';
+    if($this->isNull($value)) return 'null';
 
     if(is_object($value) && (get_class($value) == "DateTime" || get_class($value) == "SpanishDateTime")){
       $datetime = $value;
@@ -176,20 +184,20 @@ class SqlFormat {
   }
 
   public function boolean($value){
-    if(is_null($value) || ($value === 'null')) return 'null';
+    if($this->isNull($value)) return 'null';
 
     return ( settypebool($value) ) ? 'true' : 'false';
   }
 
   public function string($value){
-    if(is_null($value) || ($value === 'null')) return 'null';
+    if($this->isNull($value)) return 'null';
 
     if (!is_string($value)) throw new Exception('Valor de caracteres incorrecto: ' . $value);
     else return "'{$value}'";
   }
 
   public function escapeString($value){
-    if($value == 'null') return 'null';
+    if($this->isNull($value)) return 'null';
 
     $v = (is_numeric($value)) ? strval($value) : $value;
     if (!is_string($v)) throw new Exception('Valor de caracteres incorrecto: ' . $v);
