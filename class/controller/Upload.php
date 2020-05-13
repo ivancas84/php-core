@@ -10,7 +10,7 @@ class Upload {
    * Obtener todos los datos de una determinada entidad
    */
 
-  public $type;
+  public $entityName;
   
   final public static function getInstance() {
     $className = get_called_class();
@@ -18,18 +18,17 @@ class Upload {
   }
 
   final public static function getInstanceString($entity) {
-    $className = snake_case_to("XxYy", $type) . "Upload";
+    $className = snake_case_to("XxYy", $entity) . "Upload";
     return call_user_func("{$className}::getInstance");
   }
 
   final public static function getInstanceRequire($entity){
-    require_once("class/controller/upload/" . snake_case_to("XxYy", $type) . ".php");
-    return self::getInstanceString($type);
+    require_once("class/controller/upload/" . snake_case_to("XxYy", $entity) . ".php");
+    return self::getInstanceString($entity);
   }
 
   public function main() {
-    
-
+    return $_FILES;
   }
 
 }
