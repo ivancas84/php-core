@@ -11,7 +11,17 @@ class Upload {
    */
 
   public $entityName;
+
+  public $uploadPath = PATH_UPLOAD;
+
+  public $sufix = "";
+
+  public $directory;
   
+  public function __construct (){
+    $this->directory = date("Y/m/"); 
+  }
+
   final public static function getInstance() {
     $className = get_called_class();
     return new $className;
@@ -27,8 +37,15 @@ class Upload {
     return self::getInstanceString($entity);
   }
 
-  public function main() {
-    return $_FILES;
+  public function main(array $file) {
+    if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
+    $dir = $this->uploadPath.$this->directory;
+    $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
+    $id = uniqid();
+
+    if(!empty($this->directory) && (!file_exists($dir))) mkdir($dir, 0555, true);
+    if ( !move_uploaded_file($file["tmp_name"], $dir.$id.$this->sufix.".".$ext ) ) throw new Exception( "Error al mover archivo" );
+    return $id;
   }
 
 }

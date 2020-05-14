@@ -24,8 +24,9 @@ class UploadApi {
      * A diferencia de otras apis, la lectura de filtros se realiza dentro del controlador
      */
     try{
+      $file = Filter::fileRequired("file"); 
       $controller = Upload::getInstanceRequire($this->entityName);
-      $data = $controller->main();
+      $data = $controller->main($file);
       echo json_encode($data);
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());
