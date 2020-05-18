@@ -36,14 +36,6 @@ class Upload {
     return self::getInstanceString($entity);
   }
 
-  protected function uploadDir(){
-
-  }
-
-  protected function uploadDb($file){
-
-    Ma::insert();
-  }
   public function main(array $file) {
     if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
     $dir = $this->uploadPath."/".$this->directory;
