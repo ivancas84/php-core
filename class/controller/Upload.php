@@ -2,8 +2,7 @@
 require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
-require_once("class/controller/DisplayRender.php");
-
+require_once("class/model/Sqlo.php");
 
 class Upload {
   /**
@@ -37,15 +36,32 @@ class Upload {
     return self::getInstanceString($entity);
   }
 
+  protected function uploadDir(){
+
+  }
+
+  protected function uploadDb($file){
+
+    Ma::insert();
+  }
   public function main(array $file) {
     if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
-    $dir = $this->uploadPath.$this->directory;
+    $dir = $this->uploadPath."/".$this->directory;
     $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
     $id = uniqid();
-
     if(!empty($this->directory) && (!file_exists($dir))) mkdir($dir, 0555, true);
-    if ( !move_uploaded_file($file["tmp_name"], $dir.$id.$this->sufix.".".$ext ) ) throw new Exception( "Error al mover archivo" );
+
+    $file["id"] = $id;
+    $file["content"] = $dir.$id.$this->sufix.".".$ext;
+    if ( !move_uploaded_file($file["tmp_name"], $file["content"]) ) throw new Exception( "Error al mover archivo" );
     return $id;
+  }
+
+  protected function insertDb(){
+    $insert = EntitySqlo::getInstanceRequire("file")->insert($file);
+    Transaction::begin();
+    Transaction::update(["descripcion"=> $insert["sql"], "detalle" => $insert["detail"]]);
+    Transaction::commit();    
   }
 
 }
