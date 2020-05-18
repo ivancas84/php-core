@@ -37,14 +37,16 @@ class Upload {
     return self::getInstanceString($entity);
   }
 
+
   public function main(array $file) {
     if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
-    $dir = $this->uploadPath.$this->directory;
+    $dir = $this->uploadPath."/".$this->directory;
     $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
     $id = uniqid();
+    $file["content"] = $dir.$id.$this->sufix.".".$ext;
 
     if(!empty($this->directory) && (!file_exists($dir))) mkdir($dir, 0555, true);
-    if ( !move_uploaded_file($file["tmp_name"], $dir.$id.$this->sufix.".".$ext ) ) throw new Exception( "Error al mover archivo" );
+    if ( !move_uploaded_file($file["tmp_name"], $file["content"] ) ) throw new Exception( "Error al mover archivo" );
     return $id;
   }
 
