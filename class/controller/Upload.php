@@ -11,14 +11,13 @@ class Upload {
 
   public $entityName;
 
-  public $uploadPath = PATH_UPLOAD;
 
   public $sufix = "";
 
   public $directory;
   
   public function __construct (){
-    $this->directory = date("Y/m/"); 
+    $this->uploadPath = "upload/".date("Y/m/");
   }
 
   final public static function getInstance() {
@@ -38,21 +37,26 @@ class Upload {
 
   public function main(array $file) {
     if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
-    $dir = $this->uploadPath."/".$this->directory;
+    unset($file["error"]);
+
+    $dir = $_SERVER["DOCUMENT_ROOT"] . "/" . $this->uploadPath;
     $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
     $id = uniqid();
-    if(!empty($this->directory) && (!file_exists($dir))) mkdir($dir, 0555, true);
+    if(!empty($this->uploadPath) && (!file_exists($dir))) mkdir($dir, 0555, true);
 
     $file["id"] = $id;
-    $file["content"] = $dir.$id.$this->sufix.".".$ext;
-    if ( !move_uploaded_file($file["tmp_name"], $file["content"]) ) throw new Exception( "Error al mover archivo" );
-    return $id;
+    $file["content"] = $this->uploadPath."/".$id.$this->sufix.".".$ext;
+    if ( !move_uploaded_file($file["tmp_name"], $_SERVER["DOCUMENT_ROOT"] . "/" . $file["content"]) ) throw new Exception( "Error al mover archivo" );
+    unset($file["tmp_name"]);
+
+    $this->insertDb($file);
+    return $file;
   }
 
-  protected function insertDb(){
+  protected function insertDb($file){
     $insert = EntitySqlo::getInstanceRequire("file")->insert($file);
     Transaction::begin();
-    Transaction::update(["descripcion"=> $insert["sql"], "detalle" => $insert["detail"]]);
+    Transaction::update(["descripcion"=> $insert["sql"], "detalle" => implode(",",$insert["detail"])]);
     Transaction::commit();    
   }
 

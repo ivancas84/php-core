@@ -114,6 +114,15 @@ class Filter {
     return $r;
   }
 
+  public static function serverUrl(){
+    $protocol = (filter_input(INPUT_SERVER, 'HTTPS', FILTER_SANITIZE_STRING)) ? "https":"http";  
+    return $protocol . "://" . filter_input(INPUT_SERVER, 'SERVER_NAME', FILTER_SANITIZE_STRING);
+  }
+
+  public static function serverUrlRoot(){
+    return self::serverUrl()."/".PATH_ROOT;
+  }
+
 
 
 }
