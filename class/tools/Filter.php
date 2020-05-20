@@ -26,7 +26,6 @@ class Filter {
     return $r;
   }
 
-
   public static function requestAllRequired(){
     $request = self::requestAll();
     if(empty($request)) throw new Exception("No existen parametros");

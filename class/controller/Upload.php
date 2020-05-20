@@ -17,7 +17,7 @@ class Upload {
   public $directory;
   
   public function __construct (){
-    $this->uploadPath = "upload/".date("Y/m/");
+    $this->uploadPath = date("Y/m/");
   }
 
   final public static function getInstance() {
@@ -39,14 +39,14 @@ class Upload {
     if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
     unset($file["error"]);
 
-    $dir = $_SERVER["DOCUMENT_ROOT"] . "/" . $this->uploadPath;
+    $dir = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $this->uploadPath;
     $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
     $id = uniqid();
     if(!empty($this->uploadPath) && (!file_exists($dir))) mkdir($dir, 0555, true);
 
     $file["id"] = $id;
-    $file["content"] = $this->uploadPath."/".$id.$this->sufix.".".$ext;
-    if ( !move_uploaded_file($file["tmp_name"], $_SERVER["DOCUMENT_ROOT"] . "/" . $file["content"]) ) throw new Exception( "Error al mover archivo" );
+    $file["content"] = $this->uploadPath.$id.$this->sufix.".".$ext;
+    if ( !move_uploaded_file($file["tmp_name"], $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $file["content"]) ) throw new Exception( "Error al mover archivo" );
     unset($file["tmp_name"]);
 
     $this->insertDb($file);
