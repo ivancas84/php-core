@@ -105,11 +105,11 @@ class Transaction {
     if(!$status || $status == "CLEAR") return $status;
 
     $query = "
-SELECT id, detalle, actualizado
-FROM transaccion
+SELECT id, detail, updated
+FROM transaction
 WHERE tipo = 'commit'
-AND actualizado > '{$status}'
-ORDER BY actualizado ASC
+AND updated > '{$status}'
+ORDER BY updated ASC
 LIMIT 20;
 ";
     $db = self::dbInstance();
@@ -157,7 +157,7 @@ LIMIT 20;
       $fecha = $_SESSION["transaction"][self::$id]["actualizado"];
 
       $queryTransaction = "
-        INSERT INTO transaccion (id, actualizado, descripcion, detalle, tipo)
+        INSERT INTO transaction (id, updated, description, detail, type)
         VALUES ('" . $id . "', '" . $fecha . "', '" . $descripcionEscaped . "', '" .$detalle . "', '" . $tipo . "');
       ";
 
@@ -166,7 +166,7 @@ LIMIT 20;
       try {
         $commitDate = date("Y-m-d H:i:s");
         $dbD->multiQueryTransaction($descripcion);
-        $dbT->query("UPDATE transaccion SET tipo = 'commit', actualizado = '" . $commitDate . "' WHERE id = '" . $id . "';");
+        $dbT->query("UPDATE transaction SET type = 'commit', actualizado = '" . $commitDate . "' WHERE id = '" . $id . "';");
         unset($_SESSION["transaction"][self::$id]);
         self::$id = null;
         FileCache::set("transaction", $commitDate);
