@@ -15,7 +15,7 @@ class Render {
   public $generalCondition = array(); //condicion utilizada solo en la estructura general 
   public $order = array();
   public $page = 1;
-  public $size = 100;
+  public $size = 1000;
 
   protected $aggregate = array(); //campos a los que se aplicara funciones de agregacion
   /**
@@ -49,7 +49,10 @@ class Render {
 
   public static function getInstanceDisplay(array $display = null){
     $render = new Render;
-    if(!empty($display["size"])) $render->setSize($display["size"]);
+    if(isset($display["size"])) $render->setSize($display["size"]);
+    /**
+     * puede ser 0 o false para indicar todas las filas
+     */
     if(!empty($display["page"])) $render->setPage($display["page"]);
     if(!empty($display["order"])) $render->setOrder($display["order"]);
     if(!empty($display["condition"])) $render->setCondition($display["condition"]);
