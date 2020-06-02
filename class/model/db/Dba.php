@@ -13,6 +13,12 @@ class Dba {
    */
   public static $dbInstance = NULL; //conexion con una determinada db
   public static $dbCount = 0;
+  public static $dataHost = DATA_HOST;
+  public static $dataUser = DATA_USER;
+  public static $dataPass = DATA_PASS;
+  public static $dataDbName = DATA_DBNAME;
+  public static $dataSchema = DATA_SCHEMA;
+  public static $dataDbms = DATA_DBMS;
 
   public static function dbInstance() { //singleton db
     /**
@@ -20,8 +26,8 @@ class Dba {
      */
     if (!self::$dbCount) {
       (DATA_DBMS == "pg") ?
-        self::$dbInstance = new DbSqlPg(DATA_HOST, DATA_USER, DATA_PASS, DATA_DBNAME, DATA_SCHEMA) :
-        self::$dbInstance = new DbSqlMy(DATA_HOST, DATA_USER, DATA_PASS, DATA_DBNAME, DATA_SCHEMA);
+        self::$dbInstance = new DbSqlPg(self::$dataHost, self::$dataUser,self::$dataPass, self::$dataDbName, self::$dataSchema) :
+        self::$dbInstance = new DbSqlMy(self::$dataHost, self::$dataUser,self::$dataPass, self::$dataDbName, self::$dataSchema);
     }
     self::$dbCount++;
     return self::$dbInstance;
