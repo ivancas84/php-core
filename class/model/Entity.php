@@ -29,33 +29,24 @@ abstract class Entity {
    * El campo identifier se define como condicion y como campo definido
    */
 
-  //http://php.net/manual/en/language.oop5.late-static-bindings.php
-  //public static function name(){ return null; }
-  //public static function alias(){ return null; }
-  //public static function schema(){ return DATA_SCHEMA; }
-
-
-  //Metodo auxiliares para facilitar la definicion de consultas sql (se definen como metodos estaticos para facilitar la sintaxis)
-  //public static function n_(){ return $this->name; } //nombre de la tabla. El nombre de la tabla puede no coincidir con el de la entidad
-
-
   final public static function getInstance() {
     $className = get_called_class();
     if (!isset(self::$instances[$className])) { self::$instances[$className] = new $className; }
     return self::$instances[$className];
   }
 
-  final public static function getInstanceString($entity) {
-    $className = snake_case_to("XxYy", $entity) . "Entity";
+  final public static function getInstanceRequire($entity) {
+    $dir = "class/model/entity/";
+    $name = snake_case_to("XxYy", $entity) . ".php";
+    $prefix = "";
+    if(!@include_once($dir.$name)) {
+      $prefix = "_";
+      if(!@include_once($dir.$prefix.$name)) throw new Exception("Error al incluir clase Entity " . $entity);
+    }
+    
+    $className = $prefix.snake_case_to("XxYy", $entity) . "Entity";
     return call_user_func("{$className}::getInstance");
   }
-
-  final public static function getInstanceRequire($entity) {    
-    require_once("class/model/entity/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
-    return self::getInstanceString($entity);
-  }
-
-
 
   /**
    * Metodos para facilitar la sintaxis del sql
