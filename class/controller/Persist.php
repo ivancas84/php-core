@@ -28,14 +28,16 @@ class Persist {
     return new $className;
   }
 
-  final public static function getInstanceString($entity) {
-    $className = snake_case_to("XxYy", $entity) . "Persist";
-    return call_user_func("{$className}::getInstance");
-  }
-
-  final public static function getInstanceRequire($entity){
-    require_once("class/controller/persist/" . snake_case_to("XxYy", $entity) . ".php");
-    return self::getInstanceString($entity);
+  final public static function getInstanceRequire($entity) {
+    $dir = "class/controller/persist/";
+    $name = snake_case_to("XxYy", $entity) . ".php";
+    $className = snake_case_to("XxYy", $entity) . "Persist";    
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
+    else{
+      require_once($dir."_".$name);
+      $className = "_".$className;    
+    }
+    return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
   }
 
   public function getSql() {

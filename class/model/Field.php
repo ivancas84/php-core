@@ -86,9 +86,10 @@ abstract class Field {
     $dir = "class/model/field/" . snake_case_to("xxYy", $entity) . "/";
     $name = snake_case_to("XxYy", $field) . ".php";
     $prefix = "";
-    if(!@include_once($dir.$name)) {
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
+    else{
       $prefix = "_";
-      if(!@include_once($dir.$prefix.$name)) throw new Exception("Error al incluir clase Field " . $entity . "." . $field);
+      require_once($dir.$prefix.$name);
     }
     
     $className = $prefix."Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);

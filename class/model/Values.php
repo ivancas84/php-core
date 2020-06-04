@@ -62,16 +62,24 @@ abstract class EntityValues {
     if(!empty($values)) $instance->_setValues($values, $prefix);
     return $instance;
   }
-
-  public static function getInstanceString($entity, $values = NULL, $prefix = "") { //crear instancias de values
-    $className = snake_case_to("XxYy", $entity) . "";
-    $instance = call_user_func_array("{$className}::getInstance",[$values, $prefix]);
-    return $instance;
+  
+  final public static function getInstanceRequire($entity, $values= null, $prefix = "") {
+    $dir = "class/model/values/";
+    $name = snake_case_to("XxYy", $entity) . ".php";
+    $prf = "";
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
+    else{
+      $prf = "_";
+      require_once($dir.$prf.$name);
+    }
+    
+    $className = $prf.snake_case_to("XxYy", $entity) . "Values";
+    return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
   }
 
   final public static function getInstanceRequire($entity, $values = null, $prefix = "") {
     require_once("class/model/values/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
-    return self::getInstanceString($entity, $values, $prefix);
+    return self::getInstanceRequire($entity, $values, $prefix);
   }
 
   protected function _setLogsValidation($field, Validation $validation){

@@ -47,16 +47,6 @@ abstract class EntitySql { //Definir SQL
     $this->format = SqlFormat::getInstance();
   }
 
-  public static function getInstanceString($entity, $prefix = NULL) { //crear instancias de sql
-    /**
-     * sql, a diferencia de sus pares entity y sqlo, no puede ser implementada como singleton porque utiliza prefijos de identificacion
-     */
-    $sqlName = snake_case_to("XxYy", $entity) . "Sql";
-    $sql = new $sqlName;
-    if($prefix) $sql->prefix = $prefix;
-    return $sql;
-  }
-
   final public static function getInstance($prefix = null) {
     $className = get_called_class();
     $sql = new $className;
@@ -64,9 +54,17 @@ abstract class EntitySql { //Definir SQL
     return $sql;    
   }
 
-  final public static function getInstanceRequire($entity, $prefix = null) {    
-    require_once("class/model/sql/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
-    $className = snake_case_to("XxYy", $entity) . "Sql";
+  final public static function getInstanceRequire($entity, $prefix = null) {
+    $dir = "class/model/sql/";
+    $name = snake_case_to("XxYy", $entity) . ".php";
+    $prf = "";
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
+    else{
+      $prf = "_";
+      require_once($dir.$prf.$name);
+    }
+    
+    $className = $prf.snake_case_to("XxYy", $entity) . "Sql";
     return call_user_func_array("{$className}::getInstance", [$prefix]);
   }
 

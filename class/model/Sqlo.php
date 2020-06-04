@@ -30,14 +30,17 @@ abstract class EntitySqlo {
     return self::$instances[$className];
   }
 
-  final public static function getInstanceString($entity) {
-    $className = snake_case_to("XxYy", $entity) . "Sqlo";
-    return call_user_func("{$className}::getInstance");
-  }
-
-  final public static function getInstanceRequire($entity) {    
-    require_once("class/model/sqlo/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
-    $className = snake_case_to("XxYy", $entity) . "Sqlo";
+  final public static function getInstanceRequire($entity) {
+    $dir = "class/model/sqlo/";
+    $name = snake_case_to("XxYy", $entity) . ".php";
+    $prefix = "";
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
+    else{
+      $prefix = "_";
+      require_once($dir.$prefix.$name);
+    }
+    
+    $className = $prefix.snake_case_to("XxYy", $entity) . "Sqlo";
     return call_user_func("{$className}::getInstance");
   }
 
@@ -65,7 +68,7 @@ abstract class EntitySqlo {
     $row_ = [];
 
     $json = ($row && !is_null($row['id'])) ? $this->sql->_json($row) : null;
-    $row_[$this->entity->getName()] = EntityValues::getInstanceString($this->entity->getName(), $json);
+    $row_[$this->entity->getName()] = EntityValues::getInstanceRequire($this->entity->getName(), $json);
   }
 
   public function all($render = NULL) {
