@@ -57,6 +57,10 @@ class Ma {
      * cantidad
      */
     $r = Render::getInstance($render);
+    $r->setSize(false);
+    $r->setPage(1);
+    $r->setOrder([]);
+
     if(!in_array("_count", $r->getAggregate())) $r->setAggregate(["_count"]);
     
     $sql = EntitySqlo::getInstanceRequire($entity)->advanced($r);
