@@ -30,7 +30,7 @@ abstract class Data {
       require_once($dir."_".$name);
       $className = "_".$className;    
     }
-    return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
+    return call_user_func("{$className}::getInstance");
   }
 
   abstract public function main($params);

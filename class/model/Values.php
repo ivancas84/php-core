@@ -77,11 +77,6 @@ abstract class EntityValues {
     return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
   }
 
-  final public static function getInstanceRequire($entity, $values = null, $prefix = "") {
-    require_once("class/model/values/" . snake_case_to("xxYy", $entity) . "/" . snake_case_to("XxYy", $entity) . ".php");
-    return self::getInstanceRequire($entity, $values, $prefix);
-  }
-
   protected function _setLogsValidation($field, Validation $validation){
     $this->_logs->resetLogs($field);
     foreach($validation->getErrors() as $data){ $this->_logs->addLog($field, "error", $data); }

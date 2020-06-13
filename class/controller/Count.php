@@ -13,7 +13,7 @@ class Count {
   }
 
   final public static function getInstanceRequire($entity) {
-    $dir = "class/controller/all/";
+    $dir = "class/controller/count/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $className = snake_case_to("XxYy", $entity) . "Count";    
     if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
@@ -21,7 +21,7 @@ class Count {
       require_once($dir."_".$name);
       $className = "_".$className;    
     }
-    return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
+    return call_user_func("{$className}::getInstance");
   }
 
   public function main($display) {
