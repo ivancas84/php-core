@@ -97,6 +97,10 @@ abstract class Entity {
     return $merge;
   }
 
+  public function getFieldsNoPk(){
+    return array_merge($this->getFieldsNf(), $this->getFieldsFk());
+  }
+
   public function getFieldsNf(){ return array(); }
 
   public function getFieldsFk(){ return array_merge($this->getFieldsMu(), $this->getFields_U()); }
@@ -205,6 +209,14 @@ abstract class Entity {
      */
     $unique = array();
     foreach($this->getFields() as $field){
+      if($field->isUnique()) array_push($unique, $field);
+    }
+    return $unique;
+  }
+
+  public function getFieldsUniqueNoPk(){
+    $unique = array();
+    foreach($this->getFieldsNoPk() as $field){
       if($field->isUnique()) array_push($unique, $field);
     }
     return $unique;
