@@ -48,6 +48,10 @@ class Render {
   }
 
   public static function getInstanceDisplay(array $display = null){
+    /**
+     * Instanciar render a partir de un display
+     * Importante: Define las condiciones y parametros como condiciones generales
+     */
     $render = new Render;
     if(isset($display["size"])) $render->setSize($display["size"]);
     /**
@@ -55,8 +59,8 @@ class Render {
      */
     if(!empty($display["page"])) $render->setPage($display["page"]);
     if(!empty($display["order"])) $render->setOrder($display["order"]);
-    if(!empty($display["condition"])) $render->setCondition($display["condition"]);
-    if(!empty($display["params"])) $render->setParams($display["params"]);
+    if(!empty($display["condition"])) $render->setGeneralCondition($display["condition"]);
+    if(!empty($display["params"])) $render->setGeneralParams($display["params"]);
 
     return $render;
   }
@@ -78,6 +82,13 @@ class Render {
   public function setParams (array $params = []) {
     foreach($params as $key => $value) {
       $this->addCondition([$key, "=", $value]); 
+    }
+  } 
+
+  
+  public function setGeneralParams (array $params = []) {
+    foreach($params as $key => $value) {
+      $this->addGeneralCondition([$key, "=", $value]); 
     }
   } 
   
