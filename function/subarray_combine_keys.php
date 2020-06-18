@@ -3,8 +3,7 @@
 function subarray_combine_keys(array $values, $keys){
     /**
      * $values: array asociativo
-     * $key: Llave del array asociativo que sera utilizada para combinar, debe ser unica
-     * $key2: Llave del array asociativo que sera utilizada para combinar
+     * $keys: Llave del array asociativo que sera utilizada para combinar
      */
     $values_ = array();
     foreach($keys as $key) $values_[$key] = array_column($values, $key);
