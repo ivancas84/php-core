@@ -41,7 +41,6 @@ abstract class Field {
     //dni Texto para dni
     //select Conjunto de opciones definidas mediante los valores de las claves foraneas
 
-
   public $main = null; //flag para indicar si es un campo principal.
     //Por defecto se define la clave primaria como campo principal. En versiones anteriores se hacia la siguiente logica:
     // Si tiene algun campo main, se define el main
@@ -53,7 +52,7 @@ abstract class Field {
     //si subtype = "select_text", deben asignarse valores "text"
     //si subtype = "select_int", deben asignarse valores "int"
 
-  public $admin = true;
+  public $admin;
   /** 
    * Administracion
    * al desactivarlo, no se incluye el campo en los formularios de administracion
@@ -62,9 +61,10 @@ abstract class Field {
   public $hidden = false;
     /**
      * Campo oculto
-     * Utilizado principalmente como campos de agregacion
+     * Utilizado principalmente como campos de agregacion o campos de control
      * Si hidden es true, por defecto se define admin = false
-     * Los campos de agregacion definen al admin como false y no se incluyen en la consulta (solo pueden ser definidos en consultas avanzadas)
+     * Los campos hidden no se incluyen en la consulta (solo pueden ser definidos en consultas avanzadas)
+     * Los campos hidden no se incluyen en la condicion general _search
      * No se incluyen en la busqueda simple
      * Sí se definen en la búsqueda avanzada para ser utilizados en HAVING
      */
@@ -102,6 +102,7 @@ abstract class Field {
     $this->defineNotNull();
     $this->defineLength();
     $this->defineMain();
+    $this->defineAdmin();
   }
 
   //Retornar instancia de Entity correspondiente al field
@@ -165,6 +166,12 @@ abstract class Field {
   }
 
   protected function defineMain(){ if ( $this->isHidden() ) { $this->main = false; } }
+
+  protected function defineAdmin(){
+    if ( is_null($this->admin) ) {
+      $this->admin = ($this->isHidden()) ?  false : true;
+    }
+  }
 
   protected function defineDataType(){
     if (is_null($this->dataType)) {
