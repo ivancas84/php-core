@@ -49,11 +49,11 @@ class Transaction {
 
     $_SESSION["transaction"][self::$id] = [
       "sql" => null,
-      "tipo" => "begin",
-      "descripcion" => "",
-      "detalle" => "",
-      "alta" => date("Y-m-d H:i:s"),
-      "actualizado" => date("Y-m-d H:i:s"),
+      "type" => "begin",
+      "description" => "",
+      "detail" => "",
+      "inserted" => date("Y-m-d H:i:s"),
+      "updated" => date("Y-m-d H:i:s"),
     ];
     return self::$id;
   }
@@ -64,19 +64,19 @@ class Transaction {
      */
     if(empty(self::$id)) throw new UnexpectedValueException("Id de transaccion no definido");
 
-    if(!empty($data["descripcion"])){
-      if(!empty($_SESSION["transaction"][self::$id]["descripcion"])) $_SESSION["transaction"][self::$id]["descripcion"] .= " ";
-      $_SESSION["transaction"][self::$id]["descripcion"] .= $data["descripcion"];
+    if(!empty($data["description"])){
+      if(!empty($_SESSION["transaction"][self::$id]["description"])) $_SESSION["transaction"][self::$id]["description"] .= " ";
+      $_SESSION["transaction"][self::$id]["description"] .= $data["description"];
     }
 
-    if(!empty($data["detalle"])){
-      if(!empty($_SESSION["transaction"][self::$id]["detalle"])) $_SESSION["transaction"][self::$id]["detalle"] .= ",";
-      $_SESSION["transaction"][self::$id]["detalle"] .= $data["detalle"];
+    if(!empty($data["detail"])){
+      if(!empty($_SESSION["transaction"][self::$id]["detail"])) $_SESSION["transaction"][self::$id]["detail"] .= ",";
+      $_SESSION["transaction"][self::$id]["detail"] .= $data["detail"];
     }
 
-    if(!empty($data["tipo"])) $_SESSION["transaction"][self::$id]["tipo"] .= $data["tipo"];
+    if(!empty($data["type"])) $_SESSION["transaction"][self::$id]["type"] .= $data["type"];
 
-    $_SESSION["transaction"][self::$id]["actualizado"] = date("Y-m-d H:i:s");
+    $_SESSION["transaction"][self::$id]["updated"] = date("Y-m-d H:i:s");
 
     return self::$id;
   }
@@ -107,7 +107,7 @@ class Transaction {
     $query = "
 SELECT id, detail, updated
 FROM transaction
-WHERE tipo = 'commit'
+WHERE type = 'commit'
 AND updated > '{$status}'
 ORDER BY updated ASC
 LIMIT 20;
@@ -122,7 +122,7 @@ LIMIT 20;
       $rows = $db->fetchAll($result);
 
       $de = [];
-      foreach($rows as $row) $de = array_merge($de, explode(",",$row["detalle"]));
+      foreach($rows as $row) $de = array_merge($de, explode(",",$row["detail"]));
       return array_unique($de);
     }
   }
@@ -148,25 +148,25 @@ LIMIT 20;
 
     try {
       $id = $dbT->escapeString(self::$id);
-      if(empty($_SESSION["transaction"][self::$id]["descripcion"])) throw new Exception("Transaccion vacia");
-      $descripcion = $_SESSION["transaction"][self::$id]["descripcion"];
-      $descripcionEscaped = $dbT->escapeString($descripcion);  //se escapa para almacenarlo en la base de datos
-      $detalle = $dbT->escapeString($_SESSION["transaction"][self::$id]["detalle"]);
+      if(empty($_SESSION["transaction"][self::$id]["description"])) throw new Exception("Transaccion vacia");
+      $description = $_SESSION["transaction"][self::$id]["description"];
+      $descriptionEscaped = $dbT->escapeString($description);  //se escapa para almacenarlo en la base de datos
+      $detail = $dbT->escapeString($_SESSION["transaction"][self::$id]["detail"]);
 
-      $tipo = $dbT->escapeString($_SESSION["transaction"][self::$id]["tipo"]);
-      $fecha = $_SESSION["transaction"][self::$id]["actualizado"];
+      $type = $dbT->escapeString($_SESSION["transaction"][self::$id]["type"]);
+      $fecha = $_SESSION["transaction"][self::$id]["updated"];
 
       $queryTransaction = "
         INSERT INTO transaction (id, updated, description, detail, type)
-        VALUES ('" . $id . "', '" . $fecha . "', '" . $descripcionEscaped . "', '" .$detalle . "', '" . $tipo . "');
+        VALUES ('" . $id . "', '" . $fecha . "', '" . $descriptionEscaped . "', '" .$detail . "', '" . $type . "');
       ";
 
       $dbT->query($queryTransaction);
       $dbD = Dba::dbInstance();
       try {
         $commitDate = date("Y-m-d H:i:s");
-        $dbD->multiQueryTransaction($descripcion);
-        $dbT->query("UPDATE transaction SET type = 'commit', actualizado = '" . $commitDate . "' WHERE id = '" . $id . "';");
+        $dbD->multiQueryTransaction($description);
+        $dbT->query("UPDATE transaction SET type = 'commit', updated = '" . $commitDate . "' WHERE id = '" . $id . "';");
         unset($_SESSION["transaction"][self::$id]);
         self::$id = null;
         FileCache::set("transaction", $commitDate);
