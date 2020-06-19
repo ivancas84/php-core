@@ -21,7 +21,7 @@ class PersistApi {
       $persistController = Persist::getInstanceRequire($this->entityName);
       $persistController->main($data);
       Transaction::begin();
-      Transaction::update(["descripcion"=> $persistController->getSql(), "detalle" => implode(",",$persistController->getDetail())]);
+      Transaction::update(["description"=> $persistController->getSql(), "detail" => implode(",",$persistController->getDetail())]);
       Transaction::commit();
 
       echo json_encode($persistController->getDetail());

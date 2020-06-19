@@ -202,7 +202,7 @@ class Ma {
      */
     $sqlo = EntitySqlo::getInstanceRequire($entity);
     $row_ = self::unique($entity, $row); //1
-
+    
     if (!empty($row_)){ //2
       $row["id"] = $row_["id"];
       return $sqlo->update($row);
