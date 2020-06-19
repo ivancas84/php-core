@@ -349,12 +349,20 @@ abstract class EntitySql { //Definir SQL
         /**
          * campo de agregacion general: "_count"
          * utilizar solo como condicion general
-         * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
          * No utilizar prefijo para su definicion
          */
         $f = $this->mappingField($field);
         return $this->format->conditionNumber($f, $value, $option);
       break;
+
+      case $p."_label":
+        /**
+         * campo de agregacion general: "_label"
+         * utilizar solo como condicion general
+         * No se define prefijo para su definicion 
+         */
+        $f = $this->mappingField($field);
+        return $this->format->conditionText($f, $value, $option);
     }
   }
 
