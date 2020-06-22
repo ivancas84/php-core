@@ -58,7 +58,7 @@ class Upload {
   protected function insertDb($file){
     $insert = EntitySqlo::getInstanceRequire("file")->insert($file);
     Transaction::begin();
-    Transaction::update(["descripcion"=> $insert["sql"], "detalle" => implode(",",$insert["detail"])]);
+    Transaction::update(["description"=> $insert["sql"], "detail" => implode(",",$insert["detail"])]);
     Transaction::commit();    
   }
 
