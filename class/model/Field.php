@@ -39,7 +39,9 @@ abstract class Field {
     //select_text Conjunto de strings definido, los valores se definen en el atributo "selectValues"
     //cuil Texto para cuil
     //dni Texto para dni
-    //select Conjunto de opciones definidas mediante los valores de las claves foraneas
+    //select (fk) Conjunto de opciones definidas mediante los valores de las claves foraneas
+    //typeahead (fk)
+    //file (fk)
 
   public $main = null; //flag para indicar si es un campo principal.
     //Por defecto se define la clave primaria como campo principal. En versiones anteriores se hacia la siguiente logica:
