@@ -21,6 +21,10 @@ abstract class EntitySqlo {
   public $sql;    //EntitySql. Atributo auxiliar para facilitar la definicion de consultas sql
   protected static $instances = [];
 
+  function __destruct() {
+    Dba::dbClose();
+  } 
+
   final public static function getInstance() {
     $className = get_called_class();
     if (!isset(self::$instances[$className])) {

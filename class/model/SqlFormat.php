@@ -19,6 +19,10 @@ class SqlFormat {
     $this->db = Dba::dbInstance();
   }
 
+  function __destruct() {
+    Dba::dbClose();
+  } 
+
   public static function getInstance() {
     /**
      * singleton
