@@ -22,9 +22,21 @@ class Dba {
 
   public static function dbInstance() { //singleton db
     /**
-     * Cuando se abren varios recursos de db instance se incrementa un contador, al cerrarse recursos se decrementa. Si el contador llega a 0 se cierra la instancia de la base
+     * Cuando se abren varios recursos de db instance se incrementa un contador.
+     * Al cerrarse recursos se decrementa el contador. 
+     * Si el contador llega a 0 se cierra la instancia de la base
+     * Si se van a utilizar multiples consultas a la base de datos, se recomienda efectuar una transaccion de recurso:
+     * Ejemplo de transaccion de recurso:
+     *   self::dbInstance();
+     *   try {
+     *     ... 
+     *   } finally {
+     *     self::dbClose();
+     *   }
+     * La transaccion de recurso evita multiples conexiones a la base de datos en un mismo script
      */
-    if (!self::$dbCount) {
+    if (self::$dbCount <= 0) {
+      self::$dbCount = 0;
       (DATA_DBMS == "pg") ?
         self::$dbInstance = new DbSqlPg(self::$dataHost, self::$dataUser,self::$dataPass, self::$dataDbName, self::$dataSchema) :
         self::$dbInstance = new DbSqlMy(self::$dataHost, self::$dataUser,self::$dataPass, self::$dataDbName, self::$dataSchema);
@@ -32,12 +44,22 @@ class Dba {
     self::$dbCount++;
     return self::$dbInstance;
   }
-
   public static function dbClose() { //cerrar conexiones a la base de datos
     self::$dbCount--;
+    
     if(!self::$dbCount) self::$dbInstance->close(); //cuando todos los recursos liberan la base de datos se cierra
     return self::$dbInstance;
   }
+
+  public static function dbCloseAll() { 
+    /**
+     * Cierra todas las conexiones e inicializa el contador a 0
+     */
+    if(self::$dbCount) self::$dbInstance->close();
+    self::$dbCount = 0;
+  }    
+    
+
 
   public static function uniqId(){ //identificador unico
     //usleep(1); //con esto se evita que los procesadores generen el mismo id
