@@ -73,7 +73,7 @@ abstract class EntityValues {
       require_once($dir.$prf.$name);
     }
     
-    $className = $prf.snake_case_to("XxYy", $entity) . "Values";
+    $className = $prf.snake_case_to("XxYy", $entity);
     return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
   }
 
