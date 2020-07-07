@@ -44,9 +44,9 @@ class Upload {
     $dir = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $this->uploadPath;
     $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
     $id = uniqid();
-    if(!empty($this->uploadPath) && (!file_exists($dir))) mkdir($dir, 0777, true);
+    if(!empty($this->uploadPath) && (!file_exists($dir))) mkdir($dir, 0755, true);
 
-    $file["id"] = $id;
+    $file["id"] = $id;  
     $file["content"] = $this->uploadPath.$id.$this->sufix.".".$ext;
     if ( !move_uploaded_file($file["tmp_name"], $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $file["content"]) ) throw new Exception( "Error al mover archivo" );
     unset($file["tmp_name"]);
