@@ -44,7 +44,7 @@ class Upload {
     $dir = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $this->uploadPath;
     $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
     $id = uniqid();
-    if(!empty($this->uploadPath) && (!file_exists($dir))) mkdir($dir, 0555, true);
+    if(!empty($this->uploadPath) && (!file_exists($dir))) mkdir($dir, 0777, true);
 
     $file["id"] = $id;
     $file["content"] = $this->uploadPath.$id.$this->sufix.".".$ext;
