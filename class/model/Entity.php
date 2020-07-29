@@ -39,7 +39,7 @@ abstract class Entity {
     $dir = "class/model/entity/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prefix = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
     else{
       $prefix = "_";
       require_once($dir.$prefix.$name);

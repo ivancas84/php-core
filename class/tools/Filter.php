@@ -118,8 +118,8 @@ class Filter {
     return $protocol . "://" . filter_input(INPUT_SERVER, 'SERVER_NAME', FILTER_SANITIZE_STRING);
   }
 
-  public static function serverUrlRoot(){
-    return self::serverUrl()."/".PATH_ROOT;
+  public static function serverUrlSrc(){
+    return self::serverUrl()."/".PATH_SRC;
   }
 
 

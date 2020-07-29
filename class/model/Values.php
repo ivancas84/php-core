@@ -67,7 +67,7 @@ abstract class EntityValues {
     $dir = "class/model/values/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prf = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
     else{
       $prf = "_";
       require_once($dir.$prf.$name);

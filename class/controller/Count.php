@@ -16,7 +16,7 @@ class Count {
     $dir = "class/controller/count/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $className = snake_case_to("XxYy", $entity) . "Count";    
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_ROOT."/".$dir.$name)) require_once($dir.$name);
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
     else{
       require_once($dir."_".$name);
       $className = "_".$className;    
