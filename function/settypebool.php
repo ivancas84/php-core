@@ -7,9 +7,9 @@
  * @return boolean: resultado de la transformacion
  */
 function settypebool ( $var ) {
-	if(!isset($var)) return false;
+	if(!isset($var) || is_null($var)) return null;
 	
-	if(is_string($var)) $var = strtolower($var);
+	if(is_string($var)) $var = mb_strtolower($var);
 	
 	if ( ( $var === true ) 
 	|| ( $var === 1 )
@@ -17,7 +17,9 @@ function settypebool ( $var ) {
 	|| ( $var === '1' )
 	|| ( $var === 't' )
 	|| ( $var === 'on' ) 
-	|| ( $var === 'si' ) 
+  || ( $var === 'si' ) 
+  || ( $var === 'sí' )
+  || ( $var === 's' ) 
 	|| ( $var === 'yes' )
 	|| ( $var === 'ok' ) 
 	|| ( $var === 'checked' )
