@@ -118,12 +118,10 @@ class SqlFormat {
         else return "(trim(both ' ' from to_char(" . $field . ", '99999999999999999999')) LIKE '%" . $value . "%' ) ";
       default: return "(" . $field . " " . $option . " " . $value . ") ";
     }
-    
   }
 
   public function numeric($value){
     if($this->isNull($value)) return 'null';
-
     if ( !is_numeric($value) ) throw new Exception('Valor numerico incorrecto: ' . $value);
     else return $value;
   }
@@ -134,73 +132,44 @@ class SqlFormat {
     return $value;
   }
 
-  public function timestamp($value){
+  public function datetime($value){
     if($this->isNull($value)) return 'null';
 
     if(is_object($value) && get_class($value) == "DateTime"){
       $datetime = $value;
     } else {
-      $datetime = DateTime::createFromFormat('Y-m-d H:i:s', $value);
-    }
-
-    if ( !$datetime ) throw new Exception('Valor fecha y hora incorrecto: ' . $value);
-    else return "'" . $datetime->format('Y-m-d H:i:s') . "'";
-  }
-
-  public function date($value){
-    if($this->isNull($value)) return 'null';
-
-    if(is_object($value) && get_class($value) == "DateTime"){
-      $datetime = $value;
-    } else {
-      $datetime = DateTime::createFromFormat('Y-m-d', $value);
+      $datetime = new DateTime($value);
     }
 
     if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
+    $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
     else return "'" . $datetime->format('Y-m-d') . "'";
   }
 
-  public function time($value){
-    if($this->isNull($value)) return 'null';
-
-    if(is_object($value) && get_class($value) == "DateTime"){
-      $datetime = $value;
-    } else {
-      $datetime = DateTime::createFromFormat('H:i', $value);
-      if(!$datetime) $datetime = DateTime::createFromFormat('H:i:s', $value);
-    }
-
-    if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
-    else return "'" . $datetime->format('H:i') . "'";
-  }
-
   public function year($value){
+    /**
+     * Metodo similar a datetime pero se agrega un chequeo adicional para crear
+     */
     if($this->isNull($value)) return 'null';
 
     if(is_object($value) && (get_class($value) == "DateTime" || get_class($value) == "SpanishDateTime")){
       $datetime = $value;
     } else {
       $datetime = DateTime::createFromFormat('Y', $value);
+      if(!$datetime) $datetime = new DateTime($value);
     }
 
     if ( !$datetime ) throw new Exception('Valor año incorrecto: ' . $value);
+    $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
     else return "'" . $datetime->format('Y') . "'";
   }
 
   public function boolean($value){
     if($this->isNull($value)) return 'null';
-
     return ( settypebool($value) ) ? 'true' : 'false';
   }
 
   public function string($value){
-    if($this->isNull($value)) return 'null';
-
-    if (!is_string($value)) throw new Exception('Valor de caracteres incorrecto: ' . $value);
-    else return "'{$value}'";
-  }
-
-  public function escapeString($value){
     if($this->isNull($value)) return 'null';
 
     $v = (is_numeric($value)) ? strval($value) : $value;
