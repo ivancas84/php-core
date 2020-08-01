@@ -74,6 +74,7 @@ abstract class EntityValues {
     return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
   }
 
+  abstract public function _check();
   abstract public function _fromArray(array $row = NULL, $prf = "");
   abstract public function _toArray($prf = "");
   
