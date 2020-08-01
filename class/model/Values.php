@@ -82,9 +82,9 @@ abstract class EntityValues {
   abstract public function _setDefault();
   public function _getLogs(){ return $this->_logs; }
 
-  protected function _setLogsValidation($field, Validation $validation){
-    $this->_logs->resetLogs($field);
-    foreach($validation->getErrors() as $data){ $this->_logs->addLog($field, "error", $data); }
+  protected function _setLogsValidation($fieldName, Validation $validation){
+    $this->_logs->resetLogs($fieldName);
+    foreach($validation->getErrors() as $data){ $this->_logs->addLog($fieldName, "error", $data); }
     return $validation->isSuccess();
   }
 
