@@ -4,13 +4,12 @@ require_once("class/tools/SpanishDateTime.php");
 require_once("class/tools/Validation.php");
 require_once("class/tools/Format.php");
 require_once("class/tools/Logs.php");
-
 require_once("function/snake_case_to.php");
-
 
 abstract class EntityValues {
   /**
-   * Facilita la manipulacion de valores
+   * Manipulación de valores de una entidad
+   * 
    * Prioriza tipos básicos
    *   Ej. Para una fecha presenta dos metodos de seteo 
    *     setFecha, recibe un string
@@ -23,14 +22,18 @@ abstract class EntityValues {
    * Define una estructura de verificación
    *   Se basa en el uso de Logs y Validations
    *   Se ignoran los valores distintos de UNDEFINED
-   *   Los chequeos se realizan principalmente al setear campos
+   *   Se define un método independiente de chequeo para evitar un doble chequeo si se manipulan valores de la base de datos
+   *     Se supone que si estan en la base es porque fueron chequeados.
+   *   
    *   IMPORTANTE: si el campo no se setea, no se chequea.
    *   Para asegurarse de que todos los campos esten seteados, se puede utilizar el metodo _setDefault();
-   *   Se recomienda al instanciar asignar valores por defecto y luego valores adicionales
-   *     $v = EntityValues::getInstanceRequired("entity", DEFAULT_VALUES);
+   *     $v = EntityValues::getInstanceRequired("entity")->setDefault()->_fromArray($something);
    *     $v->_fromArray($somthing);
+   * 
    *   Una vez realizados los chequeos se puede utilizar el atributo logs para obtener el estado final
-   *     $this->_logs()->isError(), $this->_logs()->isErrorKey("campo"), $this->_logs()->getLogs(), 
+   *     $v->_check()->_getLogs()->isError();
+   *     $v->_getLogs()->isErrorKey("campo")
+   *     $this->_getLogs()->getLogs(), 
    */
 
 
@@ -49,12 +52,6 @@ abstract class EntityValues {
   public function __construct(){
     $this->_logs = new Logs();
   }
-
-  abstract public function _fromArray(array $row = NULL);
-  abstract public function _isEmpty();
-  abstract public function _setDefault();
-  public function _logs(){ return $this->_logs; }
-
 
   public static function getInstance($values = NULL, $prefix = "") { //crear instancias de values
     $className = get_called_class();
@@ -77,6 +74,13 @@ abstract class EntityValues {
     return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
   }
 
+  abstract public function _fromArray(array $row = NULL, $prf = "");
+  abstract public function _toArray($prf = "");
+  
+  abstract public function _isEmpty();
+  abstract public function _setDefault();
+  public function _getLogs(){ return $this->_logs; }
+
   protected function _setLogsValidation($field, Validation $validation){
     $this->_logs->resetLogs($field);
     foreach($validation->getErrors() as $data){ $this->_logs->addLog($field, "error", $data); }
@@ -84,7 +88,7 @@ abstract class EntityValues {
   }
 
   public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
-  public function _identifier($format = null){ return Format::convertCase($this->_identifier, $format); }
+  public function _getIdentifier($format = null){ return Format::convertCase($this->_identifier, $format); }
 
   public function _setValues($values, $prefix = ""){
     if(is_string($values) && ($values == DEFAULT_VALUE || $values == "DEFAULT") ) $this->_setDefault();
@@ -104,5 +108,3 @@ abstract class EntityValues {
   }
 
 }
-
-
