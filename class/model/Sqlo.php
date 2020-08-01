@@ -160,16 +160,14 @@ abstract class EntitySqlo {
      * Puede incluirse un id en el array de parametro, si no esta definido se definira uno automaticamente
      * @return array("id" => "identificador principal actualizado", "sql" => "sql de actualizacion", "detail" => "detalle de campos modificados")
      */
-    $r = $this->sql->initializeInsert($row);
-    $r_ = $this->sql->format($r);
+    $r_ = $this->sql->format($row);
     $sql = $this->_insert($r_);
 
     return array("id" => $r["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$r["id"]]);
   }
 
   public function update(array $row) { //sql de actualizacion
-    $r = $this->sql->initializeUpdate($row);
-    $r_ = $this->sql->format($r);
+    $r_ = $this->sql->format($row);
     $sql = "
 {$this->_update($r_)}
 WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
