@@ -124,7 +124,7 @@
         }
          
         public function isSuccess() {
-            if(empty($this->errors)) return true;
+          return (empty($this->errors)) ? true : false;
         }
         
         public function getErrors() {
