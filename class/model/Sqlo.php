@@ -163,7 +163,7 @@ abstract class EntitySqlo {
     $r_ = $this->sql->format($row);
     $sql = $this->_insert($r_);
 
-    return array("id" => $r["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$r["id"]]);
+    return array("id" => $row["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$row["id"]]);
   }
 
   public function update(array $row) { //sql de actualizacion
