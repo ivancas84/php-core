@@ -120,4 +120,28 @@ class Dba {
     } finally { self::dbClose(); }
   }
 
+  public static function query($sql){
+    $db = self::dbInstance();
+    try {
+      $result = $db->query($sql);
+      $result->close();
+    } finally { self::dbClose(); }
+  }
+
+  public static function multiQuery($sql){
+    $db = self::dbInstance();
+    try {
+      $result = $db->multiQuery($sql);
+      $result->close();
+    } finally { self::dbClose(); }
+  }
+
+  public static function multiQueryTransaction($sql){
+    $db = self::dbInstance();
+    try {
+      $result = $db->multiQueryTransaction($sql);
+      $result->close();
+    } finally { self::dbClose(); }    
+  }
+
 }
