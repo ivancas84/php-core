@@ -40,8 +40,6 @@ class Ma {
      */
   }
 
-  
-
   public static function count($entity, $render = null){
     /**
      * cantidad
@@ -160,30 +158,11 @@ class Ma {
     else return null;
   }
 
-  public static function isDeletable($entity, array $ids){ //es eliminable?
-    if(!count($ids)) return "El identificador está vacío";
-
-    $entities = [];
-
-    for($i = 0; $i < count($ids); $i++){
-      if(empty($ids[$i])) return "El identificador está vacío";
-
-      foreach(Entity::getInstanceRequire($entity)->getFieldsRef() as $field) {
-        if(self::count($field->getEntity()->getName(), [$field->getName(), "=", $ids[$i]])) array_push($entities, $field->getEntity()->getName());
-      }
-    }
-
-    //print_r($entities);
-    if(!count($entities)) return true;
-    return "Esta asociado a " . implode(', ', array_unique($entities)) . ".";
-  }
-
   public static function identifier($entity, $identifier){
     $render = new Render();
     $render->setGeneralCondition(["_identifier","=",$identifier]);
     $sql = EntitySqlo::getInstanceRequire($entity)->all($render); 
     return Dba::fetchAll($sql);
   }
-
 
 }
