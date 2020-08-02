@@ -34,16 +34,7 @@ abstract class EntitySql { //Definir SQL
    * Tipo: FormatSql
    */
 
-  public $db;
-  /**
-   * Conexion con la base de datos
-   * Tipo: Db
-   * 
-   * Para definir el sql es necesaria la existencia de una clase de acceso abierta, ya que ciertos metodos, como por ejemplo "escapar caracteres" lo requieren.
-   * Ademas, ciertos metodos requieren determinar el motor de base de datos para definir la sintaxis SQL adecuada
-   */
   public function __construct(){
-    $this->db = Dba::dbInstance();
     $this->format = SqlFormat::getInstance();
   }
 
