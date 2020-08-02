@@ -40,17 +40,7 @@ class Ma {
      */
   }
 
-  public static function isPersistible($entity, array $row){ //es persistible?
-    $row_ = self::unique($entity, $row); //1) Consultar valores a partir de los datos
-    $sqlo = EntitySqlo::getInstanceRequire($entity);
-
-    if (count($row_)){
-      $row["id"] = $row_["id"];
-      return $sqlo->sql->isUpdatable($row);  //2) Si 1 dio resultado, verificar si es actualizable
-    }
-
-    return $sqlo->sql->isInsertable($row); //3) Si 1 no dio resultado, verificar si es insertable
-  }
+  
 
   public static function count($entity, $render = null){
     /**
@@ -187,46 +177,6 @@ class Ma {
     if(!count($entities)) return true;
     return "Esta asociado a " . implode(', ', array_unique($entities)) . ".";
   }
-
-  public static function persist($entity, array $row){ //generar sql de persistencia para la entidad
-    /**
-     * Procedimiento:
-     *   1) consultar valores a partir de los datos (CUIDADO UTILIZAR _unique en vez de unique para no restringir datos con condiciones auxiliares)
-     *   2) Si 1 dio resultado, actualizar
-     *   3) Si 1 no dio resultado, definir pk e insertar
-     *
-     * Retorno:
-     *   array("id" => "id del campo persistido", "sql"=>"sql de persistencia", "detail"=>"detalle de los campos persistidos")
-     *     "id": Dependiendo de la implementacion, el id del campo persistido puede no coincidir con el enviado
-     *     "detail": array de elementos, cada elemento es un string concatenado de la forma entidadId, ejemplo "persona1234567890"
-     */
-    $sqlo = EntitySqlo::getInstanceRequire($entity);
-    $row_ = self::unique($entity, $row); //1
-    
-    if (!empty($row_)){ //2
-      $row["id"] = $row_["id"];
-      return $sqlo->update($row);
-    }
-
-    else { return $sqlo->insert($row); } //3
-  }
-
-  public static function persistAll($entity, array $rows){
-    $sql = "";
-    $detail = [];
-    $ids = [];
-
-    foreach($rows as $row){
-      $persist = self::persist($entity, $row);
-      $sql .= $persist["sql"];
-      array_push($ids, $persist["id"]);
-      $detail = array_merge($detail, $persist["detail"]);
-    }
-
-    return ["entity"=>$entity, "sql" => $sql, "detail"=>$detail, "ids"=>$ids];
-  }
-
-
 
   public static function identifier($entity, $identifier){
     $render = new Render();
