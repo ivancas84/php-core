@@ -19,8 +19,7 @@ require_once("function/toString.php");
 
 class Ma {
   /**
-   * Model access
-   * Facilita el acceso al modelo
+   * Model access (Acceso rapido al modelo)
    * Interfaz opcional entre el modelo y la base de datos para ser utilizada con los métodos de uso general
    * Prefijos y sufijos en el nombre de metodos:
    *   get: Utiliza id como parametro principal de busqueda
@@ -165,4 +164,35 @@ class Ma {
     return Dba::fetchAll($sql);
   }
 
+  public static function persist($entity, array $row){
+    /**
+     * Persistencia directa (no realiza chequeo de valores ni log)
+     */
+    $row_ = self::unique($entity, $row); 
+    
+    if (!empty($row_)){ 
+      $row["id"] = $row_["id"];
+      return self::update($entity, $row);
+    }
+
+    else { return self::insert($entity, $row); }
+  }
+
+  public static function insert($entity, array $row){ 
+    /**
+     * Insercion directa (no realiza chequeo de valores ni log)
+     */
+    $insert = EntitySql::getInstanceRequire($entity)->insert($row);
+    Dba::multiQueryTransaction($insert["sql"]);
+    return $insert;
+  }
+
+  public static function update($entity, array $row){
+    /**
+     * Actualizacion directa (no realiza chequeo de valores ni log)
+     */ 
+    $update = EntitySql::getInstanceRequire($entity)->update($row);
+    Dba::multiQueryTransaction($insert["sql"]);
+    return $udpate;
+  }
 }
