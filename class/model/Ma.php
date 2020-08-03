@@ -26,7 +26,13 @@ class Ma extends Db {
    *   one: Debe retornar un unico valor
    *   OrNull: Puede retornar valores nulos
    */
-
+  public static function open($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
+    if (!key_exists($host.$dbname, self::$dbInstance)) {
+      self::$dbInstance[$host.$dbname] = new self($host, $user, $passwd, $dbname);
+    } 
+    return self::$dbInstance[$host.$dbname];
+  }
+  
   public function count($entity, $render = null){
     /**
      * cantidad
@@ -51,7 +57,7 @@ class Ma extends Db {
      */
     $sql = EntitySqlo::getInstanceRequire($entity)->advanced($render);
     $result = $this->query($sql);
-    $rows = $this->fetch_all($result);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
     return $rows;    
   }
@@ -65,7 +71,7 @@ class Ma extends Db {
     if(empty($sql)) return null;
 
     $result = $this->query($sql);
-    $rows = $this->fetch_all($result);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
     if(count($rows) > 1) throw new Exception("La busqueda por campos unicos de {$entity} retorno mas de un resultado");
     if(count($rows) == 1) return $rows[0];
@@ -116,7 +122,7 @@ class Ma extends Db {
      */
     $sql = EntitySqlo::getInstanceRequire($entity)->all($render);
     $result = $this->query($sql);
-    $rows = $this->fetch_all($result);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
     return $rows;
   }
@@ -139,7 +145,7 @@ class Ma extends Db {
     if(!is_array($ids)) $ids = [$ids];
     $sqlo = EntitySqlo::getInstanceRequire($entity)->getAll($ids, $render);
     $result = $this->query($sql);
-    $rows = $this->fetch_all($result);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
     return $rows;
   }
@@ -164,7 +170,7 @@ class Ma extends Db {
     $sql = EntitySqlo::getInstanceRequire($entity)->all($render); 
     $sqlo = EntitySqlo::getInstanceRequire($entity)->getAll($ids, $render);
     $result = $this->query($sql);
-    $rows = $this->fetch_all($result);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
     return $rows;
   }
@@ -189,7 +195,6 @@ class Ma extends Db {
      */
     $insert = EntitySql::getInstanceRequire($entity)->insert($row);
     $result = $this->query($insert["sql"]);
-    $rows = $this->fetch_all($result);
     $result->free();
     return $insert;
   }
@@ -200,7 +205,6 @@ class Ma extends Db {
      */ 
     $update = EntitySql::getInstanceRequire($entity)->update($row);
     $result = $this->query($update["sql"]);
-    $rows = $this->fetch_all($result);
     $result->free();
     return $udpate;
   }
