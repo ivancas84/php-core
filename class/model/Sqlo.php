@@ -13,14 +13,32 @@ abstract class EntitySqlo {
    * Definir SQL para ser ejecutado directamente por el motor de base de datos
    */
 
-  public $entity; //Entity. Configuracion de la entidad
-  public $db;     //Para definir el sql es necesaria la existencia de una clase de acceso abierta, ya que ciertos metodos, como por ejemplo "escapar caracteres" lo requieren. Puede requerirse adicionalmente determinar el motor de base de datos para definir la sintaxis adecuada
-  public $sql;    //EntitySql. Atributo auxiliar para facilitar la definicion de consultas sql
+  public $entityName;
+  /**
+   * String con el nombre de la entidad (facilita la construccion)
+   */
+
+  public $entity; 
+  /**
+   * Entity
+   */
+
+  public $sql;
+  /**
+   * EntitySql
+   */
+
   protected static $instances = [];
 
-  function __destruct() {
-    Dba::dbClose();
-  } 
+  public function __construct(){
+    /**
+     * Se definen todos los recursos de forma independiente, 
+     * sin parametros en el constructor, 
+     * para facilitar el polimorfismo de las subclases
+     */
+    $this->entity = Entity::getInstanceRequire($this->entityName);
+    $this->sql = EntitySql::getInstanceRequire($this->entityName);
+  }
 
   final public static function getInstance() {
     $className = get_called_class();
@@ -49,8 +67,6 @@ abstract class EntitySqlo {
 
   final public function __wakeup(){ trigger_error('Unserializing is not allowed.', E_USER_ERROR); } //singleton
 
-  public function nextPk(){ return $this->db->uniqId(); } //siguiente identificador unico
-  
   public function jsonAll(array $rows){ foreach($rows as &$row) $row = $this->json($row); return $rows; }
   
   public function json(array $row) { return $this->sql->_json($row); }
