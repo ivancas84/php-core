@@ -26,8 +26,11 @@ class Db extends mysqli {
     if (key_exists($this->host.$this->dbname, self::$dbInstance) && ($this->thread_id == self::$dbInstance[$this->host.$this->dbname]->thread_id)) {
       unset(self::$dbInstance[$this->host.$this->dbname]);
     }
-    $this->close();
-    
+    parent::close();
+  }
+
+  public function close(){
+    throw new BadMethodCallException("El cierre del recurso se realiza en el __destruct");
   }
 
   public function query($query, $resultmode = MYSQLI_STORE_RESULT){
