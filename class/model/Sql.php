@@ -37,10 +37,6 @@ abstract class EntitySql { //Definir SQL
     $this->format = SqlFormat::getInstance();
   }
 
-  function __destruct() {
-    Dba::dbClose();
-  } 
-
   final public static function getInstance($prefix = null) {
     $className = get_called_class();
     $sql = new $className;
