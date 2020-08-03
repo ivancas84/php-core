@@ -18,7 +18,8 @@ class Db extends mysqli {
     $this->dbname = $dbname;
     parent::__construct($host, $user, $passwd, $dbname);
     if($this->connect_error) throw new Exception($this->connect_error);
-    $this->multi_query( "SET NAMES 'utf8'; SET lc_time_names = 'es_AR';");
+    $result = $this->multi_query_last( "SET NAMES 'utf8'; SET lc_time_names = 'es_AR';");
+    if($this->error) throw new Exception($this->error);
   }
 
   public function __destruct(){
@@ -31,26 +32,42 @@ class Db extends mysqli {
 
   public function query($query, $resultmode = MYSQLI_STORE_RESULT){
     $result = parent::query($query, $resultmode);
-    if($this->error) throw new Exception($this->error);
+    if(!$result) throw new Exception($this->error);
     return $result;
   }
 
   public function multi_query($query){
-    $result = parent::multi_query($query);
-    if($this->error) throw new Exception($this->error);
-    return $result;
+    /**
+     * cuidado, siempre espera que se recorran los resultados.
+     * Se recomienda utilizar multi_query_last si se quiere evitar procesamiento adicional
+     */
+    if(!$result = parent::multi_query($query)) throw new Exception($this->error);
   }
 
-  public function multi_query_last(){
-    $result = $this->multi_query($query);
-    while ($this->more_results()) $result = $this->next_result();
+  public function multi_query_last($query){
+    /**
+     * si corresponde,  devuelve el ultimo resultado si existe, sino devuelve false
+     */
+    $r = $this->multi_query($query);
+
+    $result = $this->store_result();
+
+    $i = 0;
+    $errors = [];
+    while ($this->more_results()) {
+      $result = $this->store_result();
+      $r = $this->next_result();
+      if(!$r) array_push($errors, "sentencia " . $i);
+    }
+
+    if(count($errors)) throw new Exception($this->error . ": " . implode(" ", $errors));
     return $result;
   }
 
   public function multi_query_transaction($query){
     $this->begin_transaction();
     try {
-      $result = $this->multi_query($query);
+      $result = $this->multi_query_last($query);
     } catch (Exception $e) {
       $this->rollback();
       throw $e;
@@ -63,7 +80,7 @@ class Db extends mysqli {
     if ($fieldNumber >= $result->field_count) return array();
 
     $column = array();
-    while ($row = $this->fetch_row($result)) array_push($column,$row[$fieldNumber]);
+    while ($row = $result->fetch_row()) array_push($column,$row[$fieldNumber]);
 
     return $column;
   }

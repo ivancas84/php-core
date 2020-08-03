@@ -46,7 +46,7 @@ class Ma extends Db {
     
     $sql = EntitySqlo::getInstanceRequire($entity)->advanced($r);
     $result = $this->query($sql);
-    $row = $this->fetch_assoc($result);
+    $row = $result->fetch_assoc();
     $result->free();
     return intval($row["_count"]);
   }
