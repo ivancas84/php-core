@@ -2,10 +2,7 @@
 
 require_once("function/snake_case_to.php");
 require_once("class/model/Sql.php");
-require_once("class/model/db/Interface.php");
 require_once("class/model/Render.php");
-require_once("class/model/Render.php");
-
 require_once("function/settypebool.php");
 
 
