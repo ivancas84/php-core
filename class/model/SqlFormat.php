@@ -16,12 +16,8 @@ class SqlFormat {
   private static $instance; //singleton
 
   public function __construct() {
-    $this->db = Dba::dbInstance();
+    $this->db = Db::open();
   }
-
-  function __destruct() {
-    Dba::dbClose();
-  } 
 
   public static function getInstance() {
     /**
@@ -39,14 +35,13 @@ class SqlFormat {
     return (is_null($value) || (strtolower($value) == 'null'));
   }
 
-  protected function conditionDateTime($field, $value, $option, $my, $pg){
+  protected function conditionDateTime($field, $value, $option, $my){
     if($c = $this->conditionIsNull($field, $option, $value)) return $c;
 
     switch($option){
       case "=~": case "!=~":
         $o = ($option == "!=~") ? "NOT " : "";
-        if($this->db->getDbms() == "mysql") return "(CAST(DATE_FORMAT({$field}, '{$my}') AS CHAR) {$o}LIKE '%{$value}%' )";
-        else return "(TO_CHAR({$field}, '{$pg}') {$o}LIKE '%{$value}%' )";
+        return "(CAST(DATE_FORMAT({$field}, '{$my}') AS CHAR) {$o}LIKE '%{$value}%' )";
       break;
 
       case "=":
@@ -58,8 +53,7 @@ class SqlFormat {
         if($value === false) return "({$field} IS NOT NULL) ";
 
       default:
-        if($this->db->getDbms() == "mysql") return "({$field} {$option} '{$value}')";
-        else return "({$field} {$option} TO_TIMESTAMP('{$value}', '{$pg}') )";
+        return "({$field} {$option} '{$value}')";
     }
   }
 
@@ -89,19 +83,19 @@ class SqlFormat {
   }
 
   public function conditionTimestamp($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d %H:%i:%s", "YYYY-MM-DD HH24:MI:SS");  
+    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d %H:%i:%s");  
   }
 
   public function conditionYear($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y", "YYYY");  
+    return $this->conditionDateTime($field, $value, $option, "%Y");  
   }
 
   public function conditionDate($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d", "YYYY-MM-DD");  
+    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d");  
   }
 
   public function conditionTime($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%H:%i:%s", "HH24:MI:SS");  
+    return $this->conditionDateTime($field, $value, $option, "%H:%i:%s");  
   }
 
   public function conditionBoolean($field, $value = NULL){
@@ -114,16 +108,13 @@ class SqlFormat {
 
     switch($option) {
       case "=~": 
-        if($this->db->getDbms() == "mysql") return "(CAST(" . $field . " AS CHAR) LIKE '%" . $value . "%' )";
-        else return "(trim(both ' ' from to_char(" . $field . ", '99999999999999999999')) LIKE '%" . $value . "%' ) ";
+        return "(CAST(" . $field . " AS CHAR) LIKE '%" . $value . "%' )";
       default: return "(" . $field . " " . $option . " " . $value . ") ";
     }
-    
   }
 
   public function numeric($value){
     if($this->isNull($value)) return 'null';
-
     if ( !is_numeric($value) ) throw new Exception('Valor numerico incorrecto: ' . $value);
     else return $value;
   }
@@ -134,73 +125,44 @@ class SqlFormat {
     return $value;
   }
 
-  public function timestamp($value){
+  public function datetime($value){
     if($this->isNull($value)) return 'null';
 
     if(is_object($value) && get_class($value) == "DateTime"){
       $datetime = $value;
     } else {
-      $datetime = DateTime::createFromFormat('Y-m-d H:i:s', $value);
-    }
-
-    if ( !$datetime ) throw new Exception('Valor fecha y hora incorrecto: ' . $value);
-    else return "'" . $datetime->format('Y-m-d H:i:s') . "'";
-  }
-
-  public function date($value){
-    if($this->isNull($value)) return 'null';
-
-    if(is_object($value) && get_class($value) == "DateTime"){
-      $datetime = $value;
-    } else {
-      $datetime = DateTime::createFromFormat('Y-m-d', $value);
+      $datetime = new DateTime($value);
     }
 
     if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
-    else return "'" . $datetime->format('Y-m-d') . "'";
-  }
-
-  public function time($value){
-    if($this->isNull($value)) return 'null';
-
-    if(is_object($value) && get_class($value) == "DateTime"){
-      $datetime = $value;
-    } else {
-      $datetime = DateTime::createFromFormat('H:i', $value);
-      if(!$datetime) $datetime = DateTime::createFromFormat('H:i:s', $value);
-    }
-
-    if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
-    else return "'" . $datetime->format('H:i') . "'";
+    $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
+    return "'" . $datetime->format('Y-m-d') . "'";
   }
 
   public function year($value){
+    /**
+     * Metodo similar a datetime pero se agrega un chequeo adicional para crear
+     */
     if($this->isNull($value)) return 'null';
 
     if(is_object($value) && (get_class($value) == "DateTime" || get_class($value) == "SpanishDateTime")){
       $datetime = $value;
     } else {
       $datetime = DateTime::createFromFormat('Y', $value);
+      if(!$datetime) $datetime = new DateTime($value);
     }
 
     if ( !$datetime ) throw new Exception('Valor año incorrecto: ' . $value);
-    else return "'" . $datetime->format('Y') . "'";
+    $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
+    return "'" . $datetime->format('Y') . "'";
   }
 
   public function boolean($value){
     if($this->isNull($value)) return 'null';
-
     return ( settypebool($value) ) ? 'true' : 'false';
   }
 
   public function string($value){
-    if($this->isNull($value)) return 'null';
-
-    if (!is_string($value)) throw new Exception('Valor de caracteres incorrecto: ' . $value);
-    else return "'{$value}'";
-  }
-
-  public function escapeString($value){
     if($this->isNull($value)) return 'null';
 
     $v = (is_numeric($value)) ? strval($value) : $value;

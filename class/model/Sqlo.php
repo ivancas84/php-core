@@ -2,10 +2,7 @@
 
 require_once("function/snake_case_to.php");
 require_once("class/model/Sql.php");
-require_once("class/model/db/Interface.php");
 require_once("class/model/Render.php");
-require_once("class/model/Render.php");
-
 require_once("function/settypebool.php");
 
 
@@ -16,14 +13,32 @@ abstract class EntitySqlo {
    * Definir SQL para ser ejecutado directamente por el motor de base de datos
    */
 
-  public $entity; //Entity. Configuracion de la entidad
-  public $db;     //Para definir el sql es necesaria la existencia de una clase de acceso abierta, ya que ciertos metodos, como por ejemplo "escapar caracteres" lo requieren. Puede requerirse adicionalmente determinar el motor de base de datos para definir la sintaxis adecuada
-  public $sql;    //EntitySql. Atributo auxiliar para facilitar la definicion de consultas sql
+  public $entityName;
+  /**
+   * String con el nombre de la entidad (facilita la construccion)
+   */
+
+  public $entity; 
+  /**
+   * Entity
+   */
+
+  public $sql;
+  /**
+   * EntitySql
+   */
+
   protected static $instances = [];
 
-  function __destruct() {
-    Dba::dbClose();
-  } 
+  public function __construct(){
+    /**
+     * Se definen todos los recursos de forma independiente, 
+     * sin parametros en el constructor, 
+     * para facilitar el polimorfismo de las subclases
+     */
+    $this->entity = Entity::getInstanceRequire($this->entityName);
+    $this->sql = EntitySql::getInstanceRequire($this->entityName);
+  }
 
   final public static function getInstance() {
     $className = get_called_class();
@@ -52,8 +67,6 @@ abstract class EntitySqlo {
 
   final public function __wakeup(){ trigger_error('Unserializing is not allowed.', E_USER_ERROR); } //singleton
 
-  public function nextPk(){ return $this->db->uniqId(); } //siguiente identificador unico
-  
   public function jsonAll(array $rows){ foreach($rows as &$row) $row = $this->json($row); return $rows; }
   
   public function json(array $row) { return $this->sql->_json($row); }
@@ -160,16 +173,14 @@ abstract class EntitySqlo {
      * Puede incluirse un id en el array de parametro, si no esta definido se definira uno automaticamente
      * @return array("id" => "identificador principal actualizado", "sql" => "sql de actualizacion", "detail" => "detalle de campos modificados")
      */
-    $r = $this->sql->initializeInsert($row);
-    $r_ = $this->sql->format($r);
+    $r_ = $this->sql->format($row);
     $sql = $this->_insert($r_);
 
-    return array("id" => $r["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$r["id"]]);
+    return array("id" => $row["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$row["id"]]);
   }
 
   public function update(array $row) { //sql de actualizacion
-    $r = $this->sql->initializeUpdate($row);
-    $r_ = $this->sql->format($r);
+    $r_ = $this->sql->format($row);
     $sql = "
 {$this->_update($r_)}
 WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
