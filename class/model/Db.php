@@ -1,45 +1,32 @@
 <?php
 
-/**
- * @todo Implementar render en el getall
- */
-
-require_once("class/model/db/My.php");
-require_once("class/model/db/Pg.php");
-
 class Db extends mysqli {
   /**
-   * Extiende la clase mysqli para implementar excepciones y metodos adicionales
+   * Extiende la clase mysqli para implementar instancia abierta reutilizable, excepciones y metodos adicionales
    */
   public static $dbInstance = [];
-  public static $dbCount = [];
 
-  public static connect($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASSWORD, $dbname = DATA_DBNAME){
-    if (!key_exists($host.$dbname, self::$dbCount)) {
-      self::$dbCount[$host.$dbname] = 0 
-      self::$dbInstance[$host.$dbname] = $this->__construct($host, $user, $passwd, $dbname);
-    }
-    self::$dbCount[$host.$passwd]++;
-    return self::$dbInstance[$host.$passwd];
+  public static function open($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
+    if (!key_exists($host.$dbname, self::$dbInstance)) {
+      self::$dbInstance[$host.$dbname] = new self($host, $user, $passwd, $dbname);
+    } 
+    return self::$dbInstance[$host.$dbname];
   }
 
-  public function __construct($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASSWORD, $dbname = DATA_DBNAME){
+  public function __construct($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
     $this->host = $host;
     $this->dbname = $dbname;
-    parent::__construct($host, $user, $password, $dbname);
+    parent::__construct($host, $user, $passwd, $dbname);
     if($this->connect_error) throw new Exception($this->connect_error);
     $this->multi_query( "SET NAMES 'utf8'; SET lc_time_names = 'es_AR';");
   }
 
   public function __destruct(){
-    if (key_exists($host.$dbname, self::$dbCount)) {
-      self::$dbCount[$host.$dbname]--;
-      if(self::$dbCount[$host.$dbname] <= 0) {
-        self::$dbInstance[$host.$dbname]->close();
-        unset($dbCount[$host.$dbname]);
-        unset($dbInstance[$host.$dbname]);
-      }
-    } 
+    if (key_exists($this->host.$this->dbname, self::$dbInstance) && ($this->thread_id == self::$dbInstance[$this->host.$this->dbname]->thread_id)) {
+      unset(self::$dbInstance[$this->host.$this->dbname]);
+    }
+    $this->close();
+    
   }
 
   public function query($query, $resultmode = MYSQLI_STORE_RESULT){
@@ -67,29 +54,19 @@ class Db extends mysqli {
     } catch (Exception $e) {
       $this->rollback();
       throw $e;
-    } finally() {
+    } finally {
       $this->commit();
     }
   }
    
   public function fetch_all_columns($result, $fieldNumber) {
-    if ($fieldNumber >= $this->field_count($result)) return array();
+    if ($fieldNumber >= $result->field_count) return array();
 
     $column = array();
     while ($row = $this->fetch_row($result)) array_push($column,$row[$fieldNumber]);
 
     return $column;
   }
-
-  public function num_rows($result){ return $result->num_rows; } //@override
-
-  public function field_count($result){ return $result->field_count; }
-
-  public function fetch_all($result) { return $result->fetch_all(MYSQLI_ASSOC); }
-
-  public function fetch_assoc($result){ return $result->fetch_assoc(); }
-
-  public function fetch_row($result){ return $result->fetch_row(); }
 
   public function fields_info ( $table ) {
   /**
