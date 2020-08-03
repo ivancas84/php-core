@@ -16,12 +16,8 @@ class SqlFormat {
   private static $instance; //singleton
 
   public function __construct() {
-    $this->db = Dba::dbInstance();
+    $this->db = Db::open();
   }
-
-  function __destruct() {
-    Dba::dbClose();
-  } 
 
   public static function getInstance() {
     /**
@@ -39,14 +35,13 @@ class SqlFormat {
     return (is_null($value) || (strtolower($value) == 'null'));
   }
 
-  protected function conditionDateTime($field, $value, $option, $my, $pg){
+  protected function conditionDateTime($field, $value, $option, $my){
     if($c = $this->conditionIsNull($field, $option, $value)) return $c;
 
     switch($option){
       case "=~": case "!=~":
         $o = ($option == "!=~") ? "NOT " : "";
-        if($this->db->getDbms() == "mysql") return "(CAST(DATE_FORMAT({$field}, '{$my}') AS CHAR) {$o}LIKE '%{$value}%' )";
-        else return "(TO_CHAR({$field}, '{$pg}') {$o}LIKE '%{$value}%' )";
+        return "(CAST(DATE_FORMAT({$field}, '{$my}') AS CHAR) {$o}LIKE '%{$value}%' )";
       break;
 
       case "=":
@@ -58,8 +53,7 @@ class SqlFormat {
         if($value === false) return "({$field} IS NOT NULL) ";
 
       default:
-        if($this->db->getDbms() == "mysql") return "({$field} {$option} '{$value}')";
-        else return "({$field} {$option} TO_TIMESTAMP('{$value}', '{$pg}') )";
+        return "({$field} {$option} '{$value}')";
     }
   }
 
@@ -89,19 +83,19 @@ class SqlFormat {
   }
 
   public function conditionTimestamp($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d %H:%i:%s", "YYYY-MM-DD HH24:MI:SS");  
+    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d %H:%i:%s");  
   }
 
   public function conditionYear($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y", "YYYY");  
+    return $this->conditionDateTime($field, $value, $option, "%Y");  
   }
 
   public function conditionDate($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d", "YYYY-MM-DD");  
+    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d");  
   }
 
   public function conditionTime($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%H:%i:%s", "HH24:MI:SS");  
+    return $this->conditionDateTime($field, $value, $option, "%H:%i:%s");  
   }
 
   public function conditionBoolean($field, $value = NULL){
@@ -114,8 +108,7 @@ class SqlFormat {
 
     switch($option) {
       case "=~": 
-        if($this->db->getDbms() == "mysql") return "(CAST(" . $field . " AS CHAR) LIKE '%" . $value . "%' )";
-        else return "(trim(both ' ' from to_char(" . $field . ", '99999999999999999999')) LIKE '%" . $value . "%' ) ";
+        return "(CAST(" . $field . " AS CHAR) LIKE '%" . $value . "%' )";
       default: return "(" . $field . " " . $option . " " . $value . ") ";
     }
   }
@@ -143,7 +136,7 @@ class SqlFormat {
 
     if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
     $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    else return "'" . $datetime->format('Y-m-d') . "'";
+    return "'" . $datetime->format('Y-m-d') . "'";
   }
 
   public function year($value){
@@ -161,7 +154,7 @@ class SqlFormat {
 
     if ( !$datetime ) throw new Exception('Valor año incorrecto: ' . $value);
     $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    else return "'" . $datetime->format('Y') . "'";
+    return "'" . $datetime->format('Y') . "'";
   }
 
   public function boolean($value){
