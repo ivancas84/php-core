@@ -349,7 +349,6 @@ abstract class EntitySql { //Definir SQL
         /**
          * campo de agregacion general: "_label"
          * utilizar solo como condicion general
-         * No se define prefijo para su definicion 
          */
         $f = $this->mappingField($field);
         return $this->format->conditionText($f, $value, $option);
