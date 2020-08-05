@@ -66,83 +66,6 @@ class Persist {
     return $logs;
   }
 
-  public function delete($entity, $id, array $params = null){
-    $persist = EntitySqlo::getInstanceRequire($entity)->delete($id);
-    array_push($this->logs, ["sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
-  }
-
-  public function deleteAll($entity, array $ids, array $params = null){
-    if(!empty($ids)) {
-      $persist = EntitySqlo::getInstanceRequire($entity)->deleteAll($ids, $params);
-    }
-
-    array_push($this->logs, ["sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
-  }
-
-
-  public function save_($entity, array $rows = [], array $params = null) {
-      /**
-       * Procesar un conjunto de rows de una entidad
-       * $rows:
-       *   Valores a persisitir
-       *
-       * $params:
-       *   Posee datos de identificacion para determinar los valores actuales y modificarlos o eliminarlos segun corresponda
-       *   Habitualmente es un array asociativo con los siguientes elementos:
-       *     name: Nombre de la clave foranea
-       *     value: valor de la clave foranea
-       *
-       * Procedimiento:
-       *   1) obtener $ids actuales en base a $params
-       *   2) recorrer los datos a persistir $rows:
-       *      a) Combinarlos con los parametros $rowId
-       *      b) Comparar $row["id"] con $id, si es igual, eliminar $id del array
-       */
-      $idsActuales = [];
-      if(!empty($params)) $idsActuales = Ma::ids($entity, [$params["name"], '=', $params["value"]]);
-
-      foreach($rows as $row){
-          if(!empty($params["name"])) $row[$params["name"]] = $params["value"];
-
-          if(!empty($row["id"])) {
-            /**
-             * eliminar id persistido del array de $ids previamente consultado
-             */
-            $key = array_search($row["id"], $idsActuales);
-            if($key !== false) unset($idsActuales[$key]);
-            $idsActuales = array_values($idsActuales); //resetear indices
-          }
-      }
-
-      $persist = Ma::persistAll($entity, $rows, $params);
-      $this->delete($entity, $idsActuales);        
-      array_push($this->logs, [
-        "sql"=>$persist["sql"], 
-        "detail"=>$persist["detail"]
-      ]);
-  }
-
-  public function save($entity, $row) {
-      /**
-       * inserta o actualiza (persiste)
-       * @param $row: Valores a persisitir
-       */
-
-      $id = null;
-      $sql ="";
-      $detail = [];
-      
-      if(!empty($row)) {
-        $persist = Ma::persist($entity, $row);
-        $id = $persist["id"];
-        $sql = $persist["sql"];
-        $detail = $persist["detail"];
-      }
-
-      array_push($this->logs, ["sql"=>$sql, "detail"=>$detail]);
-      return $id;
-  }
-
   public function insert($entity, $row) {
     /**
      * Persistir row
@@ -165,11 +88,6 @@ class Persist {
   }
 
   public function update($entity, $row) {
-    /**
-     * Persistir row
-     * $row:
-     *   Valores a persisitir
-     */
     $id = null;
     $sql ="";
     $detail = [];
@@ -186,11 +104,24 @@ class Persist {
   }
 
   public function main($data){
-    return $this->save($this->entityName, $data);
+    if(empty($data)) return;
+
+    $ma = Ma::open();
+    $row_ = $ma->unique($this->entityName, $data);
+
+    if (!empty($row_)){ 
+      $data["id"] = $row_["id"];
+      return $this->update($this->entityName, $data);
+    } else {
+      return $this->insert($this->entityName, $data);
+    }
+
+    echo $this->getSql();
+    die("Error");
+    //$db = Db::open();
+    //$db->multi_query_transaction($this->getSql());
   }
-
 }
-
 
 
 
