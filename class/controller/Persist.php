@@ -77,8 +77,6 @@ class Persist {
     $detail = [];
     
     if(!empty($row)) {
-      print_r($row);
-      die("insert persist");
       $persist = EntitySqlo::getInstanceRequire($entity)->insert($row);
       $id = $persist["id"];
       $sql = $persist["sql"];
@@ -112,20 +110,20 @@ class Persist {
     $row_ = $ma->unique($this->entityName, $data);
     $values = EntityValues::getInstanceRequire($this->entityName)->_fromArray($data);
     if(!$values->_check()) throw new Exception($values->_getLogs()->toString());
-    
-    
+        
     if (!empty($row_)){ 
-      $data["id"] = $row_["id"];
-      return $this->update($this->entityName, $values->_toArray());
+      $values->setId($row_["id"]);
+      $id = $this->update($this->entityName, $values->_toArray());
     } else {
+      $values->setId(uniqid());
       $values->_setDefault();
-      return $this->insert($this->entityName, $values->_toArray());
+      $id = $this->insert($this->entityName, $values->_toArray());
     }
 
-    echo $this->getSql();
-    die("Error");
-    //$db = Db::open();
-    //$db->multi_query_transaction($this->getSql());
+    $db = Db::open();
+    $db->multi_query_transaction($this->getSql());
+    
+    return $id;
   }
 }
 
