@@ -348,10 +348,18 @@ abstract class EntitySql { //Definir SQL
       case $p."_label":
         /**
          * campo de agregacion general: "_label"
-         * utilizar solo como condicion general
          */
         $f = $this->mappingField($field);
         return $this->format->conditionText($f, $value, $option);
+
+      case $p."_label_search":
+        /**
+         * ccombinacion entre label y search
+         */
+        $f = $this->mappingField($p."_label");
+        $cond1 =  $this->format->conditionText($f, $value, $option);
+        $cond2 =  $this->_conditionSearch($option, $value);
+        return "({$cond1} OR {$cond2})";
     }
   }
 
@@ -396,10 +404,16 @@ abstract class EntitySql { //Definir SQL
     }
   }
 
-  public function _fields(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
-  
-  public function _fieldsDb(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (solo exclusivos)
-  
+  public function _fields(){ throw new BadMethodCallException("Not Implemented"); } 
+  /**
+   * Definir sql con los campos de la entidad
+   */
+
+  public function _fieldsExclusive(){ throw new BadMethodCallException("Not Implemented"); } 
+  /**
+   * Definir sql con los campos exclusivos de la entidad
+   */
+
   public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
 
 
@@ -440,7 +454,7 @@ abstract class EntitySql { //Definir SQL
     $option = "=~";
     //condicion estructurada de busqueda que involucra a todos los campos estructurales (excepto booleanos)
     $conditions = [];
-    foreach($this->entity->getFields() as $field){
+    foreach($this->entity->getFieldsNf() as $field){
       if($field->getDataType() == "boolean") continue;
       $c = $this->_conditionFieldStruct($this->prf().$field->getName(),$option,$value);
       array_push($conditions, $c);
@@ -696,7 +710,7 @@ abstract class EntitySql { //Definir SQL
     return $this->entity->sn_();
  
  /*return "( SELECT DISTINCT
-{$this->_fieldsDb()}
+{$this->_fieldsExclusive()}
 {$this->_from($render)}
 " . concat($this->_condition($render), 'WHERE ') . ")
 ";*/

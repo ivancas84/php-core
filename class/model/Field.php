@@ -57,25 +57,16 @@ abstract class Field {
   public $admin;
   /** 
    * Administracion
-   * al desactivarlo, no se incluye el campo en los formularios de administracion
+   * si = false, no se incluye en los formularios de administracion 
+   * si = false, no se incluye en la persistencia
    */
 
-  public $hidden = false;
-    /**
-     * Campo oculto
-     * Utilizado principalmente como campos de agregacion o campos de control
-     * Si hidden es true, por defecto se define admin = false
-     * Los campos hidden no se incluyen en la consulta (solo pueden ser definidos en consultas avanzadas)
-     * Los campos hidden no se incluyen en la condicion general _search
-     * No se incluyen en la busqueda simple
-     * Sí se definen en la búsqueda avanzada para ser utilizados en HAVING
-     */
-
-  public $db = true;
+  public $exclusive = true;
   /**
    * Campo exclusivo
-   * Un campo exclusivo puede definirse internamente en la entidad.
-   * Un campo no exlusivo debe definirse con alguna relación independiente. 
+   * Un campo exclusivo puede definirse internamente con los campos de la entidad.
+   * Un campo no exlusivo debe definirse con alguna relación independiente.
+   * Esta pensado para separar los fields de una entidad de las que no son para el caso que haya que definirse subconsulta 
    */
 
   final public static function getInstance() {
@@ -103,8 +94,6 @@ abstract class Field {
     $this->defineSubtype();
     $this->defineNotNull();
     $this->defineLength();
-    $this->defineMain();
-    $this->defineAdmin();
   }
 
   //Retornar instancia de Entity correspondiente al field
@@ -121,12 +110,11 @@ abstract class Field {
   public function getDataType(){ return $this->dataType; }
   public function getSelectValues(){ return $this->selectValues; }
   public function getType() { return $this->type; }
-  public function isHidden(){ return $this->hidden; }
   public function isMain(){ return $this->main; }
   public function isNotNull(){ return $this->notNull; }
   public function isUnique(){ return $this->unique; }  
   public function isAdmin(){ return $this->admin; }
-  public function isDb(){ return $this->db; }
+  public function isExclusive(){ return $this->exclusive; }
   
   public function isUniqueMultiple(){ 
     $fields = $this->getEntity()->getFieldsUniqueMultiple();
@@ -164,14 +152,6 @@ abstract class Field {
   protected function defineNotNull(){
     if ( is_null($this->notNull) ) {
       $this->notNull = ( ( $this->subtype == "checkbox" ) ) ? true : false;
-    }
-  }
-
-  protected function defineMain(){ if ( $this->isHidden() ) { $this->main = false; } }
-
-  protected function defineAdmin(){
-    if ( is_null($this->admin) ) {
-      $this->admin = ($this->isHidden()) ?  false : true;
     }
   }
 
