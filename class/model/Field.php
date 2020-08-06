@@ -57,7 +57,8 @@ abstract class Field {
   public $admin;
   /** 
    * Administracion
-   * al desactivarlo, no se incluye el campo en los formularios de administracion
+   * si = false, no se incluye en los formularios de administracion 
+   * si = false, no se incluye en la persistencia
    */
 
   public $hidden = false;
@@ -75,7 +76,8 @@ abstract class Field {
   /**
    * Campo exclusivo
    * Un campo exclusivo puede definirse internamente en la entidad.
-   * Un campo no exlusivo debe definirse con alguna relación independiente. 
+   * Un campo no exlusivo debe definirse con alguna relación independiente.
+   * Esta pensado para separar los fields de una entidad de las que no son para el caso que haya que definirse subconsulta 
    */
 
   final public static function getInstance() {
