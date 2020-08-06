@@ -31,7 +31,7 @@ class Ids {
   public function main($display) {
     $displayRender = DisplayRender::getInstanceRequire($this->entityName);
     $render = $displayRender->main($display);
-    return Ma::ids($this->entityName, $render);    
+    return Ma::open()->ids($this->entityName, $render);    
   }
 
 }
