@@ -167,7 +167,7 @@ class SqlFormat {
 
     $v = (is_numeric($value)) ? strval($value) : $value;
     if (!is_string($v)) throw new Exception('Valor de caracteres incorrecto: ' . $v);
-    else $escapedString = $this->db->escapeString($v);
+    else $escapedString = $this->db->escape_string($v);
     return "'" . $escapedString . "'";
   }
 
