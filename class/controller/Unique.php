@@ -29,7 +29,7 @@ class Unique {
 
   public function main($params) {
     //$params = ["domicilio"=>"1543133270054093"];
-    return Ma::unique($this->entityName, $params);
+    return Ma::open()->unique($this->entityName, $params);
   }
 
 }
