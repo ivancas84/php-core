@@ -348,10 +348,18 @@ abstract class EntitySql { //Definir SQL
       case $p."_label":
         /**
          * campo de agregacion general: "_label"
-         * utilizar solo como condicion general
          */
         $f = $this->mappingField($field);
         return $this->format->conditionText($f, $value, $option);
+
+      case $p."_label_search":
+        /**
+         * ccombinacion entre label y search
+         */
+        $f = $this->mappingField($p."_label");
+        $cond1 =  $this->format->conditionText($f, $value, $option);
+        $cond2 =  $this->_conditionSearch($option, $value);
+        return "({$cond1} OR {$cond2})";
     }
   }
 
@@ -440,7 +448,7 @@ abstract class EntitySql { //Definir SQL
     $option = "=~";
     //condicion estructurada de busqueda que involucra a todos los campos estructurales (excepto booleanos)
     $conditions = [];
-    foreach($this->entity->getFields() as $field){
+    foreach($this->entity->getFieldsNf() as $field){
       if($field->getDataType() == "boolean") continue;
       $c = $this->_conditionFieldStruct($this->prf().$field->getName(),$option,$value);
       array_push($conditions, $c);
