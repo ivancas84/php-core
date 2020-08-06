@@ -186,7 +186,7 @@ abstract class EntitySqlo {
 WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
 ";
 
-    return array("id" => $r["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$r["id"]]);
+    return array("id" => $row["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$row["id"]]);
   }
 
   public function updateAll($row, array $ids) { //sql de actualizacion para un conjunto de ids

@@ -1,5 +1,7 @@
 <?php
 
+require_once("function/settypebool.php");
+
 class Db extends mysqli {
   /**
    * Extiende la clase mysqli para implementar instancia abierta reutilizable, excepciones y metodos adicionales
@@ -112,7 +114,7 @@ WHERE (COLUMNS.TABLE_SCHEMA = '" .  $this->dbname . "') AND (COLUMNS.TABLE_NAME 
 ORDER BY COLUMNS.ORDINAL_POSITION;";
 
     $result = $this->query($sql);
-    $r_aux = $this-> fetch_all ( $result ) ;
+    $r_aux =  $result->fetch_all(MYSQLI_ASSOC) ;
     $r = array () ;
 
     foreach ($r_aux as $field_aux ) {
@@ -157,7 +159,7 @@ ORDER BY COLUMNS.ORDINAL_POSITION;";
      */
     $sql = "SHOW TABLES FROM " . $this->dbname . ";";
     $result = $this->query($sql);
-    return (!$result) ? false : fetch_all_columns ( $result , 0 );
+    return (!$result) ? false : $this->fetch_all_columns ( $result , 0 );
   }
 
 }

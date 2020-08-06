@@ -75,8 +75,8 @@ abstract class EntityValues {
   }
 
   abstract public function _check();
-  abstract public function _fromArray(array $row = NULL, $prf = "");
-  abstract public function _toArray($prf = "");
+  abstract public function _fromArray(array $row = NULL, string $prf = "");
+  abstract public function _toArray(string $prf = "");
   
   abstract public function _isEmpty();
   abstract public function _setDefault();

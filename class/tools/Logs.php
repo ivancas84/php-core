@@ -59,4 +59,13 @@ class Logs {
     return $this->logs;
   }
 
+  public function toString(){
+    return  implode(', ', array_map(function ($entry) {
+     
+    return implode(', ', $entry);
+     
+    }, $this->logs));
+    
+  }
+
 }

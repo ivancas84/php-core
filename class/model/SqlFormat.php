@@ -125,18 +125,37 @@ class SqlFormat {
     return $value;
   }
 
-  public function datetime($value){
+  public function date($value){
     if($this->isNull($value)) return 'null';
 
-    if(is_object($value) && get_class($value) == "DateTime"){
-      $datetime = $value;
-    } else {
-      $datetime = new DateTime($value);
-    }
+    $datetime = (is_object($value) && get_class($value) == "DateTime") ?
+      $value : new DateTime($value);
 
     if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
     $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
     return "'" . $datetime->format('Y-m-d') . "'";
+  }
+
+  public function time($value){
+    if($this->isNull($value)) return 'null';
+
+    $datetime = (is_object($value) && get_class($value) == "DateTime") ?
+      $value : new DateTime($value);
+
+    if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
+    $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
+    return "'" . $datetime->format('H:i:s') . "'";
+  }
+
+  public function timestamp($value){
+    if($this->isNull($value)) return 'null';
+
+    $datetime = (is_object($value) && get_class($value) == "DateTime") ?
+      $value : new DateTime($value);
+
+    if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
+    $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
+    return "'" . $datetime->format('Y-m-d H:i:s') . "'";
   }
 
   public function year($value){
@@ -167,7 +186,7 @@ class SqlFormat {
 
     $v = (is_numeric($value)) ? strval($value) : $value;
     if (!is_string($v)) throw new Exception('Valor de caracteres incorrecto: ' . $v);
-    else $escapedString = $this->db->escapeString($v);
+    else $escapedString = $this->db->escape_string($v);
     return "'" . $escapedString . "'";
   }
 
