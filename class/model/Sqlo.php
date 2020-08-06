@@ -65,13 +65,9 @@ abstract class EntitySqlo {
 
   final public function __clone() { trigger_error('Clone is not allowed.', E_USER_ERROR); } //singleton
 
-  final public function __wakeup(){ trigger_error('Unserializing is not allowed.', E_USER_ERROR); } //singleton
-
-  public function jsonAll(array $rows){ foreach($rows as &$row) $row = $this->json($row); return $rows; }
+  final public function __wakeup(){ trigger_error('Unserializing is not allowed.', E_USER_ERROR); } //singleton }
   
   public function json(array $row) { return $this->sql->_json($row); }
-
-  public function valuesAll(array $rows){ foreach($rows as &$row) $row = $this->values($row); return $rows; }
 
   public function values(array $row){ //retornar instancias de EntityValues
     /**

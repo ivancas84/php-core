@@ -15,7 +15,9 @@ class GetAllApi {
       $ids = Filter::jsonPostRequired(); //siempre deben recibirse ids
       $controller = GetAll::getInstanceRequire($this->entityName);
       $rows = $controller->main($ids);
-      echo json_encode(EntitySqlo::getInstanceRequire($this->entityName)->jsonAll($rows));
+      $sqlo = EntitySqlo::getInstanceRequire($this->entityName);
+      foreach($rows as &$row) $row = $sqlo->json($row);
+      echo json_encode($rows);
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());
       http_response_code(500);
