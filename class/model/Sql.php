@@ -404,10 +404,16 @@ abstract class EntitySql { //Definir SQL
     }
   }
 
-  public function _fields(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (exclusivos y generales)
-  
-  public function _fieldsDb(){ throw new BadMethodCallException("Not Implemented"); } //Definir sql con los campos de la entidad (solo exclusivos)
-  
+  public function _fields(){ throw new BadMethodCallException("Not Implemented"); } 
+  /**
+   * Definir sql con los campos de la entidad
+   */
+
+  public function _fieldsExclusive(){ throw new BadMethodCallException("Not Implemented"); } 
+  /**
+   * Definir sql con los campos exclusivos de la entidad
+   */
+
   public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
 
 
@@ -704,7 +710,7 @@ abstract class EntitySql { //Definir SQL
     return $this->entity->sn_();
  
  /*return "( SELECT DISTINCT
-{$this->_fieldsDb()}
+{$this->_fieldsExclusive()}
 {$this->_from($render)}
 " . concat($this->_condition($render), 'WHERE ') . ")
 ";*/
