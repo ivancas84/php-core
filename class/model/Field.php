@@ -43,7 +43,7 @@ abstract class Field {
     //typeahead (fk)
     //file (fk)
 
-  public $main = null; //flag para indicar si es un campo principal.
+  public $main = false; //flag para indicar si es un campo principal.
     //Por defecto se define la clave primaria como campo principal. En versiones anteriores se hacia la siguiente logica:
     // Si tiene algun campo main, se define el main
     // Si no tiene campo main, se define el unique
@@ -54,7 +54,7 @@ abstract class Field {
     //si subtype = "select_text", deben asignarse valores "text"
     //si subtype = "select_int", deben asignarse valores "int"
 
-  public $admin;
+  public $admin = true;
   /** 
    * Administracion
    * si = false, no se incluye en los formularios de administracion 
