@@ -63,7 +63,6 @@ abstract class EntitySql { //Definir SQL
   public function initializeInsert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //inicializar valores para insercion
   public function initializeUpdate(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //inicializar valores para actualizacion
   public function format(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //formato de sql
-  public function _json(array $row) { throw new BadMethodCallException("No implementado"); }
 
   public function formatIds(array $ids = []) {
     /**

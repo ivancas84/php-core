@@ -34,7 +34,9 @@ class All {
     $render = $displayRender->main($display);
     $ma = Ma::open();
     $rows = $ma->all($this->entityName, $render);
-    return EntitySqlo::getInstanceRequire($this->entityName)->jsonAll($rows);
+    $sqlo = EntitySqlo::getInstanceRequire($this->entityName);
+    foreach($rows as &$row) $row = $sqlo->json($row);
+    return $rows;
   }
 
 }
