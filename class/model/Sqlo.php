@@ -79,7 +79,7 @@ abstract class EntitySqlo {
      * Este metodo debe sobrescribirse en el caso de que existan relaciones
      */
     $row_ = [];
-    $row_[$this->entity->getName()] = EntityValues::getInstanceRequire($this->entity->getName())->_fromArray($row));
+    $row_[$this->entity->getName()] = EntityValues::getInstanceRequire($this->entity->getName())->_fromArray($row);
     return $row_;
   }
 
