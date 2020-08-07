@@ -67,7 +67,7 @@ abstract class EntitySqlo {
 
   final public function __wakeup(){ trigger_error('Unserializing is not allowed.', E_USER_ERROR); } //singleton }
   
-  public function json(array $row) { return $this->sql->_json($row); }
+  public function json(array $row) { return EntityValues::getInstanceRequire($this->entity->getName())->_fromArray($row)->_toArray(); }
 
   public function values(array $row){ //retornar instancias de EntityValues
     /**
@@ -79,9 +79,8 @@ abstract class EntitySqlo {
      * Este metodo debe sobrescribirse en el caso de que existan relaciones
      */
     $row_ = [];
-
-    $json = ($row && !is_null($row['id'])) ? $this->sql->_json($row) : null;
-    $row_[$this->entity->getName()] = EntityValues::getInstanceRequire($this->entity->getName(), $json);
+    $row_[$this->entity->getName()] = EntityValues::getInstanceRequire($this->entity->getName())->_fromArray($row));
+    return $row_;
   }
 
   public function all($render = NULL) {
@@ -253,6 +252,5 @@ WHERE
 
 
   }
-  
 
 }
