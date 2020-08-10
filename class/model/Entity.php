@@ -24,9 +24,14 @@ abstract class Entity {
    * Si es null, se considera el mismo nombre que la entidad
    */
 
-  public $identifier = []; //define un nuevo campo "identifier" para facilitar las consultas y busquedas
+  public $identifier = [];
   /**
-   * El campo identifier se define como condicion y como campo definido
+   * Define un nuevo campo "identifier" para facilitar las consultas, busquedas, e importacion
+   * El campo identifier consiste en un array de string con los atributos que identifican univocamente a la entidad, 
+   * pueden pertenecer a otra entidad, en este caso utilizar los prefijos correspondientes
+   * no utilizar ids para su definicion
+   * por ejemplo:
+   *   public $identifier = ["fecha_anio", "fecha_semestre","alu_per_numero_documento"];
    */
 
   final public static function getInstance() {
