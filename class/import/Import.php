@@ -2,7 +2,6 @@
 
 require_once("class/model/Sqlo.php");
 require_once("class/model/Ma.php");
-require_once("class/model/db/Dba.php");
 
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
@@ -169,11 +168,16 @@ abstract class Import {
     }
 
     public function queryEntityField_($name, $field, $id = null){
+      /**
+       * Consulta a la base de datos de la entidad $name
+       * Utilizando el campo field y el valor almacenado (deberia ser unico)
+       * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
+       */
         if(!$id) $id = $name;
         $this->dbs[$id] = [];
         if(empty($this->ids[$id])) return;
 
-        $rows = Ma::all($name, [$field,"=",$this->ids[$id]]);
+        $rows = Ma::open()->all($name, [$field,"=",$this->ids[$id]]);
     
         $this->dbs[$id] = array_combine_key(
           $rows,
@@ -183,7 +187,7 @@ abstract class Import {
 
     public function queryEntityIdentifier_($name){        
         if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
-            Ma::identifier($name, $this->ids[$name]),
+            Ma::open()->identifier($name, $this->ids[$name]),
             Entity::getInstanceRequire($name)->identifier
         );;
     }
