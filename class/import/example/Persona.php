@@ -7,9 +7,6 @@ require_once("class/tools/Validation.php");
 class ImportPersona extends Import {
   
   public function element($i, $data){
-    /**
-     * Definir elemento a procear
-     */
     $element = new ImportPersonaElement($i, $data); 
     array_push($this->elements, $element);
   }

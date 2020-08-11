@@ -37,12 +37,85 @@ abstract class Import {
     }
 
     abstract public function element($i, $data);
+    /**
+     * En funcion de los datos de entrada, se definen un elemento
+     * Un elemento posee todos los datos que posteriormente seran insertados y los posibles errores que puede haber
+     * Existe una clase abstracta Element que posee un conjunto de metodos de uso habitual
+     * 
+     * Ejemplo:
+     * {
+     *   $element = new ImportPersonaElement($i, $data); 
+     *   array_push($this->elements, $element);
+     * }
+     */
         
     abstract public function identify();
+    /**
+     * Se completa el atributo ids definiendo por cada entidad un identificador
+     * Cobra particular importancia el uso del atributo identifier de cada entidad
+     * 
+     * Ejemplo:
+     * {
+     *   ***** PERSONA (utiliza campo unico de identificacion) *****
+     *   $this->ids["persona"] = [];
+     *   foreach($this->elements as &$element){
+     *     $dni = $element->entities["persona"]->numeroDocumento();
+     *     if(Validation::is_empty($dni)){
+     *       $element->process = false;                
+     *       $element->logs->addLog("persona", "error", "El número de documento no se encuentra definido");
+     *       continue;
+     *     }
+     *   }
+     *   
+     *   //OPCIONAL por si no se quiere definir dos veces la misma persona
+     *   if(in_array($dni, $this->ids["persona"])) $element->logs->addLog("persona","error","El número de documento ya existe");
+     *   
+     *   array_push($this->ids["persona"], $element->entities["persona"]->numeroDocumento());
+     * 
+     *   ***** LUGAR (utiliza "identifier")*****
+     *   $this->ids["lugar"] = [];
+     *   $element->entities["lugar"]->_setIdentifier(
+     *     $element->entities["lugar"]->distrito().UNDEFINED.
+     *     $element->entities["lugar"]->provincia()
+     *   );
+     *
+     *   if(!in_array($element->entities["lugar"]->_identifier(), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_identifier());
+     * }
+     */
 
     abstract public function query();
+    /**
+     * Consulta de existencia de datos en la base de datos para evitar volver a ejecutar o actualizar datos existentes
+     * Los datos consultados se cargan en el atributo dbs
+     * 
+     * Ejemplo: Pueden utilizarse los metodos predefinidos queryEntityField, queryEntityIdentifier
+     * {
+     *   $this->queryEntityField_("persona","numero_documento");
+     * }
+     **/
 
     abstract public function process();
+    /**
+     * Procesamiento de datos: Define el SQL de actualizacion o insercion de datos
+     * 
+     * Ejemplo: Pueden utilizarse metodos predefinidos processSource, insertSource, updateSource
+     * 
+     * {
+     *   foreach($this->elements as &$element) {
+     *   if($element->logs->isError()) continue;
+     *
+     *   if(key_exists($element->entities["persona"]->numeroDocumento(), $this->dbs["persona"])){
+     *     $personaExistente = EntityValues::getInstanceRequire("persona");
+     *     $dni = $element->entities["persona"]->numeroDocumento();
+     *     $personaExistente->_fromArray($this->dbs["persona"][$dni]);
+     *     if(!$element->entities["persona"]->checkNombresParecidos($personaExistente)){                    
+     *       $element->logs->addLog("persona", "error", "En la base existe una persona cuyos datos no coinciden");
+     *       continue;
+     *     }
+     *   }
+     *   $element->sql .= $this->processSource_("persona", $element->entities, $element->entities["persona"]->numeroDocumento());
+     * }
+     */
 
     public function summary() {
         $informe = "<h3>Resultado " . $this->id . "</h3>";
@@ -120,11 +193,8 @@ abstract class Import {
             foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
             //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
             // echo "<pre>";
-            // print_r($this->headers);
-            // print_r($datos);
             $e = @array_combine($this->headers, $datos);
             $this->element($i, $e);                  
-
             //if($i==100) break;           
         }
     }
@@ -154,15 +224,15 @@ abstract class Import {
         file_put_contents($this->pathSummary . ".sql", $sql);
     }
 
-    public function identifyValue_($id, $value){
+    protected function identifyValue($id, $value){
         if(!isset($this->ids[$id])) $this->ids[$id] = [];
         if(!in_array($value, $this->ids[$id])) array_push($this->ids[$id], $value); 
     }
 
-    public function queryEntityField_($name, $field, $id = null){
+    protected function queryEntityField($name, $field, $id = null){
       /**
        * Consulta a la base de datos de la entidad $name
-       * Utilizando el campo field y el valor almacenado (deberia ser unico)
+       * Utilizando el campo field (supuestamente unico) y el valor almacenado de field desde el atributo ids
        * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
        */
         if(!$id) $id = $name;
@@ -177,7 +247,7 @@ abstract class Import {
         );
     }
 
-    public function queryEntityIdentifier_($name){        
+    protected function queryEntityIdentifier($name){        
         if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
             Ma::open()->identifier($name, $this->ids[$name]),
             Entity::getInstanceRequire($name)->identifier
@@ -185,21 +255,21 @@ abstract class Import {
     }
     
 
-    public function processSource_($name, &$source, $value, $id = null){
+    protected function processSource($name, &$source, $value, $id = null){
         if(empty($id)) $id = $name;
         
         if(key_exists($value, $this->dbs[$id])){
           $existente = EntityValues::getInstanceRequire($name);
           $existente->_fromArray($this->dbs[$id][$value]);
-          $sql = $this->updateSource_($source, $name, $existente);
+          $sql = $this->updateSource($source, $name, $existente);
         } else {        
-            $sql = $this->insertSource_($source, $name);
+            $sql = $this->insertSource($source, $name);
         }
         $this->dbs[$id][$value] = $source[$name]->_toArray();
         return $sql;
     }
 
-    public function insertSource_(&$source, $name){
+    protected function insertSource(&$source, $name){
 
         if(Validation::is_empty($source[$name]->id())) $source[$name]->setId(uniqid()); 
         $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->_toArray());
@@ -207,7 +277,7 @@ abstract class Import {
         return $persist["sql"];
     }
       
-    public function updateSource_(&$source, $name, $existente){
+    protected function updateSource(&$source, $name, $existente){
         $source[$name]->setId($existente->id());
         if(!$source[$name]->_equalTo($existente)) {
           $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
