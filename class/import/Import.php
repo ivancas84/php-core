@@ -61,7 +61,7 @@ abstract class Import {
                 $informe .= "
     <div class=\"card\">
     <ul class=\"list-group list-group-flush\">
-        <li class=\"list-group-item active\">FILA " . $i . ": " . $element->entities["persona"]->nombre() . " " . $element->entities["persona"]->numeroDocumento() . "</li>
+        <li class=\"list-group-item active\">FILA " . $i . "</li>
 ";                
                 if($element->logs()->isError()) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
 ";
@@ -123,6 +123,11 @@ abstract class Import {
             // print_r($this->headers);
             // print_r($datos);
             $e = array_combine($this->headers, $datos);
+            if(!$e){
+              echo "error de encabezados";
+              print_r($datos);
+              continue;
+            }
             $this->element($i, $e);                  
 
             //if($i==100) break;           
@@ -141,24 +146,16 @@ abstract class Import {
 
     public function persist(){
         $sql = "";
+        $db = Db::open();
         foreach($this->elements as $element) {
             if($element->logs->isError()) continue;
-            
-            $db = Dba::dbInstance();
             try {
                 $sql .= $element->sql;
-                $db->multiQueryTransaction($element->sql);
+                $db->multi_query_transaction($element->sql);
             } catch(Exception $exception){
-                echo "<pre>";
-                echo $exception->getMessage();
-                echo "<br>";
                 $element->logs->addLog("persist","error",$exception->getMessage());
-            } finally {
-                Dba::dbClose();
             }
         }
-        echo "<pre>";
-        echo $sql;
         file_put_contents($this->pathSummary . ".sql", $sql);
     }
 
@@ -197,7 +194,6 @@ abstract class Import {
         if(empty($id)) $id = $name;
         
         if(key_exists($value, $this->dbs[$id])){
-            
           $existente = EntityValues::getInstanceRequire($name);
           $existente->_fromArray($this->dbs[$id][$value]);
           $sql = $this->updateSource_($source, $name, $existente);
@@ -209,6 +205,8 @@ abstract class Import {
     }
 
     public function insertSource_(&$source, $name){
+
+        if(Validation::is_empty($source[$name]->id())) $source[$name]->setId(uniqid()); 
         $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->_toArray());
         $source[$name]->setId($persist["id"]);
         return $persist["sql"];
