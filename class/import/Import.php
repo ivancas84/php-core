@@ -97,24 +97,35 @@ abstract class Import {
     abstract public function process();
     /**
      * Procesamiento de datos: Define el SQL de actualizacion o insercion de datos
+     * Es en esta etapa que se realizan las relaciones
      * 
      * Ejemplo: Pueden utilizarse metodos predefinidos processSource, insertSource, updateSource
      * 
      * {
+     *   ***** PERSONA *****
      *   foreach($this->elements as &$element) {
-     *   if($element->logs->isError()) continue;
+     *     if(!$element->process) continue;
      *
-     *   if(key_exists($element->entities["persona"]->numeroDocumento(), $this->dbs["persona"])){
-     *     $personaExistente = EntityValues::getInstanceRequire("persona");
-     *     $dni = $element->entities["persona"]->numeroDocumento();
-     *     $personaExistente->_fromArray($this->dbs["persona"][$dni]);
-     *     if(!$element->entities["persona"]->checkNombresParecidos($personaExistente)){                    
-     *       $element->logs->addLog("persona", "error", "En la base existe una persona cuyos datos no coinciden");
-     *       continue;
+     *     if(key_exists($element->entities["persona"]->numeroDocumento(), $this->dbs["persona"])){
+     *       $personaExistente = EntityValues::getInstanceRequire("persona");
+     *       $dni = $element->entities["persona"]->numeroDocumento();
+     *       $personaExistente->_fromArray($this->dbs["persona"][$dni]);
+     *       if(!$element->entities["persona"]->checkNombresParecidos($personaExistente)){                    
+     *         $element->logs->addLog("persona", "error", "En la base existe una persona cuyos datos no coinciden");
+     *         continue;
+     *       }
      *     }
+     *     $element->sql .= $this->processSource_("persona", $element->entities, $element->entities["persona"]->numeroDocumento());
+     * 
+     *   ***** INSCRIPCION (ejemplo de relacion) *****
+     *   foreach($this->elements as &$element) {
+     *     if(!$element->process) continue;
+     *     $element->entities["inscripcion"]->setAlumno($element->entities["persona"]->id());
+     *     $this->processSource_("inscripcion", $element->entities, $element->entities["inscripcion"]->_identifier());
      *   }
-     *   $element->sql .= $this->processSource_("persona", $element->entities, $element->entities["persona"]->numeroDocumento());
      * }
+     * 
+     * 
      */
 
     public function summary() {
