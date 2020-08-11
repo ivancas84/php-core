@@ -34,7 +34,7 @@ abstract class ImportElement {
 
     public function logsEntities(){
         $logs = [];
-        foreach($this->entities as $entity) $logs = array_merge($logs, $entity->_logs()->getLogs());
+        foreach($this->entities as $entity) $logs = array_merge($logs, $entity->_getLogs()->getLogs());
         return $logs;
     }
 
