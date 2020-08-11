@@ -73,6 +73,20 @@ abstract class EntityValues {
     $className = $prf.snake_case_to("XxYy", $entity);
     return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
   }
+  
+  public function _reset(){
+    /**
+     * sobrescribir en caso de que se requiera reseteo
+     * el reseteo consiste en redefinir un valor al atributo en base a ciertas condiciones
+     * no implica que el valor este erroneo, sino que puede ser mejor formateado
+     * por ejemplo el usuario ingresa el nombre en mayusculas y conviene que este primero con mayusculas y despues con minusculas
+     * antes de resetear verificar si no tiene error y si no esta vacio
+     * el reseteo se realiza generalmente antes de persistir
+     * No se realiza el reseteo directamente en el seteo porque demanda tiempo de ejecucion,
+     * si un valor se setea de la base de datos se supone que esta bien
+     * por eso el reseteo se define como un metodo aparte que debe ser invocado si corresponde
+     */
+  }
 
   abstract public function _check();
   abstract public function _fromArray(array $row = NULL, string $prf = "");

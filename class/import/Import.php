@@ -150,11 +150,11 @@ abstract class Import {
                 if($element->logs->isError()) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
 ";
                 foreach($errores as $key => $logs) {
-                    foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . ": " .$log["data"]."</li>
+                    foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . " (error): " .$log["data"]."</li>
 ";
                 }
                 foreach($advertencias as $key => $logs) {   
-                    foreach($logs as $log) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $key . ": " .$log["data"]. "</li>
+                    foreach($logs as $log) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $key . " (advertencia): " .$log["data"]. "</li>
 ";
                 }
                 $informe .= "    </ul>
@@ -177,7 +177,6 @@ abstract class Import {
                 $i++;
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
                 $e = array_combine($encabezados, $datos);
-
                 $this->element($i, $e);                  
                 //if($i==100) break;           
             }
@@ -203,7 +202,10 @@ abstract class Import {
                         
             foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
             //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
-            // echo "<pre>";
+            //echo "<pre>";
+            //print_r($this->headers);
+            //print_r($datos);
+          
             $e = @array_combine($this->headers, $datos);
             $this->element($i, $e);                  
             //if($i==100) break;           
@@ -224,10 +226,10 @@ abstract class Import {
         $sql = "";
         $db = Db::open();
         foreach($this->elements as $element) {
-            if($element->logs->isError()) continue;
+            if(!$element->process || !$element->sql) continue;
             try {
-                $sql .= $element->sql;
-                $db->multi_query_transaction($element->sql);
+              $sql .= $element->sql;
+              $db->multi_query_transaction($element->sql);
             } catch(Exception $exception){
                 $element->logs->addLog("persist","error",$exception->getMessage());
             }
@@ -294,7 +296,6 @@ abstract class Import {
           $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
           return $persist["sql"];
         }
-    
         return "";
     }
 
