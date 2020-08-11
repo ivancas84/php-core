@@ -122,12 +122,7 @@ abstract class Import {
             // echo "<pre>";
             // print_r($this->headers);
             // print_r($datos);
-            $e = array_combine($this->headers, $datos);
-            if(!$e){
-              echo "error de encabezados";
-              print_r($datos);
-              continue;
-            }
+            $e = @array_combine($this->headers, $datos);
             $this->element($i, $e);                  
 
             //if($i==100) break;           

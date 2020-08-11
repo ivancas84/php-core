@@ -20,7 +20,6 @@ abstract class ImportElement {
         $this->setEntities($data);
     }
 
-    public function logs() { return $this->logs; }
     abstract function setEntities($data);
     
     public function setEntity($data, $name, $prefix = ""){
@@ -28,6 +27,11 @@ abstract class ImportElement {
        * Comportamiento por defecto para setear una entidad
        */
       $this->entities[$name] = EntityValues::getInstanceRequire($name);
+      if(!$data) {
+        $this->logs->addLog("define", "error", "Error al definir datos iniciales");                
+        $this->process = false;
+        return;
+      }
       $this->entities[$name]->_setDefault();
       $this->entities[$name]->_fromArray($data, $prefix);
     }
