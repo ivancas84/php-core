@@ -54,7 +54,7 @@ abstract class Import {
             $i++;
             $errores = [];
             $advertencias = [];
-            if(!empty($element->logs()->getLogs())) $errores = array_merge($errores, $element->logs()->getLogs());
+            if(!empty($element->logs->getLogs())) $errores = array_merge($errores, $element->logs->getLogs());
             if(!empty($element->logsEntities())) $advertencias = array_merge($advertencias, $element->logsEntities());
             
             if(count($errores) || count($advertencias)){
@@ -63,7 +63,7 @@ abstract class Import {
     <ul class=\"list-group list-group-flush\">
         <li class=\"list-group-item active\">FILA " . $i . "</li>
 ";                
-                if($element->logs()->isError()) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
+                if($element->logs->isError()) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
 ";
                 foreach($errores as $key => $logs) {
                     foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . ": " .$log["data"]."</li>
