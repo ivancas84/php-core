@@ -74,19 +74,19 @@ abstract class EntityValues {
     return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
   }
   
-  public function _reset(){
+  abstract public function _reset();
     /**
-     * sobrescribir en caso de que se requiera reseteo
      * el reseteo consiste en redefinir un valor al atributo en base a ciertas condiciones
      * no implica que el valor este erroneo, sino que puede ser mejor formateado
+     * el seteo realiza un formato inicial, el reseteo un formato adicional que requiere mas tiempo de ejecucion
      * por ejemplo el usuario ingresa el nombre en mayusculas y conviene que este primero con mayusculas y despues con minusculas
-     * antes de resetear verificar si no tiene error y si no esta vacio
-     * el reseteo se realiza generalmente antes de persistir
+     * el reseteo debería hacerse antes del chequeo de errores, un valor sin resetear puede ser considerado erroneo
+     * antes de resetear si no esta vacio o indefinido
      * No se realiza el reseteo directamente en el seteo porque demanda tiempo de ejecucion,
+     * sobre todo si el valor se obtiene de la base de datos
      * si un valor se setea de la base de datos se supone que esta bien
      * por eso el reseteo se define como un metodo aparte que debe ser invocado si corresponde
      */
-  }
 
   abstract public function _check();
   abstract public function _fromArray(array $row = NULL, string $prf = "");
@@ -95,12 +95,6 @@ abstract class EntityValues {
   abstract public function _isEmpty();
   abstract public function _setDefault();
   public function _getLogs(){ return $this->_logs; }
-
-  protected function _setLogsValidation($fieldName, Validation $validation){
-    $this->_logs->resetLogs($fieldName);
-    foreach($validation->getErrors() as $data){ $this->_logs->addLog($fieldName, "error", $data); }
-    return $validation->isSuccess();
-  }
 
   public function _setIdentifier($identifier){ $this->_identifier = $identifier; }
   public function _getIdentifier($format = null){ return Format::convertCase($this->_identifier, $format); }
