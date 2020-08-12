@@ -99,7 +99,7 @@ abstract class Import {
      * Procesamiento de datos: Define el SQL de actualizacion o insercion de datos
      * Es en esta etapa que se realizan las relaciones
      * 
-     * Ejemplo: Pueden utilizarse metodos predefinidos processSource, insertSource, updateSource
+     * Ejemplo: Pueden utilizarse metodos predefinidos processElement, insertElement, updateElement
      * 
      * {
      *   ***** PERSONA *****
@@ -115,13 +115,13 @@ abstract class Import {
      *         continue;
      *       }
      *     }
-     *     $element->sql .= $this->processSource_("persona", $element->entities, $element->entities["persona"]->numeroDocumento());
+     *     $element->sql .= $this->processElement("persona", $element->entities, $element->entities["persona"]->numeroDocumento());
      * 
      *   ***** INSCRIPCION (ejemplo de relacion) *****
      *   foreach($this->elements as &$element) {
      *     if(!$element->process) continue;
      *     $element->entities["inscripcion"]->setAlumno($element->entities["persona"]->id());
-     *     $this->processSource_("inscripcion", $element->entities, $element->entities["inscripcion"]->_identifier());
+     *     $this->processElement("inscripcion", $element->entities, $element->entities["inscripcion"]->_identifier());
      *   }
      * }
      * 
@@ -136,25 +136,25 @@ abstract class Import {
         $i = 0;
         foreach($this->elements as $element) {
             $i++;
-            $errores = [];
-            $advertencias = [];
-            if(!empty($element->logs->getLogs())) $errores = array_merge($errores, $element->logs->getLogs());
-            if(!empty($element->logsEntities())) $advertencias = array_merge($advertencias, $element->logsEntities());
+            $logsElement = [];
+            $logsEntities = [];
+            if(!empty($element->logs->getLogs())) $logsElement = array_merge($logsElement, $element->logs->getLogs());
+            if(!empty($element->logsEntities())) $logsEntities = array_merge($logsEntities, $element->logsEntities());
             
-            if(count($errores) || count($advertencias)){
+            if(count($logsElement) || count($logsEntities)){
                 $informe .= "
     <div class=\"card\">
     <ul class=\"list-group list-group-flush\">
         <li class=\"list-group-item active\">FILA " . $i . "</li>
 ";                
-                if($element->logs->isError()) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
+                if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
 ";
-                foreach($errores as $key => $logs) {
-                    foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . " (error): " .$log["data"]."</li>
+                foreach($logsElement as $key => $logs) {
+                    foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . " (". $log["status"]. "): " .$log["data"]."</li>
 ";
                 }
-                foreach($advertencias as $key => $logs) {   
-                    foreach($logs as $log) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $key . " (advertencia): " .$log["data"]. "</li>
+                foreach($logsEntities as $key => $logs) {   
+                    foreach($logs as $log) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $key . " (". $log["status"]. "): " .$log["data"]. "</li>
 ";
                 }
                 $informe .= "    </ul>
@@ -226,7 +226,7 @@ abstract class Import {
         $sql = "";
         $db = Db::open();
         foreach($this->elements as $element) {
-            if(!$element->process || !$element->sql) continue;
+            if(!$element->process) continue;
             try {
               $sql .= $element->sql;
               $db->multi_query_transaction($element->sql);
@@ -268,35 +268,42 @@ abstract class Import {
     }
     
 
-    protected function processSource($name, &$source, $value, $id = null){
+    protected function processElement($name, &$element, $value, $id = null){
+        /**
+         * @param $name Nombre de la entidad
+         * @param $element Elemento a procesar
+         * @param $value Valor de la entidad que la identifica univocamente
+         * @param @id Identificador auxiliar de la entidad
+         */
         if(empty($id)) $id = $name;
         
         if(key_exists($value, $this->dbs[$id])){
           $existente = EntityValues::getInstanceRequire($name);
           $existente->_fromArray($this->dbs[$id][$value]);
-          $sql = $this->updateSource($source, $name, $existente);
+          $this->updateElement($element, $name, $existente);
         } else {        
-            $sql = $this->insertSource($source, $name);
+            $this->insertElement($element, $name);
         }
-        $this->dbs[$id][$value] = $source[$name]->_toArray();
-        return $sql;
+        $this->dbs[$id][$value] = $element->entities[$name]->_toArray();
     }
 
-    protected function insertSource(&$source, $name){
-
-        if(Validation::is_empty($source[$name]->id())) $source[$name]->setId(uniqid()); 
-        $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->_toArray());
-        $source[$name]->setId($persist["id"]);
-        return $persist["sql"];
+    protected function insertElement(&$element, $name){
+        if(Validation::is_empty($element->entities[$name]->id())) $element->entities[$name]->setId(uniqid()); 
+        $persist = EntitySqlo::getInstanceRequire($name)->insert($element->entities[$name]->_toArray());
+        $element->entities[$name]->setId($persist["id"]);
+        $element->sql .=  $persist["sql"];
     }
       
-    protected function updateSource(&$source, $name, $existente){
-        $source[$name]->setId($existente->id());
-        if(!$source[$name]->_equalTo($existente)) {
-          $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
-          return $persist["sql"];
+    protected function updateElement(&$element, $name, $existente){
+        $element->entities[$name]->setId($existente->id());
+        if(!$element->entities[$name]->_equalTo($existente)) {
+          $element->logs->addLog("persona","warning","El registro sera actualizado");
+          $persist = EntitySqlo::getInstanceRequire($name)->update($element->entities[$name]->_toArray());
+          $element->sql .= $persist["sql"];
+        } else {
+          $element->process = false;
+          $element->logs->addLog("persona","info","Registros existente, no será actualizado");
         }
-        return "";
     }
 
 }
