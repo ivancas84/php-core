@@ -9,21 +9,18 @@
 function settypebool ( $var ) {
 	if(!isset($var) || is_null($var)) return null;
 	
-	if(is_string($var)) $var = mb_strtolower($var);
+	if(is_string($var)) $var = strtolower($var);
 	
 	if ( ( $var === true ) 
 	|| ( $var === 1 )
-	|| ( $var === 'true' )
-	|| ( $var === '1' )
-	|| ( $var === 't' )
-	|| ( $var === 'on' ) 
-  || ( $var === 'si' ) 
-  || ( $var === 'sí' )
-  || ( $var === 's' ) 
-	|| ( $var === 'yes' )
-	|| ( $var === 'ok' ) 
-	|| ( $var === 'checked' )
-	|| ( $var === 'selected' )) {
+	|| ( strpos($var, "t") !== false ) //t, true
+  || ( strpos($var, "1" !== false ) //1
+  || ( strpos($var, "y" !== false ) //y, yes, yeah
+  || ( strpos($var, "s" !== false ) //s, si, sí
+  || ( strpos($var, "on" !== false ) //on
+  || ( strpos($var, "ok" !== false ) //ok, okey
+  || ( strpos($var, "ch" !== false ) //check, checked, chequeado
+  || ( strpos($var, "sel" !== false ) //sel, selected, selection, seleccion, seleccinoado
 		return true ;
 			
 	} else {
