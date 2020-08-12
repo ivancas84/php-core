@@ -614,32 +614,14 @@ abstract class EntitySql { //Definir SQL
   public function order(array $order = null){
     $sql = '';
 
-    if(strpos(DATA_DBMS, 'my') !== false) {
-      foreach($order as $key => $value){
-        $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
-        $sql_ = "{$this->mappingField($key)} IS NULL, {$this->mappingField($key)} {$value}";
-        $sql .= concat($sql_, ', ', ' ORDER BY', $sql);
-      }
-    } else {
-      foreach($order as $key => $value) {
-        $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
-        if($value == "desc") $value = "desc NULLS LAST";
-        $sql .= concat("{$key} {$value}", ', ', ' ORDER BY', $sql);
-      }
+    foreach($order as $key => $value){
+      $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
+      $sql_ = "{$this->mappingField($key)} IS NULL, {$this->mappingField($key)} {$value}";
+      $sql .= concat($sql_, ', ', ' ORDER BY', $sql);
     }
 
     return $sql;
   }
-
-
-  /* DEPRECATED
-   * Ordenamiento de cadena de relaciones (metodo nuevo no independiente que reemplazara al orderBy, el orderBy sera redefinido en las subclases para facilitar el soporte a pg
-  protected function _order($field, $value){
-    $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
-    return "{$field} IS NULL, {$field} {$value}";
-  }*/
-
-
 
   public function isUpdatable(array $row){
     try {

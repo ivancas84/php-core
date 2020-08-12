@@ -17,7 +17,8 @@
             'address'       => '[\p{L}0-9\s.,()°-]+',
             'date_dmy'      => '[0-9]{1,2}\-[0-9]{1,2}\-[0-9]{4}',
             'date_ymd'      => '[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}',
-            'email'         => '[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+[.]+[a-z-A-Z]'
+            'email'         => '[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+[.]+[a-z-A-Z]',
+            'name'          => '[a-zA-ZáéíóúñÁÉÍÓÚÑçÇüÜ\s\']'
         );
 
         public $errors = array();
@@ -58,6 +59,12 @@
                 }
             }
             return $this;
+        }
+
+        public function name() {
+          if($this->value != '' && preg_match('/[^a-zA-ZáéíóúñÁÉÍÓÚÑçÇüÜ\s\']/', $this->value))
+            $this->errors[] =  'Formato no válido.';
+          return $this;
         }
 
         public function customPattern($pattern) {
@@ -104,10 +111,26 @@
 
         public function equal($value) {
             if($this->value != $value){
-                $this->errors[] = 'Valore no correspondiente.';
+                $this->errors[] = 'Valor no correspondiente.';
             }
             return $this;
         }
+
+        public function differentWords($value){
+          $val1 = explode(" ", strtolower(trim(str_replace("  ", $this->value))));
+          $val2 = explode(" ", strtolower(trim(str_replace("  ", $value))));
+          foreach($val1 as $v1) {
+            foreach($val2 as $v2){
+              if(strtolower($v1) == strtolower($v2)) {
+                $this->errors[] = 'Palabras iguales.';
+                break;
+              }
+            }
+          }
+      
+          return $this;
+        }
+
 
         public function maxSize($size) {
             if($this->file['error'] != 4 && $this->file['size'] > $size){
@@ -122,6 +145,8 @@
             }
             return $this;
         }
+
+
          
         public function isSuccess() {
           return (empty($this->errors)) ? true : false;
@@ -141,6 +166,11 @@
             return $html;        
         }
 
+        public function email(){
+          if(!self::is_empty($this->value) && !self::is_email($this->value)) $this->errors[] = "El valor no es un email";
+            return $this;
+        }
+        
         public function string() { 
             if(!self::is_empty($this->value) && !is_string($this->value)) $this->errors[] = "El valor no es una cadena de caracteres";
             return $this;
@@ -167,6 +197,24 @@
             && !is_a($this->value, 'DateTime')) 
                 $this->errors[] =  "El valor no es una fecha/hora";
             return $this;
+        }
+
+        public function empty() {
+          if(self::is_empty($this->value)) $this->errors[] =  "El valor esta vacio";
+            return $this;
+        }
+
+        public function abbreviation() {
+          $vals = explode(" ", trim(str_replace("  "," ", $this->value)));
+          
+          foreach($vals as $val) {
+            if(strlen($val) < 2) {
+              $this->errors[] =  "Posible abreviatura";
+              break;
+            }
+          }
+
+          return $this;
         }
 
         public static function purify($string) {

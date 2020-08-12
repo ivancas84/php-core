@@ -2,7 +2,6 @@
 
 require_once("class/model/Sqlo.php");
 require_once("class/model/Ma.php");
-require_once("class/model/db/Dba.php");
 
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
@@ -38,12 +37,96 @@ abstract class Import {
     }
 
     abstract public function element($i, $data);
+    /**
+     * En funcion de los datos de entrada, se definen un elemento
+     * Un elemento posee todos los datos que posteriormente seran insertados y los posibles errores que puede haber
+     * Existe una clase abstracta Element que posee un conjunto de metodos de uso habitual
+     * 
+     * Ejemplo:
+     * {
+     *   $element = new ImportPersonaElement($i, $data); 
+     *   array_push($this->elements, $element);
+     * }
+     */
         
     abstract public function identify();
+    /**
+     * Se completa el atributo ids definiendo por cada entidad un identificador
+     * Cobra particular importancia el uso del atributo identifier de cada entidad
+     * 
+     * Ejemplo:
+     * {
+     *   ***** PERSONA (utiliza campo unico de identificacion) *****
+     *   $this->ids["persona"] = [];
+     *   foreach($this->elements as &$element){
+     *     $dni = $element->entities["persona"]->numeroDocumento();
+     *     if(Validation::is_empty($dni)){
+     *       $element->process = false;                
+     *       $element->logs->addLog("persona", "error", "El número de documento no se encuentra definido");
+     *       continue;
+     *     }
+     *   }
+     *   
+     *   //OPCIONAL por si no se quiere definir dos veces la misma persona
+     *   if(in_array($dni, $this->ids["persona"])) $element->logs->addLog("persona","error","El número de documento ya existe");
+     *   
+     *   array_push($this->ids["persona"], $element->entities["persona"]->numeroDocumento());
+     * 
+     *   ***** LUGAR (utiliza "identifier")*****
+     *   $this->ids["lugar"] = [];
+     *   $element->entities["lugar"]->_setIdentifier(
+     *     $element->entities["lugar"]->distrito().UNDEFINED.
+     *     $element->entities["lugar"]->provincia()
+     *   );
+     *
+     *   if(!in_array($element->entities["lugar"]->_identifier(), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_identifier());
+     * }
+     */
 
     abstract public function query();
+    /**
+     * Consulta de existencia de datos en la base de datos para evitar volver a ejecutar o actualizar datos existentes
+     * Los datos consultados se cargan en el atributo dbs
+     * 
+     * Ejemplo: Pueden utilizarse los metodos predefinidos queryEntityField, queryEntityIdentifier
+     * {
+     *   $this->queryEntityField_("persona","numero_documento");
+     * }
+     **/
 
     abstract public function process();
+    /**
+     * Procesamiento de datos: Define el SQL de actualizacion o insercion de datos
+     * Es en esta etapa que se realizan las relaciones
+     * 
+     * Ejemplo: Pueden utilizarse metodos predefinidos processElement, insertElement, updateElement
+     * 
+     * {
+     *   ***** PERSONA *****
+     *   foreach($this->elements as &$element) {
+     *     if(!$element->process) continue;
+     *
+     *     if(key_exists($element->entities["persona"]->numeroDocumento(), $this->dbs["persona"])){
+     *       $personaExistente = EntityValues::getInstanceRequire("persona");
+     *       $dni = $element->entities["persona"]->numeroDocumento();
+     *       $personaExistente->_fromArray($this->dbs["persona"][$dni]);
+     *       if(!$element->entities["persona"]->checkNombresParecidos($personaExistente)){                    
+     *         $element->logs->addLog("persona", "error", "En la base existe una persona cuyos datos no coinciden");
+     *         continue;
+     *       }
+     *     }
+     *     $element->sql .= $this->processElement("persona", $element->entities, $element->entities["persona"]->numeroDocumento());
+     * 
+     *   ***** INSCRIPCION (ejemplo de relacion) *****
+     *   foreach($this->elements as &$element) {
+     *     if(!$element->process) continue;
+     *     $element->entities["inscripcion"]->setAlumno($element->entities["persona"]->id());
+     *     $this->processElement("inscripcion", $element->entities, $element->entities["inscripcion"]->_identifier());
+     *   }
+     * }
+     * 
+     * 
+     */
 
     public function summary() {
         $informe = "<h3>Resultado " . $this->id . "</h3>";
@@ -53,25 +136,25 @@ abstract class Import {
         $i = 0;
         foreach($this->elements as $element) {
             $i++;
-            $errores = [];
-            $advertencias = [];
-            if(!empty($element->logs()->getLogs())) $errores = array_merge($errores, $element->logs()->getLogs());
-            if(!empty($element->logsEntities())) $advertencias = array_merge($advertencias, $element->logsEntities());
+            $logsElement = [];
+            $logsEntities = [];
+            if(!empty($element->logs->getLogs())) $logsElement = array_merge($logsElement, $element->logs->getLogs());
+            if(!empty($element->logsEntities())) $logsEntities = array_merge($logsEntities, $element->logsEntities());
             
-            if(count($errores) || count($advertencias)){
+            if(count($logsElement) || count($logsEntities)){
                 $informe .= "
     <div class=\"card\">
     <ul class=\"list-group list-group-flush\">
-        <li class=\"list-group-item active\">FILA " . $i . ": " . $element->entities["persona"]->nombre() . " " . $element->entities["persona"]->numeroDocumento() . "</li>
+        <li class=\"list-group-item active\">FILA " . $i . "</li>
 ";                
-                if($element->logs()->isError()) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
+                if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
 ";
-                foreach($errores as $key => $logs) {
-                    foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . ": " .$log["data"]."</li>
+                foreach($logsElement as $key => $logs) {
+                    foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . " (". $log["status"]. "): " .$log["data"]."</li>
 ";
                 }
-                foreach($advertencias as $key => $logs) {   
-                    foreach($logs as $log) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $key . ": " .$log["data"]. "</li>
+                foreach($logsEntities as $key => $logs) {   
+                    foreach($logs as $log) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $key . " (". $log["status"]. "): " .$log["data"]. "</li>
 ";
                 }
                 $informe .= "    </ul>
@@ -94,7 +177,6 @@ abstract class Import {
                 $i++;
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
                 $e = array_combine($encabezados, $datos);
-
                 $this->element($i, $e);                  
                 //if($i==100) break;           
             }
@@ -120,12 +202,12 @@ abstract class Import {
                         
             foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
             //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
-            // echo "<pre>";
-            // print_r($this->headers);
-            // print_r($datos);
-            $e = array_combine($this->headers, $datos);
+            //echo "<pre>";
+            //print_r($this->headers);
+            //print_r($datos);
+          
+            $e = @array_combine($this->headers, $datos);
             $this->element($i, $e);                  
-
             //if($i==100) break;           
         }
     }
@@ -142,38 +224,35 @@ abstract class Import {
 
     public function persist(){
         $sql = "";
+        $db = Db::open();
         foreach($this->elements as $element) {
-            if($element->logs->isError()) continue;
-            
-            $db = Dba::dbInstance();
+            if(!$element->process) continue;
             try {
-                $sql .= $element->sql;
-                $db->multiQueryTransaction($element->sql);
+              $sql .= $element->sql;
+              $db->multi_query_transaction($element->sql);
             } catch(Exception $exception){
-                echo "<pre>";
-                echo $exception->getMessage();
-                echo "<br>";
                 $element->logs->addLog("persist","error",$exception->getMessage());
-            } finally {
-                Dba::dbClose();
             }
         }
-        echo "<pre>";
-        echo $sql;
         file_put_contents($this->pathSummary . ".sql", $sql);
     }
 
-    public function identifyValue_($id, $value){
+    protected function identifyValue($id, $value){
         if(!isset($this->ids[$id])) $this->ids[$id] = [];
         if(!in_array($value, $this->ids[$id])) array_push($this->ids[$id], $value); 
     }
 
-    public function queryEntityField_($name, $field, $id = null){
+    protected function queryEntityField($name, $field, $id = null){
+      /**
+       * Consulta a la base de datos de la entidad $name
+       * Utilizando el campo field (supuestamente unico) y el valor almacenado de field desde el atributo ids
+       * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
+       */
         if(!$id) $id = $name;
         $this->dbs[$id] = [];
         if(empty($this->ids[$id])) return;
 
-        $rows = Ma::all($name, [$field,"=",$this->ids[$id]]);
+        $rows = Ma::open()->all($name, [$field,"=",$this->ids[$id]]);
     
         $this->dbs[$id] = array_combine_key(
           $rows,
@@ -181,43 +260,50 @@ abstract class Import {
         );
     }
 
-    public function queryEntityIdentifier_($name){        
+    protected function queryEntityIdentifier($name){        
         if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
-            Ma::identifier($name, $this->ids[$name]),
+            Ma::open()->identifier($name, $this->ids[$name]),
             Entity::getInstanceRequire($name)->identifier
         );;
     }
     
 
-    public function processSource_($name, &$source, $value, $id = null){
+    protected function processElement($name, &$element, $value, $id = null){
+        /**
+         * @param $name Nombre de la entidad
+         * @param $element Elemento a procesar
+         * @param $value Valor de la entidad que la identifica univocamente
+         * @param @id Identificador auxiliar de la entidad
+         */
         if(empty($id)) $id = $name;
         
         if(key_exists($value, $this->dbs[$id])){
-            
           $existente = EntityValues::getInstanceRequire($name);
           $existente->_fromArray($this->dbs[$id][$value]);
-          $sql = $this->updateSource_($source, $name, $existente);
+          $this->updateElement($element, $name, $existente);
         } else {        
-            $sql = $this->insertSource_($source, $name);
+            $this->insertElement($element, $name);
         }
-        $this->dbs[$id][$value] = $source[$name]->_toArray();
-        return $sql;
+        $this->dbs[$id][$value] = $element->entities[$name]->_toArray();
     }
 
-    public function insertSource_(&$source, $name){
-        $persist = EntitySqlo::getInstanceRequire($name)->insert($source[$name]->_toArray());
-        $source[$name]->setId($persist["id"]);
-        return $persist["sql"];
+    protected function insertElement(&$element, $name){
+        if(Validation::is_empty($element->entities[$name]->id())) $element->entities[$name]->setId(uniqid()); 
+        $persist = EntitySqlo::getInstanceRequire($name)->insert($element->entities[$name]->_toArray());
+        $element->entities[$name]->setId($persist["id"]);
+        $element->sql .=  $persist["sql"];
     }
       
-    public function updateSource_(&$source, $name, $existente){
-        $source[$name]->setId($existente->id());
-        if(!$source[$name]->_equalTo($existente)) {
-          $persist = EntitySqlo::getInstanceRequire($name)->update($source[$name]->_toArray());
-          return $persist["sql"];
+    protected function updateElement(&$element, $name, $existente){
+        $element->entities[$name]->setId($existente->id());
+        if(!$element->entities[$name]->_equalTo($existente)) {
+          $element->logs->addLog("persona","warning","El registro sera actualizado");
+          $persist = EntitySqlo::getInstanceRequire($name)->update($element->entities[$name]->_toArray());
+          $element->sql .= $persist["sql"];
+        } else {
+          $element->process = false;
+          $element->logs->addLog("persona","info","Registros existente, no será actualizado");
         }
-    
-        return "";
     }
 
 }
