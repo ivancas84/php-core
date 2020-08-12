@@ -166,6 +166,11 @@
             return $html;        
         }
 
+        public function email(){
+          if(!self::is_empty($this->value) && !self::is_email($this->value)) $this->errors[] = "El valor no es un email";
+            return $this;
+        }
+        
         public function string() { 
             if(!self::is_empty($this->value) && !is_string($this->value)) $this->errors[] = "El valor no es una cadena de caracteres";
             return $this;
