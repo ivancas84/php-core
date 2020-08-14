@@ -47,10 +47,56 @@ abstract class ImportElement {
     $this->entities[$name]->_fromArray($data, $prefix);
   }
 
+  public function persist(){
+    $db = Db::open();
+    try {
+      $db->multi_query_transaction($this->sql);
+    } catch(Exception $exception){
+      $this->logs->addLog("persist","error",$exception->getMessage());
+    }
+  }
+
+  
+
+  
+  public function insert($name){
+    if(Validation::is_empty($this->entities[$name]->id())) $this->entities[$name]->setId(uniqid()); 
+    $persist = EntitySqlo::getInstanceRequire($name)->insert($this->entities[$name]->_toArray());
+    $this->entities[$name]->setId($persist["id"]);
+    $this->sql .=  $persist["sql"];
+  }
+
+  public function update($name, $existente){
+    $this->entities[$name]->setId($existente->id());
+    $compare =  $this->entities[$name]->_equalTo($existente);
+    if($compare !== true) {
+      $this->logs->addLog("persona","warning","El registro sera actualizado ({$compare})");
+      $persist = EntitySqlo::getInstanceRequire($name)->update($this->entities[$name]->_toArray());
+      $this->sql .= $persist["sql"];
+    } else {
+      $this->process = false;
+      $this->logs->addLog("persona","info","Registros existente, no será actualizado");
+    }
+  }
+
+
+  public function resetAndCheckEntities(){
+    foreach($this->entities as $entityName => &$entity){
+      if(!$entity->_reset()->_check()){
+        foreach($entity->_getLogs()->getLogs() as $key => $errors) {
+          foreach($errors as $error) {
+            $this->logs->addLog($entityName, "warning", $key. " " . $error["status"] . " " . $error["data"]);
+          }
+        }
+      }
+    }
+  }
+
+  /*
   public function logsEntities(){
       $logs = [];
       foreach($this->entities as $entity) $logs = array_merge($logs, $entity->_getLogs()->getLogs());
       return $logs;
   }
-
+  */
 }

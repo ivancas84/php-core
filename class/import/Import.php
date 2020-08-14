@@ -31,7 +31,9 @@ abstract class Import {
         $this->identify();
         $this->query();
         $this->process();
+
         $this->persist();
+
         $this->summary();
         echo date("Y-m-d H:i:s") . " END " . $this->id."<br>";
     }
@@ -115,7 +117,7 @@ abstract class Import {
      *         continue;
      *       }
      *     }
-     *     $element->sql .= $this->processElement("persona", $element->entities, $element->entities["persona"]->numeroDocumento());
+     *    $this->processElement($element, "persona", $dni)
      * 
      *   ***** INSCRIPCION (ejemplo de relacion) *****
      *   foreach($this->elements as &$element) {
@@ -133,36 +135,41 @@ abstract class Import {
         $informe .= "<p>Cantidad de filas procesadas: " . count($this->elements) . "</p>
 ";      
     
-        $i = 0;
+        echo "<pre>";
         foreach($this->elements as $element) {
-            $i++;
-            $logsElement = [];
-            $logsEntities = [];
-            if(!empty($element->logs->getLogs())) $logsElement = array_merge($logsElement, $element->logs->getLogs());
-            if(!empty($element->logsEntities())) $logsEntities = array_merge($logsEntities, $element->logsEntities());
-            
-            if(count($logsElement) || count($logsEntities)){
-                $informe .= "
+          
+          $fields = [];
+          foreach($element->entities as $entity){
+            foreach($entity->_toArray() as $field){
+              if(!Validation::is_empty($field)) array_push($fields, $field); 
+            }
+          }
+
+          $informe .= "
     <div class=\"card\">
     <ul class=\"list-group list-group-flush\">
-        <li class=\"list-group-item active\">FILA " . $i . "</li>
-";                
-                if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
+        <li class=\"list-group-item active\">FILA " . $element->index . "</li>
+";        
+           
+          $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">" . implode(", ",$fields) . "</li>
 ";
-                foreach($logsElement as $key => $logs) {
-                    foreach($logs as $log)  $informe .= "        <li class=\"list-group-item list-group-item-warning\">" . $key . " (". $log["status"]. "): " .$log["data"]."</li>
+          if($element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">Persistencia realizada</li>
 ";
-                }
-                foreach($logsEntities as $key => $logs) {   
-                    foreach($logs as $log) $informe .= "        <li class=\"list-group-item list-group-item-secondary\">" . $key . " (". $log["status"]. "): " .$log["data"]. "</li>
+          if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
 ";
-                }
-                $informe .= "    </ul>
+
+          foreach($element->logs->getLogs() as $key => $logs) {
+            foreach($logs as $log){
+              $class = ($log["status"] == "error") ? "list-group-item-warning" : "list-group-item-secondary" ;
+              $informe .= "        <li class=\"list-group-item {$class}\">" . $key . " (". $log["status"]. "): " .$log["data"]."</li>
+";
+            }
+          }
+          $informe .= "    </ul>
     </div>
     <br><br>";                          
-            }
-            
         }
+         
         file_put_contents($this->pathSummary . ".html", $informe);
     
         echo $informe;
@@ -224,15 +231,11 @@ abstract class Import {
 
     public function persist(){
         $sql = "";
-        $db = Db::open();
         foreach($this->elements as $element) {
-            if(!$element->process) continue;
-            try {
-              $sql .= $element->sql;
-              $db->multi_query_transaction($element->sql);
-            } catch(Exception $exception){
-                $element->logs->addLog("persist","error",$exception->getMessage());
-            }
+          if($element->process) {
+            $element->persist();
+            $sql .= $element->sql;
+          }
         }
         file_put_contents($this->pathSummary . ".sql", $sql);
     }
@@ -252,7 +255,10 @@ abstract class Import {
         $this->dbs[$id] = [];
         if(empty($this->ids[$id])) return;
 
-        $rows = Ma::open()->all($name, [$field,"=",$this->ids[$id]]);
+        $render = new Render();
+        $render->setSize(false);
+        $render->addCondition([$field,"=",$this->ids[$id]]);
+        $rows = Ma::open()->all($name, $render);
     
         $this->dbs[$id] = array_combine_key(
           $rows,
@@ -264,46 +270,28 @@ abstract class Import {
         if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
             Ma::open()->identifier($name, $this->ids[$name]),
             Entity::getInstanceRequire($name)->identifier
-        );;
+        );
     }
+
+
+    
+  public function processElement(&$element, $name, $value, $id = null){
+    /**
+     * @param $name Nombre de la entidad
+     * @param $value Valor de la entidad que la identifica univocamente
+     * @param @id Identificador auxiliar de la entidad
+     */
+    if(empty($id)) $id = $name;
+    
+    if(key_exists($value, $this->dbs[$id])){
+      $existente = EntityValues::getInstanceRequire($name);
+      $existente->_fromArray($this->dbs[$id][$value]);
+      $element->update($name, $existente);
+    } else {        
+      $element->insert($name);
+    }
+  }
     
 
-    protected function processElement($name, &$element, $value, $id = null){
-        /**
-         * @param $name Nombre de la entidad
-         * @param $element Elemento a procesar
-         * @param $value Valor de la entidad que la identifica univocamente
-         * @param @id Identificador auxiliar de la entidad
-         */
-        if(empty($id)) $id = $name;
-        
-        if(key_exists($value, $this->dbs[$id])){
-          $existente = EntityValues::getInstanceRequire($name);
-          $existente->_fromArray($this->dbs[$id][$value]);
-          $this->updateElement($element, $name, $existente);
-        } else {        
-            $this->insertElement($element, $name);
-        }
-        $this->dbs[$id][$value] = $element->entities[$name]->_toArray();
-    }
-
-    protected function insertElement(&$element, $name){
-        if(Validation::is_empty($element->entities[$name]->id())) $element->entities[$name]->setId(uniqid()); 
-        $persist = EntitySqlo::getInstanceRequire($name)->insert($element->entities[$name]->_toArray());
-        $element->entities[$name]->setId($persist["id"]);
-        $element->sql .=  $persist["sql"];
-    }
-      
-    protected function updateElement(&$element, $name, $existente){
-        $element->entities[$name]->setId($existente->id());
-        if(!$element->entities[$name]->_equalTo($existente)) {
-          $element->logs->addLog("persona","warning","El registro sera actualizado");
-          $persist = EntitySqlo::getInstanceRequire($name)->update($element->entities[$name]->_toArray());
-          $element->sql .= $persist["sql"];
-        } else {
-          $element->process = false;
-          $element->logs->addLog("persona","info","Registros existente, no será actualizado");
-        }
-    }
 
 }
