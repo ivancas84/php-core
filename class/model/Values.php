@@ -105,12 +105,15 @@ abstract class EntityValues {
   }
 
   public function _equalTo(EntityValues $entityValues, $strict = false){
+    /**
+     * Retorna true si es igual u otro valor si es diferente (false o string con el nombre del campo)
+     */
     $a = $this->_toArray();
     $b = $entityValues->_toArray();    
     if($strict) return (empty(array_diff_assoc($a, $b)) && empty(array_diff_assoc($b, $a)))? true : false;
     foreach($a as $ka => $va) {
       if(is_null($va) || !key_exists($ka, $b)) continue;
-      if($b[$ka] !== $va) return false;
+      if($b[$ka] !== $va) return $ka;
       
     }
     return true;
