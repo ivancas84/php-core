@@ -57,6 +57,28 @@ class SqlFormat {
     }
   }
 
+  protected function conditionTimestamp($field, $value, $option, $my){
+    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+
+    switch($option){
+      case "=~": case "!=~":
+        $o = ($option == "!=~") ? "NOT " : "";
+        return "(CAST(DATE_FORMAT({$field}, '{$my}') AS CHAR) {$o}LIKE '%{$value}%' )";
+      break;
+
+      case "=":
+        if($value === false) return "({$field} IS NULL) ";
+        if($value === true) return "({$field} IS NOT NULL) ";
+
+      case "!=":
+        if($value === true) return "({$field} IS NULL) ";
+        if($value === false) return "({$field} IS NOT NULL) ";
+
+      default:
+        return "(CAST({$field} AS date) {$option} '{$value}')";
+    }
+  }
+
   protected function conditionIsNull($field, $option, $value) {
     if(empty($value)) {
       switch($option){
