@@ -35,50 +35,6 @@ class SqlFormat {
     return (is_null($value) || (strtolower($value) == 'null'));
   }
 
-  protected function conditionDateTime($field, $value, $option, $my){
-    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
-
-    switch($option){
-      case "=~": case "!=~":
-        $o = ($option == "!=~") ? "NOT " : "";
-        return "(CAST(DATE_FORMAT({$field}, '{$my}') AS CHAR) {$o}LIKE '%{$value}%' )";
-      break;
-
-      case "=":
-        if($value === false) return "({$field} IS NULL) ";
-        if($value === true) return "({$field} IS NOT NULL) ";
-
-      case "!=":
-        if($value === true) return "({$field} IS NULL) ";
-        if($value === false) return "({$field} IS NOT NULL) ";
-
-      default:
-        return "({$field} {$option} '{$value}')";
-    }
-  }
-
-  protected function conditionTimestamp($field, $value, $option, $my){
-    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
-
-    switch($option){
-      case "=~": case "!=~":
-        $o = ($option == "!=~") ? "NOT " : "";
-        return "(CAST(DATE_FORMAT({$field}, '{$my}') AS CHAR) {$o}LIKE '%{$value}%' )";
-      break;
-
-      case "=":
-        if($value === false) return "({$field} IS NULL) ";
-        if($value === true) return "({$field} IS NOT NULL) ";
-
-      case "!=":
-        if($value === true) return "({$field} IS NULL) ";
-        if($value === false) return "({$field} IS NOT NULL) ";
-
-      default:
-        return "(CAST({$field} AS date) {$option} '{$value}')";
-    }
-  }
-
   protected function conditionIsNull($field, $option, $value) {
     if(empty($value)) {
       switch($option){
@@ -105,19 +61,111 @@ class SqlFormat {
   }
 
   public function conditionTimestamp($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d %H:%i:%s");  
+    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+
+    switch($option){
+      case "=~": case "!=~":
+        /**
+         * No se recomienda utilizar datepicker para definir condiciones aproximadas,
+         * ya que utilizan el formato JSON y la condicion no matchea
+         */
+        $o = ($option == "!=~") ? "NOT " : "";
+        return "(CAST(DATE_FORMAT({$field}, '%Y-%m-%d %H:%i:%s') AS CHAR) {$o}LIKE '%{$value}%' )";
+      break;
+
+      case "=":
+        if($value === false) return "({$field} IS NULL) ";
+        if($value === true) return "({$field} IS NOT NULL) ";
+
+      case "!=":
+        if($value === true) return "({$field} IS NULL) ";
+        if($value === false) return "({$field} IS NOT NULL) ";
+
+      default:
+        $value = $this->timestamp($value);
+        return "({$field} {$option} {$value})";
+    }  
   }
 
   public function conditionYear($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y");  
+    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+
+    switch($option){
+      case "=~": case "!=~":
+        /**
+         * No se recomienda utilizar datepicker para definir condiciones aproximadas,
+         * ya que utilizan el formato JSON y la condicion no matchea
+         */
+        $o = ($option == "!=~") ? "NOT " : "";
+        return "(CAST(DATE_FORMAT({$field}, '%Y') AS CHAR) {$o}LIKE '%{$value}%' )";
+      break;
+
+      case "=":
+        if($value === false) return "({$field} IS NULL) ";
+        if($value === true) return "({$field} IS NOT NULL) ";
+
+      case "!=":
+        if($value === true) return "({$field} IS NULL) ";
+        if($value === false) return "({$field} IS NOT NULL) ";
+
+      default:
+        $value = $this->year($value);
+        return "({$field} {$option} {$value})";  
+    }
   }
 
   public function conditionDate($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%Y-%m-%d");  
+    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+
+    switch($option){
+      case "=~": case "!=~":
+        /**
+         * No se recomienda utilizar datepicker para definir condiciones aproximadas,
+         * ya que utilizan el formato JSON y la condicion no matchea
+         */
+        $o = ($option == "!=~") ? "NOT " : "";
+        return "(CAST(DATE_FORMAT({$field}, '%Y-%m-%d') AS CHAR) {$o}LIKE '%{$value}%' )";
+      break;
+
+      case "=":
+        if($value === false) return "({$field} IS NULL) ";
+        if($value === true) return "({$field} IS NOT NULL) ";
+
+      case "!=":
+        if($value === true) return "({$field} IS NULL) ";
+        if($value === false) return "({$field} IS NOT NULL) ";
+
+      default:
+        $value = $this->date($value);
+        return "({$field} {$option} {$value})";
+    }
   }
 
   public function conditionTime($field, $value, $option = "="){
-    return $this->conditionDateTime($field, $value, $option, "%H:%i:%s");  
+    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+
+    switch($option){
+      case "=~": case "!=~":
+        /**
+         * No se recomienda utilizar datepicker para definir condiciones aproximadas,
+         * ya que utilizan el formato JSON y la condicion no matchea
+         */
+        $o = ($option == "!=~") ? "NOT " : "";
+        return "(CAST(DATE_FORMAT({$field}, '%H:%i:%s') AS CHAR) {$o}LIKE '%{$value}%' )";
+      break;
+
+      case "=":
+        if($value === false) return "({$field} IS NULL) ";
+        if($value === true) return "({$field} IS NOT NULL) ";
+
+      case "!=":
+        if($value === true) return "({$field} IS NULL) ";
+        if($value === false) return "({$field} IS NOT NULL) ";
+
+      default:
+        $value = $this->date($value);
+        return "({$field} {$option} {$value})";  
+    }
   }
 
   public function conditionBoolean($field, $value = NULL){
