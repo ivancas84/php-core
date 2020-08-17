@@ -25,6 +25,10 @@ class Logs {
     if(key_exists($key, $this->logs)) unset($this->logs[$key]);
   }
 
+  public function clear(){
+    $this->logs = [];
+  }
+
   public function addLog($key, $status, $data){
     /**
      * agregar log a una determinada llave

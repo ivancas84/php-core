@@ -48,28 +48,30 @@
         }
         
         public function pattern($name) {
-            if($name == 'array'){
-                if(!is_array($this->value)) {
-                    $this->errors[] = 'Formato no válido.';
-                }
-            } else {
-                $regex = '/^('.$this->patterns[$name].')$/u';
-                if($this->value != '' && !preg_match($regex, $this->value)) {
-                    $this->errors[] = 'Formato no válido.';
-                }
+          if(self::is_empty($this->value)) return $this;
+
+          if($name == 'array'){
+            if(!is_array($this->value)) {
+              $this->errors[] = 'Formato no válido.';
             }
-            return $this;
+          } else {
+            $regex = '/^('.$this->patterns[$name].')$/u';
+            if($this->value != '' && !preg_match($regex, $this->value)) {
+                $this->errors[] = 'Formato no válido.';
+            }
+          }
+          return $this;
         }
 
         public function name() {
-          if($this->value != '' && preg_match('/[^a-zA-ZáéíóúñÁÉÍÓÚÑçÇüÜ\s\']/', $this->value))
+          if(!self::is_empty($this->value) && preg_match('/[^a-zA-ZáéíóúñÁÉÍÓÚÑçÇüÜ\s\']/', $this->value))
             $this->errors[] =  'Formato no válido.';
           return $this;
         }
 
         public function customPattern($pattern) {
             $regex = '/^('.$pattern.')$/u';
-            if ($this->value != '' && !preg_match($regex, $this->value)) {
+            if (!self::is_empty($this->value) && !preg_match($regex, $this->value)) {
                 $this->errors[] = 'Formato no válido.';
             }
             return $this;
@@ -77,46 +79,52 @@
 
         public function required() {
             if ((isset($this->file) && $this->file['error'] == 4) 
-            || ($this->value === '' || $this->value === null)) {
+            || (!self::is_undefined($this->value) && $this->value === '' || $this->value === null)) {
                 $this->errors[] = 'Campo obligatorio.';
             }            
             return $this;
         }
         
         public function min($length) {
-            if (is_string($this->value)) {
-                if (strlen($this->value) < $length) {
-                    $this->errors[] = 'Valor inferior al mínimo';
-                }
-            } else {
-                if ($this->value < $length) {
-                    $this->errors[] = 'Valor inferior al mínimo';
-                }
-            }
-            return $this;
+          if(self::is_empty($this->value)) return $this;
+
+          if (is_string($this->value)) {
+              if (strlen($this->value) < $length) {
+                  $this->errors[] = 'Valor inferior al mínimo';
+              }
+          } else {
+              if ($this->value < $length) {
+                  $this->errors[] = 'Valor inferior al mínimo';
+              }
+          }
+          return $this;
         }
 
         public function max($length) {
-            if (is_string($this->value)){                
-                if(strlen($this->value) > $length){
-                    $this->errors[] = 'Valor superior al máximo';
-                }
-            } else {
-                if($this->value > $length){
-                    $this->errors[] = 'Valor superior al máximo';
-                }
-            }
-            return $this;
+          if(self::is_empty($this->value)) return $this;
+
+          if (is_string($this->value)){                
+              if(strlen($this->value) > $length){
+                  $this->errors[] = 'Valor superior al máximo';
+              }
+          } else {
+              if($this->value > $length){
+                  $this->errors[] = 'Valor superior al máximo';
+              }
+          }
+          return $this;
         }
 
         public function equal($value) {
-            if($this->value != $value){
-                $this->errors[] = 'Valor no correspondiente.';
-            }
-            return $this;
+          if(!self::is_empty($this->value) && $this->value != $value){
+              $this->errors[] = 'Valor no correspondiente.';
+          }
+          return $this;
         }
 
         public function differentWords($value){
+          if(self::is_empty($this->value)) return $this;
+
           $val1 = explode(" ", strtolower(trim(str_replace("  ", $this->value))));
           $val2 = explode(" ", strtolower(trim(str_replace("  ", $value))));
           foreach($val1 as $v1) {
@@ -130,42 +138,6 @@
       
           return $this;
         }
-
-
-        public function maxSize($size) {
-            if($this->file['error'] != 4 && $this->file['size'] > $size){
-                $this->errors[] = 'El archivo supera el tamaño máximo de '.number_format($size / 1048576, 2).' MB.';
-            }
-            return $this;
-        }
-
-        public function ext($extension) {
-            if($this->file['error'] != 4 && pathinfo($this->file['name'], PATHINFO_EXTENSION) != $extension && strtoupper(pathinfo($this->file['name'], PATHINFO_EXTENSION)) != $extension){
-                $this->errors[] = 'El archivo no es '.$extension.'.';
-            }
-            return $this;
-        }
-
-
-         
-        public function isSuccess() {
-          return (empty($this->errors)) ? true : false;
-        }
-        
-        public function getErrors() {
-            return $this->errors;
-        }
-        
-        public function displayErrors() {
-            $html = '<ul>';
-            foreach ($this->getErrors() as $error) {
-                $html .= '<li>'.$error.'</li>';
-            }
-            $html .= '</ul>';
-            
-            return $html;        
-        }
-
         public function email(){
           if(!self::is_empty($this->value) && !self::is_email($this->value)) $this->errors[] = "El valor no es un email";
             return $this;
@@ -192,17 +164,13 @@
         }
 
         public function date() {
-            if(!self::is_undefined($this->value) 
-            && !is_null($this->value) 
+            if(!self::is_empty($this->value) 
             && !is_a($this->value, 'DateTime')) 
                 $this->errors[] =  "El valor no es una fecha/hora";
             return $this;
         }
 
-        public function empty() {
-          if(self::is_empty($this->value)) $this->errors[] =  "El valor esta vacio";
-            return $this;
-        }
+       
 
         public function abbreviation() {
           $vals = explode(" ", trim(str_replace("  "," ", $this->value)));
@@ -215,6 +183,40 @@
           }
 
           return $this;
+        }
+
+
+
+        public function maxSize($size) {
+          if($this->file['error'] != 4 && $this->file['size'] > $size){
+              $this->errors[] = 'El archivo supera el tamaño máximo de '.number_format($size / 1048576, 2).' MB.';
+          }
+          return $this;
+        }
+
+        public function ext($extension) {
+            if($this->file['error'] != 4 && pathinfo($this->file['name'], PATHINFO_EXTENSION) != $extension && strtoupper(pathinfo($this->file['name'], PATHINFO_EXTENSION)) != $extension){
+                $this->errors[] = 'El archivo no es '.$extension.'.';
+            }
+            return $this;
+        }
+
+        public function isSuccess() {
+          return (empty($this->errors)) ? true : false;
+        }
+        
+        public function getErrors() {
+            return $this->errors;
+        }
+        
+        public function displayErrors() {
+            $html = '<ul>';
+            foreach ($this->getErrors() as $error) {
+                $html .= '<li>'.$error.'</li>';
+            }
+            $html .= '</ul>';
+            
+            return $html;        
         }
 
         public static function purify($string) {
@@ -255,6 +257,10 @@
 
         public static function is_empty($value) {
             return ($value === UNDEFINED || empty($value)) ? true : false;
+        }
+
+        public static function is_set($value) {
+          return ($value !== UNDEFINED || isset($value)) ? true : false;
         }
 
         public static function is_undefined($value) {
