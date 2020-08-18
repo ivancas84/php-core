@@ -9,19 +9,53 @@ abstract class Field {
 
   public $name;
   public $alias;
-  public $default; //valor por defecto definido en base de datos (puede ser null)
-    //false: El dato no tiene definido valor por defecto
+  public $default;
+  /**
+   * puede ser false para booleanos
+   */
+  
+  public $length;
+  /**
+   * longitud maxima del field
+   * false: El dato no tiene definida longitud
+   * @todo cambiar valor false por null
+   */
 
-  public $length; //longitud maxima del field
-    //false: El dato no tiene definida longitud
+  public $minLength = false; 
+   /**
+    * longitud minima del field
+    * false: El dato no tiene definida longitud
+    * @todo cambiar valor false por null
+    */
 
-  public $minLength = false; //longitud minima del field
-    //false: El dato no tiene definida longitud
+  public $notNull;
+  /**
+   * Flag para indicar si es campo no nulo
+   * true | false
+   */
 
-  public $notNull; //flag para indicar si es un campo no nulo
-  public $type; //string. tipo de datos definido en la base de datos
-  public $dataType; //tipo de datos generico
-  public $fieldType; //string. tipo de field
+  public $type;
+  /**
+   * string. 
+   * Tipo de datos definido en la base de datos.
+   */
+
+  public $dataType;
+  /**
+   * Tipo de datos generico.
+   * El framework trabaja solo con los siguientes datos.
+   * Cualquier tipo definido en la base de datos es transformado a uno de los siguientes
+   *   integer
+   *   blob
+   *   string
+   *   boolean
+   *   float
+   *   text
+   *   timestamp
+   *   date 
+   */
+
+  public $fieldType; //string con el tipo de field
     //"pk": Clave primaria
     //"nf": Field normal
     //"mu": Clave foranea muchos a uno
@@ -67,6 +101,7 @@ abstract class Field {
    * Un campo exclusivo puede definirse internamente con los campos de la entidad.
    * Un campo no exlusivo debe definirse con alguna relación independiente.
    * Esta pensado para separar los fields de una entidad de las que no son para el caso que haya que definirse subconsulta 
+   * Los campos no exclusivos habitualmente se definen como admin = false
    */
 
   final public static function getInstance() {
