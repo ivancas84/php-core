@@ -120,8 +120,7 @@ class Persist {
       $id = $this->insert($this->entityName, $values->_toArray());
     }
 
-    $db = Db::open();
-    $db->multi_query_transaction($this->getSql());
+    $ma->multi_query_transaction($this->getSql());
     
     return $id;
   }

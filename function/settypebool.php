@@ -13,14 +13,14 @@ function settypebool ( $var ) {
 	
 	if ( ( $var === true ) 
 	|| ( $var === 1 )
-	|| ( strpos($var, "t") !== false ) //t, true
-  || ( strpos($var, "1") !== false ) //1
-  || ( strpos($var, "y") !== false ) //y, yes, yeah
-  || ( strpos($var, "s") !== false ) //s, si, sí
-  || ( strpos($var, "on") !== false ) //on
-  || ( strpos($var, "ok") !== false ) //ok, okey
-  || ( strpos($var, "ch") !== false ) //check, checked, chequeado
-  || ( strpos($var, "sel") !== false ) ) //sel, selected, selection, seleccion, seleccinoado
+	|| ( strpos($var, "t") === 0 ) //t, true
+  || ( strpos($var, "1") === 0 ) //1
+  || ( strpos($var, "y") === 0 ) //y, yes, yeah
+  || ( strpos($var, "s") === 0 ) //s, si, sí
+  || ( strpos($var, "on") === 0 ) //on
+  || ( strpos($var, "ok") === 0 ) //ok, okey
+  || ( strpos($var, "ch") === 0 ) //check, checked, chequeado
+  || ( strpos($var, "sel") === 0 ) ) //sel, selected, selection, seleccion, seleccinoado
 		return true ;
 	else 
 		return false ;

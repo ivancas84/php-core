@@ -19,10 +19,11 @@ class PersistApi {
         ["action"=>"persist", "entity"=>"asignatura", "row"=>["nombre"=>"Matemática"]]
       ];*/
       $persistController = Persist::getInstanceRequire($this->entityName);
-      $persistController->main($data);
-      echo json_encode($persistController->getDetail());
+      $id = $persistController->main($data);
+      echo json_encode(["id" => $id, "detail" => $persistController->getDetail()]);
       /**
-       * se devuelve un array donde cada elemento es de la forma "entityId"
+       * se devuelve un array con el id principal y el detalle de las entidades persistidas
+       * El detalle es un array donde cada elemento es de la forma "entityId"
        */
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());
