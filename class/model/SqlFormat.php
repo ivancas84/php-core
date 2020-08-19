@@ -32,7 +32,7 @@ class SqlFormat {
      * Implementacion local del metodo is_null
      * Se verifica que el valor no sea igual al string null
      */
-    return (is_null($value) || (strtolower($value) == 'null'));
+    return (is_null($value) || (is_string($value) && (strtolower($value) == 'null')));
   }
 
   protected function conditionIsNull($field, $option, $value) {
@@ -51,6 +51,10 @@ class SqlFormat {
       }
       throw new Exception("La combinacion field-option-value no está permitida");
     }
+  }
+
+  public function conditionIsSet($field, $value, $option = "="){
+    return $this->conditionIsNull($field, $option, settypebool($value));
   }
 
   public function conditionText($field, $value, $option = "="){
@@ -74,12 +78,12 @@ class SqlFormat {
       break;
 
       case "=":
-        if($value === false) return "({$field} IS NULL) ";
-        if($value === true) return "({$field} IS NOT NULL) ";
+        if($value === false || $value === "true") return "({$field} IS NULL) ";
+        if($value === true || $value === "false") return "({$field} IS NOT NULL) ";
 
       case "!=":
-        if($value === true) return "({$field} IS NULL) ";
-        if($value === false) return "({$field} IS NOT NULL) ";
+        if($value === true || $value === "true") return "({$field} IS NULL) ";
+        if($value === false || $value === "false") return "({$field} IS NOT NULL) ";
 
       default:
         $value = $this->timestamp($value);
