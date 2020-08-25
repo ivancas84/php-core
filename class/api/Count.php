@@ -6,6 +6,10 @@ require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
 class CountApi {
+  /**
+   * Api de acceso al controlador Count
+   */
+
   public $entityName;
 
   public function main() {

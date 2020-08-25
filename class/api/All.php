@@ -6,7 +6,7 @@ require_once("class/model/Sqlo.php");
 
 class AllApi {
   /**
-   * Api general de all
+   * Api de acceso al controlador All
    */
 
   public $entityName;

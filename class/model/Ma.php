@@ -193,9 +193,8 @@ class Ma extends Db {
     /**
      * Insercion directa (no realiza chequeo de valores ni log)
      */
-    $insert = EntitySql::getInstanceRequire($entity)->insert($row);
+    $insert = EntitySqlo::getInstanceRequire($entity)->insert($row);
     $result = $this->query($insert["sql"]);
-    $result->free();
     return $insert;
   }
 

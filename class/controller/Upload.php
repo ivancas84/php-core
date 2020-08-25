@@ -3,14 +3,15 @@ require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 require_once("class/model/Sqlo.php");
+require_once("class/model/Values.php");
+
 
 class Upload {
   /**
-   * Obtener todos los datos de una determinada entidad
+   * Controlador de procesamiento de un solo archivo
    */
 
   public $entityName;
-
 
   public $sufix = "";
 
@@ -37,10 +38,7 @@ class Upload {
     return call_user_func("{$className}::getInstance");
   }
 
-  public function main(array $file) {
-    if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
-    unset($file["error"]);
-
+  public function save(array $file) {
     $dir = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $this->uploadPath;
     $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
     $id = uniqid();
@@ -48,18 +46,23 @@ class Upload {
 
     $file["id"] = $id;  
     $file["content"] = $this->uploadPath.$id.$this->sufix.".".$ext;
-    if ( !move_uploaded_file($file["tmp_name"], $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $file["content"]) ) throw new Exception( "Error al mover archivo" );
+    $destination = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $file["content"];
+    if ( !move_uploaded_file($file["tmp_name"], $destination) ) throw new Exception( "Error al mover archivo" );
     unset($file["tmp_name"]);
 
-    $this->insertDb($file);
-    return $file;
+    return $destination;
   }
 
-  protected function insertDb($file){
-    $insert = EntitySqlo::getInstanceRequire("file")->insert($file);
-    Transaction::begin();
-    Transaction::update(["description"=> $insert["sql"], "detail" => implode(",",$insert["detail"])]);
-    Transaction::commit();    
+
+  public function main(array $file) {
+    if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
+
+    $this->save($file);
+
+    $file = EntityValues::getInstanceRequire("file")->_fromArray($file)->_setDefault()->_toArray();
+    $ma->insert("file", $file);
+    return $file;
+
   }
 
 }

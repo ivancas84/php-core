@@ -5,13 +5,13 @@ require_once("class/tools/Filter.php");
 require_once("class/controller/DisplayRender.php");
 
 
-abstract class Data {
+abstract class Base {
   /**
-   * Obtener todos los datos de estructuras adicionales
-   * Data es un controlador abstracto
-   * el usuario puede retornar el valor que desee 
+   * Controlador base
+   * Todos los controladores que no se adaptan a las estructuras existentes pueden definirse con Base
+   * El usuario puede retornar el valor que desee 
    * Data esta pensado para ser llamado a traves de una api
-   * En el caso de que no se utilice una api, conviene utilizar directamente ModelTools
+   * En el caso de que no se utilice una api, conviene utilizar directamente ModelTools.
    **/
   
   public $entityName; 
@@ -22,9 +22,9 @@ abstract class Data {
   }
 
   final public static function getInstanceRequire($entity) {
-    $dir = "class/controller/data/";
+    $dir = "class/controller/base/";
     $name = snake_case_to("XxYy", $entity) . ".php";
-    $className = snake_case_to("XxYy", $entity) . "Data";    
+    $className = snake_case_to("XxYy", $entity) . "Base";    
     if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
     else{
       require_once($dir."_".$name);
