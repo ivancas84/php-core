@@ -204,7 +204,6 @@ class Ma extends Db {
      */ 
     $update = EntitySql::getInstanceRequire($entity)->update($row);
     $result = $this->query($update["sql"]);
-    $result->free();
     return $udpate;
   }
 }
