@@ -59,7 +59,6 @@ class Container {
   }
 
   public function getController($controller, $entityName){
-
     $dir = "class/controller/" . snake_case_to("xxYy", $controller) . "/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
     $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller);    
@@ -71,7 +70,6 @@ class Container {
 
     $c = new $className;
     $c->container = $this;
-    $c->db = $this->getDb();
     return $c;
   }
 
