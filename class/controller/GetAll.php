@@ -9,27 +9,15 @@ class GetAll {
    */
 
   public $entityName;
-
-  final public static function getInstance() {
-    $className = get_called_class();
-    return new $className;
-  }
-
-  final public static function getInstanceRequire($entity) {
-    $dir = "class/controller/getAll/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $className = snake_case_to("XxYy", $entity) . "GetAll";    
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      require_once($dir."_".$name);
-      $className = "_".$className;    
-    }
-    return call_user_func("{$className}::getInstance");
-  }
-
+  
   public function main($ids) {
     if(empty($ids)) throw new Exception("Identificadores no definidos");
-    return Ma::getAll($this->entityName, $ids);
+
+    $rows = $this->container->getDb()->getAll($this->entityName, $ids);
+    $sqlo = $this->container->getSqlo($this->entityName);
+    foreach($rows as &$row) $row = $sqlo->json($row);
+    return $rows;
+    
   }
 
 }

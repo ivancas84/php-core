@@ -9,7 +9,6 @@ require_once("function/snake_case_to.php");
 abstract class Entity {
 
   protected static $structure = NULL; //array. Estructura de tablas.
-  protected static $instances = [];
 
   /**
    * Debido a que la estructura utiliza clases concretas, debe asignarse luego de finalizada la generacion de archivos y solo cuando se requiera su uso.
@@ -33,26 +32,8 @@ abstract class Entity {
    * por ejemplo:
    *   public $identifier = ["fecha_anio", "fecha_semestre","alu_per_numero_documento"];
    */
-
-  final public static function getInstance() {
-    $className = get_called_class();
-    if (!isset(self::$instances[$className])) { self::$instances[$className] = new $className; }
-    return self::$instances[$className];
-  }
-
-  final public static function getInstanceRequire($entity) {
-    $dir = "class/model/entity/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $prefix = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prefix = "_";
-      require_once($dir.$prefix.$name);
-    }
-    
-    $className = $prefix.snake_case_to("XxYy", $entity) . "Entity";
-    return call_user_func("{$className}::getInstance");
-  }
+ 
+  public $container;
 
   /**
    * Metodos para facilitar la sintaxis del sql
@@ -98,6 +79,7 @@ abstract class Entity {
 
   public function getFields(){ //pk, nf, fk
     $merge =  array_merge($this->getFieldsNf(), $this->getFieldsFk());
+    
     array_unshift($merge, $this->getPk());
     return $merge;
   }

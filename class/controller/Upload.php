@@ -12,32 +12,12 @@ class Upload {
    */
 
   public $entityName;
-
   public $sufix = "";
-
   public $directory;
-  
+    
   public function __construct (){
     $this->uploadPath = date("Y/m/");
   }
-
-  final public static function getInstance() {
-    $className = get_called_class();
-    return new $className;
-  }
-
-  final public static function getInstanceRequire($entity) {
-    $dir = "class/controller/upload/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $className = snake_case_to("XxYy", $entity) . "Upload";    
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      require_once($dir."_".$name);
-      $className = "_".$className;    
-    }
-    return call_user_func("{$className}::getInstance");
-  }
-
 
   public function main(array $file) {
     if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
@@ -55,7 +35,7 @@ class Upload {
 
   public function createFileValue($file){
     $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
-    $fileValue = EntityValues::getInstanceRequire("file")->_fromArray($file)->_setDefault();
+    $fileValue = $this->container->getValues("file")->_fromArray($file)->_setDefault();
     $fileValue->setContent($this->uploadPath.$fileValue->id().$this->sufix.".".$ext);
     return $fileValue;
   }
@@ -69,8 +49,7 @@ class Upload {
 
   public function insertFile($fileValue){
     $f = $fileValue->_toArray();
-    $ma = Ma::open();
-    $ma->insert("file", $f);
+    $this->container->getDb()->insert("file", $f);
     return $f;
   }
 }

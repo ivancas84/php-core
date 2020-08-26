@@ -10,26 +10,10 @@ class Unique {
 
   public $entityName;
 
-  final public static function getInstance() {
-    $className = get_called_class();
-    return new $className;
-  }
-
-  final public static function getInstanceRequire($entity) {
-    $dir = "class/controller/unique/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $className = snake_case_to("XxYy", $entity) . "Unique";    
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      require_once($dir."_".$name);
-      $className = "_".$className;    
-    }
-    return call_user_func("{$className}::getInstance");
-  }
-
   public function main($params) {
     //$params = ["domicilio"=>"1543133270054093"];
-    return Ma::open()->unique($this->entityName, $params);
+    $row = $this->container->getDb()->unique($this->entityName, $params);
+    return $this->container->getSqlo($this->entityName)->json($row);
   }
 
 }

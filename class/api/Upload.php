@@ -27,7 +27,9 @@ class UploadApi {
       /**
        * Se asigna el nombre "file" al archivo para identificacion
        */
-      $controller = Upload::getInstanceRequire($this->entityName);
+
+      $container = new Container();
+      $controller = $container->getController("upload", $this->entityName);
       $data = $controller->main($file);
       echo json_encode($data);
     } catch (Exception $ex) {

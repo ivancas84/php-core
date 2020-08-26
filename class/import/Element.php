@@ -13,7 +13,8 @@ abstract class ImportElement {
   public $process = true;
   public $sql = "";
   public $entities = [];
-
+  public $db;
+  
   public function __construct($i, $data){
       $this->index = $i;
       $this->logs = new Logs();
@@ -37,7 +38,7 @@ abstract class ImportElement {
     /**
      * Comportamiento por defecto para setear una entidad
      */
-    $this->entities[$name] = EntityValues::getInstanceRequire($name);
+    $this->entities[$name] = $this->container->getValues($name);
     if(!$data) {
       $this->logs->addLog($name, "error", "Error al definir datos iniciales");                
       $this->process = false;
@@ -48,9 +49,8 @@ abstract class ImportElement {
   }
 
   public function persist(){
-    $db = Db::open();
     try {
-      $db->multi_query_transaction($this->sql);
+      $this->db->multi_query_transaction($this->sql);
     } catch(Exception $exception){
       $this->logs->addLog("persist","error",$exception->getMessage());
     }
@@ -61,7 +61,7 @@ abstract class ImportElement {
   
   public function insert($name){
     if(Validation::is_empty($this->entities[$name]->id())) $this->entities[$name]->setId(uniqid()); 
-    $persist = EntitySqlo::getInstanceRequire($name)->insert($this->entities[$name]->_toArray());
+    $persist = $this->container->getSqlo($name)->insert($this->entities[$name]->_toArray());
     $this->entities[$name]->setId($persist["id"]);
     $this->sql .=  $persist["sql"];
   }
@@ -71,7 +71,7 @@ abstract class ImportElement {
     $compare =  $this->entities[$name]->_equalTo($existente);
     if($compare !== true) {
       $this->logs->addLog("persona","warning","El registro sera actualizado ({$compare})");
-      $persist = EntitySqlo::getInstanceRequire($name)->update($this->entities[$name]->_toArray());
+      $persist = $this->container->getSqlo($name)->update($this->entities[$name]->_toArray());
       $this->sql .= $persist["sql"];
     } else {
       $this->process = false;

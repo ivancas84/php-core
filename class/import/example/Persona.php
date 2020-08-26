@@ -39,7 +39,7 @@ class ImportPersona extends Import {
       if($element->logs->isError()) continue;
 
       if(key_exists($element->entities["persona"]->numeroDocumento(), $this->dbs["persona"])){
-        $personaExistente = EntityValues::getInstanceRequire("persona");
+        $personaExistente = $this->container->getValues("persona");
         $dni= $element->entities["persona"]->numeroDocumento();
         $personaExistente->_fromArray($this->dbs["persona"][$dni]);
         if(!$element->entities["persona"]->checkNombresParecidos($personaExistente)){                    

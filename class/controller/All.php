@@ -11,30 +11,14 @@ class All {
    */
 
   public $entityName;
-  
-  final public static function getInstance() {
-    $className = get_called_class();
-    return new $className;
-  }
+  public $db;
+  public $container;
 
-  final public static function getInstanceRequire($entity) {
-    $dir = "class/controller/all/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $className = snake_case_to("XxYy", $entity) . "All";    
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      require_once($dir."_".$name);
-      $className = "_".$className;    
-    }
-    return call_user_func("{$className}::getInstance");
-  }
-  
   public function main($display) {
-    $displayRender = DisplayRender::getInstanceRequire($this->entityName);
+    $displayRender = $this->container->getController("display_render", $this->entityName);
     $render = $displayRender->main($display);
-    $ma = Ma::open();
-    $rows = $ma->all($this->entityName, $render);
-    $sqlo = EntitySqlo::getInstanceRequire($this->entityName);
+    $rows = $this->db->all($this->entityName, $render);
+    $sqlo = $this->container->getSqlo($this->entityName);
     foreach($rows as &$row) $row = $sqlo->json($row);
     return $rows;
   }

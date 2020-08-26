@@ -1,8 +1,6 @@
 <?php
-require_once("class/controller/Base.php");
 require_once("class/tools/Filter.php");
-require_once("class/model/Sqlo.php");
-
+require_once("class/Container.php");
 
 class BaseApi {
   /**
@@ -14,7 +12,9 @@ class BaseApi {
   public function main() {
     try{
       $display = Filter::jsonPost();
-      $controller = Base::getInstanceRequire($this->entityName);
+
+      $container = new Container();
+      $controller = $container->getController("base", $this->entityName);
       $data = $controller->main($display);
       echo json_encode($data);
     } catch (Exception $ex) {

@@ -15,18 +15,6 @@ class SqlFormat {
 
   private static $instance; //singleton
 
-  public function __construct() {
-    $this->db = Db::open();
-  }
-
-  public static function getInstance() {
-    /**
-     * singleton
-     */
-    if(is_null(self::$instance)) self::$instance = new SqlFormat();
-    return self::$instance;
-  }
-
   public function isNull($value){
     /**
      * Implementacion local del metodo is_null

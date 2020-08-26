@@ -1,8 +1,7 @@
 <?php
 require_once("class/controller/Count.php");
 
-require_once("class/model/Ma.php");
-require_once("class/model/Render.php");
+require_once("class/Container.php");
 require_once("class/tools/Filter.php");
 
 class CountApi {
@@ -16,7 +15,8 @@ class CountApi {
     try{
       $display = Filter::jsonPost();
 
-      $controller = Count::getInstanceRequire($this->entityName);
+      $container = new Container();
+      $controller = $container->getController("count", $this->entityName);
       $count = $controller->main($display);
       echo json_encode($count);
 
