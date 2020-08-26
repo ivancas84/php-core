@@ -115,14 +115,13 @@ class Persist {
       $values->setId($row_["id"]);
       $id = $this->update($this->entityName, $values->_toArray());
     } else {
-      $values->setId(uniqid());
       $values->_setDefault();
       $id = $this->insert($this->entityName, $values->_toArray());
     }
 
     $ma->multi_query_transaction($this->getSql());
     
-    return $id;
+    return ["id" => $id, "detail" => $this->getDetail()]
   }
 }
 
