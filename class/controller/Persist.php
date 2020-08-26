@@ -14,7 +14,77 @@ class Persist {
    */
 
   public $entityName;
-  public $db;
+  public $container;
+
+  public $logs = [];
+  /**
+   * Cada elemento de logs es un array con la siguiente informacion 
+   * sql
+   * detail
+   */
+
+  public function getSql() {
+    $sql = "";
+    foreach($this->logs as $log) {
+      if (!empty($log["sql"])) $sql .= $log["sql"];
+    }
+    return $sql;
+  }
+
+  public function getDetail() {
+    $detail = [];
+    foreach($this->logs as $log) {
+      if (!empty($log["detail"])) $detail = array_merge($detail, $log["detail"]);
+    }
+    return $detail;
+  }
+
+  public function getLogsKeys($keys){
+    $logs = [];
+    foreach($this->logs as $log) {
+      $l = [];
+      foreach($keys as $key) $l[$key] = $log[$key];
+      array_push($logs, $l);
+    }
+    return $logs;
+  }
+
+  public function insert($entity, $row) {
+    /**
+     * Persistir row
+     * $row:
+     *   Valores a persisitir
+     */
+    $id = null;
+    $sql ="";
+    $detail = [];
+    
+    if(!empty($row)) {
+      $persist = $this->getContainer()->getSqlo($entity)->insert($row);
+      $id = $persist["id"];
+      $sql = $persist["sql"];
+      $detail = $persist["detail"];
+    }
+
+    array_push($this->logs, ["sql"=>$sql, "detail"=>$detail]);
+    return $id;
+  }
+
+  public function update($entity, $row) {
+    $id = null;
+    $sql ="";
+    $detail = [];
+    
+    if(!empty($row)) {
+      $persist = $this->getContainer()->getSqlo($entity)->update($row);
+      $id = $persist["id"];
+      $sql = $persist["sql"];
+      $detail = $persist["detail"];
+    }
+
+    array_push($this->logs, ["sql"=>$sql, "detail"=>$detail]);
+    return $id;
+  }
 
   public function main($data){
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
@@ -31,7 +101,7 @@ class Persist {
       $persist = $this->container->getSqlo($this->entityName)->insert($values->_toArray());
     }
 
-    $this->db->multi_query_transaction_log($persist["sql"]);
+    $this->container->getDb()->multi_query_transaction_log($persist["sql"]);
     
     return ["id" => $persist["id"], "detail" => $persist["detail"]];
   }
