@@ -26,12 +26,23 @@ class Ma extends Db {
    *   one: Debe retornar un unico valor
    *   OrNull: Puede retornar valores nulos
    */
+
+  public static $dbInstanceMa = [];
+
   public static function open($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
-    if (!key_exists($host.$dbname, self::$dbInstance)) {
-      self::$dbInstance[$host.$dbname] = new self($host, $user, $passwd, $dbname);
+    if (!key_exists($host.$dbname, self::$dbInstanceMa)) {
+      self::$dbInstanceMa[$host.$dbname] = new self($host, $user, $passwd, $dbname);
     } 
-    return self::$dbInstance[$host.$dbname];
+    return self::$dbInstanceMa[$host.$dbname];
   }
+
+  public function __destruct(){
+    if (key_exists($this->host.$this->dbname, self::$dbInstanceMa) && ($this->thread_id == self::$dbInstanceMa[$this->host.$this->dbname]->thread_id)) {
+      unset(self::$dbInstanceMa[$this->host.$this->dbname]);
+    }
+    parent::close();
+  }
+
   
   public function count($entity, $render = null){
     /**
