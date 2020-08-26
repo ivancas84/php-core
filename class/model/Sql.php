@@ -19,45 +19,13 @@ abstract class EntitySql { //Definir SQL
   public $prefix = '';
   /**
    * Prefijo de identificacion
-   * Tipo: string
    */
-  
+
+  public $entityName;
+  public $container;
   public $entity;
-  /**
-   * Configuracion de la entidad
-   * Tipo: Entity
-   */
-
-  public $format; 
-  /**
-   * Tipo: FormatSql
-   */
-
-  public function __construct(){
-    $this->format = SqlFormat::getInstance();
-  }
-
-  final public static function getInstance($prefix = null) {
-    $className = get_called_class();
-    $sql = new $className;
-    if($prefix) $sql->prefix = $prefix;
-    return $sql;    
-  }
-
-  final public static function getInstanceRequire($entity, $prefix = null) {
-    $dir = "class/model/sql/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $prf = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prf = "_";
-      require_once($dir.$prf.$name);
-    }
+  public $format;
     
-    $className = $prf.snake_case_to("XxYy", $entity) . "Sql";
-    return call_user_func_array("{$className}::getInstance", [$prefix]);
-  }
-
   public function prf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; }   //prefijo fields
   public function prt(){ return (empty($this->prefix)) ?  $this->entity->getAlias() : $this->prefix; } //prefijo tabla
   public function initializeInsert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //inicializar valores para insercion

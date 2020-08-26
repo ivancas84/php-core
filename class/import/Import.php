@@ -24,6 +24,8 @@ abstract class Import {
     public $ids = []; //array asociativo con identificadores
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
     public $elements = []; //array de elementos a importar
+    public $db;
+    public $container;
     
     public function main(){
         echo date("Y-m-d H:i:s") . " BEGIN " . $this->id . "<br>";
@@ -109,7 +111,7 @@ abstract class Import {
      *     if(!$element->process) continue;
      *
      *     if(key_exists($element->entities["persona"]->numeroDocumento(), $this->dbs["persona"])){
-     *       $personaExistente = EntityValues::getInstanceRequire("persona");
+     *       $personaExistente = $this->container->getValues("persona");
      *       $dni = $element->entities["persona"]->numeroDocumento();
      *       $personaExistente->_fromArray($this->dbs["persona"][$dni]);
      *       if(!$element->entities["persona"]->checkNombresParecidos($personaExistente)){                    
@@ -258,7 +260,7 @@ abstract class Import {
         $render = new Render();
         $render->setSize(false);
         $render->addCondition([$field,"=",$this->ids[$id]]);
-        $rows = Ma::open()->all($name, $render);
+        $rows = $this->db->all($name, $render);
     
         $this->dbs[$id] = array_combine_key(
           $rows,
@@ -268,8 +270,8 @@ abstract class Import {
 
     protected function queryEntityIdentifier($name){        
         if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
-            Ma::open()->identifier($name, $this->ids[$name]),
-            Entity::getInstanceRequire($name)->identifier
+            $this->db->identifier($name, $this->ids[$name]),
+            $this->container->getEntity($name)->identifier
         );
     }
 
@@ -284,7 +286,7 @@ abstract class Import {
     if(empty($id)) $id = $name;
     
     if(key_exists($value, $this->dbs[$id])){
-      $existente = EntityValues::getInstanceRequire($name);
+      $existente = $this->container->getValues($name);
       $existente->_fromArray($this->dbs[$id][$value]);
       $element->update($name, $existente);
     } else {        

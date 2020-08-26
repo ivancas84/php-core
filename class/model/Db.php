@@ -8,19 +8,20 @@ class Db extends mysqli {
    */
   public static $dbInstance = [];
 
+  /*
   public static function open($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
     if (!key_exists($host.$dbname, self::$dbInstance)) {
       self::$dbInstance[$host.$dbname] = new self($host, $user, $passwd, $dbname);
     } 
     return self::$dbInstance[$host.$dbname];
-  }
+  }*/
 
   public function __construct($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
     $this->host = $host;
     $this->dbname = $dbname;
     parent::__construct($host, $user, $passwd, $dbname);
     if($this->connect_error) throw new Exception($this->connect_error);
-    $result = $this->multi_query_last( "SET NAMES 'utf8'; SET lc_time_names = 'es_AR';");
+    //$result = $this->multi_query_last( "SET NAMES 'utf8'; SET lc_time_names = 'es_AR';");
     if($this->error) throw new Exception($this->error);
   }
 
@@ -47,6 +48,7 @@ class Db extends mysqli {
      * Se recomienda utilizar multi_query_last si se quiere evitar procesamiento adicional
      */
     if(!$result = parent::multi_query($query)) throw new Exception($this->error);
+    return $result;
   }
 
   public function multi_query_last($query){

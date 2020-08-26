@@ -1,5 +1,5 @@
 <?php
-require_once("class/controller/Ids.php");
+require_once("class/Container.php");
 require_once("class/tools/Filter.php");
 
 class IdsApi {
@@ -13,9 +13,9 @@ class IdsApi {
     try{
       $display = Filter::jsonPost();
 
-      $controller = Ids::getInstanceRequire($this->entityName);
+      $container = new Container();
+      $controller = $container->getController("ids", $this->entityName);
       $ids = $controller->main($display);
-
       echo json_encode($ids);
     
     } catch (Exception $ex) {

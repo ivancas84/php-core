@@ -2,11 +2,7 @@
 
 
 require_once("class/tools/Filter.php");
-require_once("class/controller/Transaction.php");
-require_once("class/controller/Persist.php");
-
-require_once("class/model/Sqlo.php");
-require_once("function/stdclass_to_array.php");
+require_once("class/Container.php");
 
 class PersistApi {
   public $entityName;
@@ -14,17 +10,11 @@ class PersistApi {
   public function main(){
     try {
       $data = Filter::jsonPostRequired();
-      /*$data = [
-        ["action"=>"persist", "entity"=>"sede", "row"=>["numero"=>"20", "nombre"=>"Prueba"]],
-        ["action"=>"persist", "entity"=>"asignatura", "row"=>["nombre"=>"Matemática"]]
-      ];*/
-      $persistController = Persist::getInstanceRequire($this->entityName);
-      $id = $persistController->main($data);
-      echo json_encode(["id" => $id, "detail" => $persistController->getDetail()]);
-      /**
-       * se devuelve un array con el id principal y el detalle de las entidades persistidas
-       * El detalle es un array donde cada elemento es de la forma "entityId"
-       */
+
+      $container = new Container();
+      $controller = $container->getController("persist", $this->entityName);
+      $result = $controller->main($data);
+      echo json_encode($result);
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());
       http_response_code(500);

@@ -27,7 +27,7 @@ abstract class EntityValues {
    *   
    *   IMPORTANTE: si el campo no se setea, no se chequea.
    *   Para asegurarse de que todos los campos esten seteados, se puede utilizar el metodo _setDefault();
-   *     $v = EntityValues::getInstanceRequired("entity")->setDefault()->_fromArray($something);
+   *     $v = $this->container->getValues("entity")->setDefault()->_fromArray($something);
    *     $v->_fromArray($somthing);
    * 
    *   Una vez realizados los chequeos se puede utilizar el atributo logs para obtener el estado final
@@ -42,38 +42,14 @@ abstract class EntityValues {
    * El identificador puede estar formado por campos de la tabla actual o relacionadas
    */
   
-  protected $_logs;
+  public $_logs;
   /**
    * Logs de verificaciones
    */
 
 
 
-  public function __construct(){
-    $this->_logs = new Logs();
-  }
 
-  public static function getInstance($values = NULL, $prefix = "") { //crear instancias de values
-    $className = get_called_class();
-    $instance = new $className;
-    if(!empty($values)) $instance->_setValues($values, $prefix);
-    return $instance;
-  }
-  
-  final public static function getInstanceRequire($entity, $values= null, $prefix = "") {
-    $dir = "class/model/values/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $prf = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prf = "_";
-      require_once($dir.$prf.$name);
-    }
-    
-    $className = $prf.snake_case_to("XxYy", $entity);
-    return call_user_func_array("{$className}::getInstance", [$values, $prefix]);
-  }
-  
   abstract public function _reset();
     /**
      * el reseteo consiste en redefinir un valor al atributo en base a ciertas condiciones

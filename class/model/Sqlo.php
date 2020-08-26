@@ -18,56 +18,9 @@ abstract class EntitySqlo {
    * String con el nombre de la entidad (facilita la construccion)
    */
 
-  public $entity; 
-  /**
-   * Entity
-   */
+  public $container;
 
-  public $sql;
-  /**
-   * EntitySql
-   */
-
-  protected static $instances = [];
-
-  public function __construct(){
-    /**
-     * Se definen todos los recursos de forma independiente, 
-     * sin parametros en el constructor, 
-     * para facilitar el polimorfismo de las subclases
-     */
-    $this->entity = Entity::getInstanceRequire($this->entityName);
-    $this->sql = EntitySql::getInstanceRequire($this->entityName);
-  }
-
-  final public static function getInstance() {
-    $className = get_called_class();
-    if (!isset(self::$instances[$className])) {
-      $c = new $className;
-      self::$instances[$className] = $c;
-    }
-    return self::$instances[$className];
-  }
-
-  final public static function getInstanceRequire($entity) {
-    $dir = "class/model/sqlo/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $prefix = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prefix = "_";
-      require_once($dir.$prefix.$name);
-    }
-    
-    $className = $prefix.snake_case_to("XxYy", $entity) . "Sqlo";
-    return call_user_func("{$className}::getInstance");
-  }
-
-  final public function __clone() { trigger_error('Clone is not allowed.', E_USER_ERROR); } //singleton
-
-  final public function __wakeup(){ trigger_error('Unserializing is not allowed.', E_USER_ERROR); } //singleton }
-  
-  public function json(array $row) { return EntityValues::getInstanceRequire($this->entity->getName())->_fromArray($row)->_toArray(); }
+  public function json(array $row) { return $this->container->getValues($this->entity->getName())->_fromArray($row)->_toArray(); }
 
   public function values(array $row){ //retornar instancias de EntityValues
     /**
@@ -79,7 +32,7 @@ abstract class EntitySqlo {
      * Este metodo debe sobrescribirse en el caso de que existan relaciones
      */
     $row_ = [];
-    $row_[$this->entity->getName()] = EntityValues::getInstanceRequire($this->entity->getName())->_fromArray($row);
+    $row_[$this->entity->getName()] = $this->container->getValues($this->entity->getName())->_fromArray($row);
     return $row_;
   }
 

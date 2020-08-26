@@ -13,10 +13,10 @@ class GetAllApi {
   public function main() {
     try{
       $ids = Filter::jsonPostRequired(); //siempre deben recibirse ids
-      $controller = GetAll::getInstanceRequire($this->entityName);
+
+      $container = new Container();
+      $controller = $container->getController("get_all", $this->entityName);
       $rows = $controller->main($ids);
-      $sqlo = EntitySqlo::getInstanceRequire($this->entityName);
-      foreach($rows as &$row) $row = $sqlo->json($row);
       echo json_encode($rows);
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());

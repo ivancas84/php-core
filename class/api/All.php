@@ -6,7 +6,7 @@ require_once("class/model/Sqlo.php");
 
 class AllApi {
   /**
-   * Api general de all
+   * Api de acceso al controlador All
    */
 
   public $entityName;
@@ -14,7 +14,9 @@ class AllApi {
   public function main() {
     try{
       $display = Filter::jsonPostRequired(); //siempre se recibe al menos size y page
-      $controller = All::getInstanceRequire($this->entityName);
+      
+      $container = new Container();
+      $controller = $container->getController("all", $this->entityName);
       $data = $controller->main($display);
       echo json_encode($data);
     } catch (Exception $ex) {

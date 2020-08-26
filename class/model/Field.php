@@ -7,6 +7,7 @@ abstract class Field {
 
   protected static $instances = [];
 
+  public $container;
   public $name;
   public $alias;
   public $default;
@@ -103,26 +104,6 @@ abstract class Field {
    * Esta pensado para separar los fields de una entidad de las que no son para el caso que haya que definirse subconsulta 
    * Los campos no exclusivos habitualmente se definen como admin = false
    */
-
-  final public static function getInstance() {
-    $className = get_called_class();
-    if (!isset(self::$instances[$className])) { self::$instances[$className] = new $className; }
-    return self::$instances[$className];
-  }
-
-  final public static function getInstanceRequire($entity, $field) {
-    $dir = "class/model/field/" . snake_case_to("xxYy", $entity) . "/";
-    $name = snake_case_to("XxYy", $field) . ".php";
-    $prefix = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prefix = "_";
-      require_once($dir.$prefix.$name);
-    }
-    
-    $className = $prefix."Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);
-    return call_user_func("{$className}::getInstance");
-  }
 
   public function __construct() {
     $this->defineDataType();

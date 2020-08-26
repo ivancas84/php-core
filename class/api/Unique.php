@@ -1,6 +1,5 @@
 <?php
-require_once("class/controller/Unique.php");
-require_once("class/model/Sqlo.php");
+require_once("class/Container.php");
 require_once("class/tools/Filter.php");
 
 class UniqueApi {
@@ -14,10 +13,10 @@ class UniqueApi {
     try{
       $params = Filter::jsonPostRequired();
       
-      $controller = Unique::getInstanceRequire($this->entityName);
+      $container = new Container();
+      $controller = $container->getController("unique", $this->entityName);
       $row = $controller->main($params);
-
-      echo json_encode(EntitySqlo::getInstanceRequire($this->entityName)->json($row));
+      echo json_encode($row);
 
     } catch (Exception $ex) {
       error_log($ex->getTraceAsString());

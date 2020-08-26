@@ -1,12 +1,10 @@
 <?php
-require_once("class/controller/Data.php");
 require_once("class/tools/Filter.php");
-require_once("class/model/Sqlo.php");
+require_once("class/Container.php");
 
-
-class DataApi {
+class BaseApi {
   /**
-   * Api general de data
+   * Api de acceso al controlador Base
    */
 
   public $entityName;
@@ -14,7 +12,9 @@ class DataApi {
   public function main() {
     try{
       $display = Filter::jsonPost();
-      $controller = Data::getInstanceRequire($this->entityName);
+
+      $container = new Container();
+      $controller = $container->getController("base", $this->entityName);
       $data = $controller->main($display);
       echo json_encode($data);
     } catch (Exception $ex) {
