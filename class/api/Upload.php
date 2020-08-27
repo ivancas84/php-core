@@ -1,42 +1,57 @@
 <?php
-require_once("class/controller/Upload.php");
+require_once("class/model/Ma.php");
+require_once("class/model/Render.php");
+require_once("class/tools/Filter.php");
 require_once("class/model/Sqlo.php");
+require_once("class/model/Values.php");
 
 
-class UploadApi {
+class Upload {
   /**
-   * Api general de upload para procesar un solo archivos
+   * Controlador de procesamiento de un solo archivo
    */
 
   public $entityName;
-  /**
-   * entityName hace referencia principalmente al tipo de procesamiento, por ejemplo "file", "image" o algun procesamiento particular.
-   * entityName por defecto hace referencia al tipo mime pero no es estrictamente necesario, puede referirse también a un modo particular de procesamiento.
-   * Habitualmente se define un controlador por defecto denominado File, que hace referencia a cualquier archivo
-   * Otros tipos de procesamiento pueden ser por ejemplo Image (para imagenes) requiere que se almacenen diferentes tamanios para presentar
-   * Si consideramos procesamientos particulares, entityName puede tomar el valor por ejemplo "InfoPersona" indicando que se procesara informacion relativa a Persona, 
-   * Se asigna el nombre "file" al archivo para identificacion, recordemos que esta api procesa un solo archivo
-   */
-
-  public function main() {
-    /**
-     * A diferencia de otras apis, la lectura de filtros se realiza dentro del controlador
-     */
-    try{
-      $file = Filter::fileRequired("file"); 
-      /**
-       * Se asigna el nombre "file" al archivo para identificacion
-       */
-
-      $container = new Container();
-      $controller = $container->getController("upload", $this->entityName);
-      $data = $controller->main($file);
-      echo json_encode($data);
-    } catch (Exception $ex) {
-      error_log($ex->getTraceAsString());
-      http_response_code(500);
-      echo $ex->getMessage();
-    }
+  public $sufix = "";
+  public $directory;
+    
+  public function __construct (){
+    $this->uploadPath = date("Y/m/");
   }
 
+  public function main() {
+    $file = Filter::fileRequired("file"); 
+
+    if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
+
+    $this->createDir();
+    $fileValue = $this->createFileValue($file);
+    $destination = $this->moveUploadedFile($file, $fileValue);
+    return $this->insertFile($fileValue);
+  }
+
+  public function createDir(){
+    $dir = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $this->uploadPath;
+    if(!empty($this->uploadPath) && (!file_exists($dir))) mkdir($dir, 0755, true);
+  }
+
+  public function createFileValue($file){
+    $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
+    $fileValue = $this->container->getValues("file")->_fromArray($file)->_setDefault();
+    $fileValue->setContent($this->uploadPath.$fileValue->id().$this->sufix.".".$ext);
+    return $fileValue;
+  }
+
+  public function moveUploadedFile($file, $fileValue){
+    $destination = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $fileValue->content();
+    if ( !move_uploaded_file($file["tmp_name"], $destination) ) throw new Exception( "Error al mover archivo" );
+    unset($file["tmp_name"]);
+    return $destination;
+  }
+
+  public function insertFile($fileValue){
+    $f = $fileValue->_toArray();
+    $this->container->getDb()->insert("file", $f);
+    return $f;
+  }
 }

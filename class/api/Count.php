@@ -1,29 +1,14 @@
 <?php
-require_once("class/controller/Count.php");
-
-require_once("class/Container.php");
+require_once("class/model/Ma.php");
+require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
-class CountApi {
-  /**
-   * Api de acceso al controlador Count
-   */
-
+class Count {
   public $entityName;
 
   public function main() {
-    try{
-      $display = Filter::jsonPost();
-
-      $container = new Container();
-      $controller = $container->getController("count", $this->entityName);
-      $count = $controller->main($display);
-      echo json_encode($count);
-
-    } catch (Exception $ex) {
-      http_response_code(500);
-      error_log($ex->getTraceAsString());
-      echo $ex->getMessage();
-    }
+    $display = Filter::jsonPost();
+    $render = Render::getInstanceDisplay($display);
+    return $this->container->getDb()->count($this->entityName, $render);
   }
 }

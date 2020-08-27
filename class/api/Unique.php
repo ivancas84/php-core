@@ -1,8 +1,9 @@
 <?php
-require_once("class/Container.php");
+require_once("class/model/Ma.php");
+require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
-class UniqueApi {
+class Unique {
   /**
    * Comportamiento general de all
    */
@@ -10,19 +11,9 @@ class UniqueApi {
   public $entityName;
 
   public function main() {
-    try{
-      $params = Filter::jsonPostRequired();
-      
-      $container = new Container();
-      $controller = $container->getController("unique", $this->entityName);
-      $row = $controller->main($params);
-      echo json_encode($row);
-
-    } catch (Exception $ex) {
-      error_log($ex->getTraceAsString());
-      http_response_code(500);
-      echo $ex->getMessage();
-    }
+    $params = Filter::jsonPostRequired();
+    $row = $this->container->getDb()->unique($this->entityName, $params);
+    return $this->container->getSqlo($this->entityName)->json($row);
   }
 
 }

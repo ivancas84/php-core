@@ -58,6 +58,21 @@ class Container {
     return self::$field[$className] = $c; 
   }
 
+  public function getApi($controller, $entityName){
+    $dir = "class/api/" . snake_case_to("xxYy", $controller) . "/";
+    $name = snake_case_to("XxYy", $entityName) . ".php";
+    $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller);    
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
+    else{
+      require_once($dir."_".$name);
+      $className = "_".$className;    
+    }
+
+    $c = new $className;
+    $c->container = $this;
+    return $c;
+  }
+  
   public function getController($controller, $entityName){
     $dir = "class/controller/" . snake_case_to("xxYy", $controller) . "/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
