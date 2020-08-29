@@ -1,6 +1,8 @@
 <?php
 
 require_once("class/model/Ma.php");
+require_once("function/snake_case_to.php");
+require_once("class/model/SqlFormat.php");
 
 class Container {
   static $db = null;
@@ -58,16 +60,26 @@ class Container {
     return self::$field[$className] = $c; 
   }
 
-  public function getController($controller, $entityName){
-    $dir = "class/controller/" . snake_case_to("xxYy", $controller) . "/";
+  public function getApi($controller, $entityName){
+    $dir = "class/api/" . snake_case_to("xxYy", $controller) . "/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
-    $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller);    
+    $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller). "Api";    
     if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
     else{
       require_once($dir."_".$name);
       $className = "_".$className;    
     }
 
+    $c = new $className;
+    $c->container = $this;
+    return $c;
+  }
+
+  public function getController($controller){
+    $dir = "class/controller/";
+    $name = snake_case_to("XxYy", $controller) . ".php";
+    $className = snake_case_to("XxYy", $controller);    
+    require_once($dir.$name);
     $c = new $className;
     $c->container = $this;
     return $c;

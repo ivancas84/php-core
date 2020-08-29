@@ -1,6 +1,6 @@
 <?php
-require_once("class/controller/GetAll.php");
-require_once("class/model/Sqlo.php");
+require_once("class/model/Ma.php");
+require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
 class GetAllApi {
@@ -9,20 +9,15 @@ class GetAllApi {
    */
 
   public $entityName;
-
+  
   public function main() {
-    try{
-      $ids = Filter::jsonPostRequired(); //siempre deben recibirse ids
-
-      $container = new Container();
-      $controller = $container->getController("get_all", $this->entityName);
-      $rows = $controller->main($ids);
-      echo json_encode($rows);
-    } catch (Exception $ex) {
-      error_log($ex->getTraceAsString());
-      http_response_code(500);
-      echo $ex->getMessage();
-    }
+    $ids = Filter::jsonPostRequired(); //siempre deben recibirse ids
+    if(empty($ids)) throw new Exception("Identificadores no definidos");
+    $rows = $this->container->getDb()->getAll($this->entityName, $ids);
+    $sqlo = $this->container->getSqlo($this->entityName);
+    foreach($rows as &$row) $row = $sqlo->json($row);
+    return $rows;
+    
   }
 
 }

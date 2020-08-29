@@ -1,27 +1,21 @@
 <?php
+require_once("class/model/Ma.php");
+require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
-require_once("class/Container.php");
 
-class BaseApi {
+
+abstract class BaseApi {
   /**
-   * Api de acceso al controlador Base
-   */
+   * Controlador base
+   * Todos los controladores que no se adaptan a las estructuras existentes pueden definirse con Base
+   * El usuario puede retornar el valor que desee 
+   * Data esta pensado para ser llamado a traves de una api
+   * En el caso de que no se utilice una api, conviene utilizar directamente ModelTools.
+   **/
+  
+  public $entityName; 
+  public $container;
 
-  public $entityName;
-
-  public function main() {
-    try{
-      $display = Filter::jsonPost();
-
-      $container = new Container();
-      $controller = $container->getController("base", $this->entityName);
-      $data = $controller->main($display);
-      echo json_encode($data);
-    } catch (Exception $ex) {
-      error_log($ex->getTraceAsString());
-      http_response_code(500);
-      echo $ex->getMessage();
-    }
-  }
+  abstract public function main();
 
 }

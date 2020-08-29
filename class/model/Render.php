@@ -15,7 +15,7 @@ class Render {
   public $generalCondition = array(); //condicion utilizada solo en la estructura general 
   public $order = array();
   public $page = 1;
-  public $size = 1000;
+  public $size = false;
 
   protected $aggregate = array(); //campos a los que se aplicara funciones de agregacion
   /**

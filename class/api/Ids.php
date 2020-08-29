@@ -1,5 +1,6 @@
 <?php
-require_once("class/Container.php");
+require_once("class/model/Ma.php");
+require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
 class IdsApi {
@@ -10,19 +11,9 @@ class IdsApi {
   public $entityName;
 
   public function main() {
-    try{
-      $display = Filter::jsonPost();
-
-      $container = new Container();
-      $controller = $container->getController("ids", $this->entityName);
-      $ids = $controller->main($display);
-      echo json_encode($ids);
-    
-    } catch (Exception $ex) {
-      http_response_code(500);
-      error_log($ex->getTraceAsString());
-      echo $ex->getMessage();
-    }
+    $display = Filter::jsonPost();
+    $render = Render::getInstanceDisplay($display);
+    return $this->container->getDb()->ids($this->entityName, $render);    
   }
 
 }

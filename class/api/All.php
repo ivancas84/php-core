@@ -1,29 +1,23 @@
 <?php
-require_once("class/controller/All.php");
+require_once("class/model/Ma.php");
+require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
-require_once("class/model/Sqlo.php");
-
 
 class AllApi {
   /**
-   * Api de acceso al controlador All
+   * Obtener todos los datos de una determinada entidad
    */
 
   public $entityName;
+  public $container;
 
   public function main() {
-    try{
-      $display = Filter::jsonPostRequired(); //siempre se recibe al menos size y page
-      
-      $container = new Container();
-      $controller = $container->getController("all", $this->entityName);
-      $data = $controller->main($display);
-      echo json_encode($data);
-    } catch (Exception $ex) {
-      error_log($ex->getTraceAsString());
-      http_response_code(500);
-      echo $ex->getMessage();
-    }
+    $display = Filter::jsonPostRequired(); //siempre se recibe al menos size y page
+    $render = Render::getInstanceDisplay($display);
+    $rows = $this->container->getDb()->all($this->entityName, $render);
+    $sqlo = $this->container->getSqlo($this->entityName);
+    foreach($rows as &$row) $row = $sqlo->json($row);
+    return $rows;
   }
 
 }
