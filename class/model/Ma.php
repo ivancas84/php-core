@@ -5,15 +5,7 @@
  */
 
 require_once("class/model/Db.php");
-require_once("class/model/SqlFormat.php");
-require_once("class/model/Sqlo.php");
-require_once("class/model/Entity.php");
 require_once("class/model/Render.php");
-require_once("class/controller/Transaction.php");
-
-require_once("function/snake_case_to.php");
-require_once("function/stdclass_to_array.php");
-require_once("function/array_combine_concat.php");
 require_once("function/toString.php");
 
 class Ma extends Db {
@@ -190,8 +182,8 @@ class Ma extends Db {
      * Insercion directa (no realiza chequeo de valores ni log)
      */
     $insert = $this->container->getSqlo($entity)->insert($row);
-    $result = $this->query($insert["sql"]);
-    return $insert;
+    $result = $this->query_log($insert["sql"]);
+    return array("id" => $insert["id"], "detail"=>$insert["detail"]);
   }
 
   public function update($entity, array $row){
@@ -199,11 +191,12 @@ class Ma extends Db {
      * Actualizacion directa (no realiza chequeo de valores ni log)
      */ 
     $update = $this->container->getSql($entity)->update($row);
-    $result = $this->query($update["sql"]);
-    return $udpate;
+    $result = $this->query_log($update["sql"]);
+    return array("id" => $update["id"], "detail"=>$update["detail"]);
   }
 
-  protected function log($query){
+  public function log($query){
+    return;
     $escapedQuery = $this->escape_string($query);
 
     $sql = "

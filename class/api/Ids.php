@@ -3,7 +3,7 @@ require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
-class Ids {
+class IdsApi {
   /**
    * Comportamiento general de api ids
    */

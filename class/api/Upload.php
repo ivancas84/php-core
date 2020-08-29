@@ -6,7 +6,7 @@ require_once("class/model/Sqlo.php");
 require_once("class/model/Values.php");
 
 
-class Upload {
+class UploadApi {
   /**
    * Controlador de procesamiento de un solo archivo
    */

@@ -3,7 +3,7 @@ require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
-class Unique {
+class UniqueApi {
   /**
    * Comportamiento general de all
    */

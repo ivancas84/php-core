@@ -4,7 +4,7 @@ require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
 
-abstract class Base {
+abstract class BaseApi {
   /**
    * Controlador base
    * Todos los controladores que no se adaptan a las estructuras existentes pueden definirse con Base
