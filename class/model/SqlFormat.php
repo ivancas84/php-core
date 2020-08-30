@@ -23,37 +23,35 @@ class SqlFormat {
     return (is_null($value) || (is_string($value) && (strtolower($value) == 'null')));
   }
 
-  protected function conditionIsNull($field, $option, $value) {
-    if(empty($value)) {
-      switch($option){
-        case "=": return "({$field} IS NULL) ";
-        case "!=": return "({$field} IS NOT NULL) "; 
-      }
-      throw new Exception("La combinacion field-option-value no está permitida");
-    }
+  protected function conditionExists($field, $option, $value) {
+    if(empty($value) || $value == "true" || $value == "false" || is_bool($value) ) {
+      if (($option != "=") && ($option != "!=")) throw new Exception("La combinacion field-option-value no está permitida");
 
-    if($value === true) {
-      switch($option){
-        case "!=": return "({$field} IS NULL) ";
-        case "=": return "({$field} IS NOT NULL) ";       
+      switch(settypebool($value)){
+        case true:
+          return ($option == "=") ? "({$field} IS NOT NULL) " : "({$field} IS NULL) ";
+        default:
+          return ($option == "=") ? "({$field} IS NULL) " : "({$field} IS NOT NULL) ";
       }
-      throw new Exception("La combinacion field-option-value no está permitida");
     }
   }
 
   public function conditionIsSet($field, $value, $option = "="){
-    return $this->conditionIsNull($field, $option, settypebool($value));
+    /**
+     * Valor especial de condicion para verificar la existencia
+     */
+    return $this->conditionExists($field, $option, settypebool($value));
   }
 
   public function conditionText($field, $value, $option = "="){
-    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+    if($c = $this->conditionExists($field, $option, $value)) return $c;
     if($option == "=~") return "(lower({$field}) LIKE lower('%{$value}%'))";
     if($option == "!=~") return "(lower({$field}) NOT LIKE lower('%{$value}%'))";
     return "(lower({$field}) {$option} lower('{$value}')) ";
   }
 
   public function conditionTimestamp($field, $value, $option = "="){
-    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+    if($c = $this->conditionExists($field, $option, $value)) return $c;
 
     switch($option){
       case "=~": case "!=~":
@@ -80,7 +78,7 @@ class SqlFormat {
   }
 
   public function conditionYear($field, $value, $option = "="){
-    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+    if($c = $this->conditionExists($field, $option, $value)) return $c;
 
     switch($option){
       case "=~": case "!=~":
@@ -107,7 +105,7 @@ class SqlFormat {
   }
 
   public function conditionDate($field, $value, $option = "="){
-    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+    if($c = $this->conditionExists($field, $option, $value)) return $c;
 
     switch($option){
       case "=~": case "!=~":
@@ -134,7 +132,7 @@ class SqlFormat {
   }
 
   public function conditionTime($field, $value, $option = "="){
-    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+    if($c = $this->conditionExists($field, $option, $value)) return $c;
 
     switch($option){
       case "=~": case "!=~":
@@ -166,7 +164,7 @@ class SqlFormat {
   }
   
   public function conditionNumber($field, $value, $option = "="){
-    if($c = $this->conditionIsNull($field, $option, $value)) return $c;
+    if($c = $this->conditionExists($field, $option, $value)) return $c;
 
     switch($option) {
       case "=~": 
