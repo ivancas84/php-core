@@ -23,7 +23,7 @@ class PersistApi {
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
 
-    $values = $this->container->getValues($this->entityName)->_fromArray($data);
+    $values = $this->container->getValues($this->entityName)->_fromArray($data)->_reset();
     if(!$values->_check()) throw new Exception($values->_getLogs()->toString());
     
     //$row_ = $this->container->getDb()->unique($this->entityName, $data);
