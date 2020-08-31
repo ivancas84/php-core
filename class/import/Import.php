@@ -260,7 +260,7 @@ abstract class Import {
         $render = new Render();
         $render->setSize(false);
         $render->addCondition([$field,"=",$this->ids[$id]]);
-        $rows = $this->db->all($name, $render);
+        $rows = $this->container->getDb()->all($name, $render);
     
         $this->dbs[$id] = array_combine_key(
           $rows,

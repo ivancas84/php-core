@@ -85,6 +85,27 @@ class Container {
     return $c;
   }
 
+  public function getImport($entityName){
+    $path = "class/import/" . snake_case_to("xxYy", $entityName) . "/Import.php";
+    $className = snake_case_to("XxYy", $entityName)."Import";    
+    require_once($path);
+    $c = new $className;
+    $c->container = $this;
+    return $c;
+  }
+
+  
+  public function getImportElement($entityName, $index){
+    $path = "class/import/" . snake_case_to("xxYy", $entityName) . "/Element.php";
+    $className = snake_case_to("XxYy", $entityName)."ElementImport";    
+    require_once($path);
+    $c = new $className;
+    $c->index = $index;
+    $c->logs = new Logs();
+    $c->container = $this;
+    return $c;
+  }
+
   public function getValues($entity){
     $dir = "class/model/values/";
     $name = snake_case_to("XxYy", $entity) . ".php";

@@ -14,12 +14,8 @@ abstract class ImportElement {
   public $sql = "";
   public $entities = [];
   public $db;
+  public $container;
   
-  public function __construct($i, $data){
-      $this->index = $i;
-      $this->logs = new Logs();
-      $this->setEntities($data);
-  }
 
   abstract function setEntities($data);
   /**
