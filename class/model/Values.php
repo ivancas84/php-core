@@ -53,15 +53,16 @@ abstract class EntityValues {
   abstract public function _reset();
     /**
      * el reseteo consiste en redefinir un valor al atributo en base a ciertas condiciones
-     * no implica que el valor este erroneo, sino que puede ser mejor formateado
+     * no implica que el valor este erroneo, sino que puede ser mejor formateado, aunque en ocasiones el valor puede ser erroneo y al reformatearlo es valido
      * el seteo realiza un formato inicial, el reseteo un formato adicional que requiere mas tiempo de ejecucion
      * por ejemplo el usuario ingresa el nombre en mayusculas y conviene que este primero con mayusculas y despues con minusculas
      * el reseteo debería hacerse antes del chequeo de errores, un valor sin resetear puede ser considerado erroneo
-     * antes de resetear si no esta vacio o indefinido
+     * antes de resetear verificar si no esta vacio o indefinido
      * No se realiza el reseteo directamente en el seteo porque demanda tiempo de ejecucion,
      * sobre todo si el valor se obtiene de la base de datos
      * si un valor se setea de la base de datos se supone que esta bien
      * por eso el reseteo se define como un metodo aparte que debe ser invocado si corresponde
+     * un valor correctamente formateado que es reformateado debe conservar su valor original
      */
 
   abstract public function _check();
