@@ -165,11 +165,17 @@
 
         public function date() {
             if(!self::is_empty($this->value) 
-            && !is_a($this->value, 'DateTime')) 
+            && !($this->value instanceof DateTime)) 
                 $this->errors[] =  "El valor no es una fecha/hora";
             return $this;
         }
 
+        public function isA($class) {
+          if(!self::is_empty($this->value) 
+            && !(is_a($this->value, $class))) 
+                $this->errors[] =  "El valor no es " . $class;
+            return $this;
+        }
        
 
         public function abbreviation() {
