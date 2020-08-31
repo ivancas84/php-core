@@ -131,7 +131,7 @@ class Ma extends Db {
   public function getAll($entity, $ids, $render = null){ //busqueda por ids
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
-    $sqlo = $this->container->getSqlo($entity)->getAll($ids, $render);
+    $sql = $this->container->getSqlo($entity)->getAll($ids, $render);
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();

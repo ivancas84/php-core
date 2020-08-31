@@ -23,13 +23,21 @@ class PersistApi {
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
 
-    $values = $this->container->getValues($this->entityName)->_fromArray($data);
+    $values = $this->container->getValues($this->entityName)->_fromArray($data)->_reset();
     if(!$values->_check()) throw new Exception($values->_getLogs()->toString());
+    
+    $detail = [];
+    /**
+     * Solo se registrara el detalle de las actualizaciones
+     * El cache debe actualizarse solo con las actualizaciones
+     * Las inserciones no se encuentran cacheadas y seran posteriormente consultadas
+     */
     
     //$row_ = $this->container->getDb()->unique($this->entityName, $data);
     //if (!empty($row_)){ $values->setId($row_["id"]);
     if(!Validation::is_empty($values->id())){
       $persist = $this->container->getSqlo($this->entityName)->update($values->_toArray());
+      $detail = $persist["detail"];
     } else {
       $values->_setDefault();
       $persist = $this->container->getSqlo($this->entityName)->insert($values->_toArray());
@@ -37,7 +45,7 @@ class PersistApi {
 
     $this->container->getDb()->multi_query_transaction_log($persist["sql"]);
     
-    return ["id" => $persist["id"], "detail" => $persist["detail"]];
+    return ["id" => $persist["id"], "detail" => $detail];
   }
 }
 
