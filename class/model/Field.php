@@ -19,14 +19,12 @@ abstract class Field {
   /**
    * longitud maxima del field
    * false: El dato no tiene definida longitud
-   * @todo cambiar valor false por null
    */
 
-  public $minLength = false; 
+  public $minLength; 
    /**
     * longitud minima del field
     * false: El dato no tiene definida longitud
-    * @todo cambiar valor false por null
     */
 
   public $notNull;
@@ -230,28 +228,25 @@ abstract class Field {
   }
 
   protected function defineLength(){
-    if (empty($this->length)){
-      switch ($this->type) {
-        case "tinyint": $this->length = 3; break;
-        case "smallint": $this->length = 5; break;
-        case "mediumint": $this->length = 8; break;
-        case "int": $this->length = 10; break;
-        case "integer": $this->length = 10; break;
-        case "serial": $this->length = 10; break;
-        case "bigint": $this->length = 20; break;
-        case "tinyblob": $this->length = 255; break; //bytes
-        case "blob": $this->length = 65535; break; //bytes (64KB)
-        case "mediumblob": $this->length = 16777215; break; //bytes (16MB)
-        case "longblog": $this->length = 4294967295; break; //bytes (4GB)
-      }
+    if(!empty($this->length) ) return $this->length;
+    switch ($this->type) {
+      case "tinyint": return $this->length = 3;
+      case "smallint": return $this->length = 5;
+      case "mediumint": return $this->length = 8;
+      case "int": return $this->length = 10;
+      case "integer": return $this->length = 10;
+      case "serial": return $this->length = 10;
+      case "bigint": return $this->length = 20;
+      case "tinyblob": return $this->length = 255; //bytes
+      case "blob": return $this->length = 65535; //bytes (64KB)
+      case "mediumblob": return $this->length = 16777215; //bytes (16MB)
+      case "longblog": return $this->length = 4294967295; //bytes (4GB)
     }
 
-    if ($this->length === false || $this->length === null) {
-      switch($this->subtype){
-        case "text": $this->length = 45; break;
-        case "cuil": $this->length = 11; break;
-        case "dni": $this->length = 8; break;
-      }
+    switch($this->subtype){
+      case "text": return $this->length = 45;
+      case "cuil": return $this->length = 11;
+      case "dni": return $this->length = 8;
     }
   }
 }
