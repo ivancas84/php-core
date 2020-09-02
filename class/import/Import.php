@@ -11,6 +11,7 @@ abstract class Import {
      * Importacion de elementos
      */
     
+    public $start = 1; //comienzo
     public $id; //identificacion de los datos a procear
     public $source; //fuente de los datos a procesar
     public $pathSummary; //directorio donde se almacena el resumen del procesamiento
@@ -28,7 +29,7 @@ abstract class Import {
     public $container;
     
     public function main(){
-        echo date("Y-m-d H:i:s") . " BEGIN " . $this->id . "<br>";
+        echo date("Y-m-d H:i:s") . "<br>";
         $this->define();
         $this->identify();
         $this->query();
@@ -37,7 +38,7 @@ abstract class Import {
         $this->persist();
 
         $this->summary();
-        echo date("Y-m-d H:i:s") . " END " . $this->id."<br>";
+        echo date("Y-m-d H:i:s") . "<br>";
     }
 
     abstract public function element($i, $data);
@@ -131,7 +132,7 @@ abstract class Import {
      * 
      * 
      */
-
+    
     public function summary() {
         $informe = "<h3>Resultado " . $this->id . "</h3>";
         $informe .= "<p>Cantidad de filas procesadas: " . count($this->elements) . "</p>
@@ -139,21 +140,16 @@ abstract class Import {
     
         echo "<pre>";
         foreach($this->elements as $element) {
-          
-          $fields = [];
-          foreach($element->entities as $entity){
-            foreach($entity->_toArray() as $field){
-              if(!Validation::is_empty($field)) array_push($fields, $field); 
-            }
-          }
+          if((!$element->process) && (empty($element->logs->getLogs()))) continue;
 
+          
           $informe .= "
     <div class=\"card\">
     <ul class=\"list-group list-group-flush\">
-        <li class=\"list-group-item active\">FILA " . $element->index . "</li>
+        <li class=\"list-group-item active\">FILA " . ($element->index + $this->start) . "</li>
 ";        
            
-          $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">" . implode(", ",$fields) . "</li>
+          $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">" . $this->element->id() . "</li>
 ";
           if($element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">Persistencia realizada</li>
 ";
@@ -270,7 +266,7 @@ abstract class Import {
 
     protected function queryEntityIdentifier($name){        
         if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
-            $this->db->identifier($name, $this->ids[$name]),
+             $this->container->getDb()->identifier($name, $this->ids[$name]),
             $this->container->getEntity($name)->identifier
         );
     }
