@@ -61,27 +61,51 @@ class Container {
   }
 
   public function getApi($controller, $entityName){
-    $dir = "class/api/" . snake_case_to("xxYy", $controller) . "/";
-    $name = snake_case_to("XxYy", $entityName) . ".php";
-    $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller). "Api";    
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
+    $path = "class/api/" . snake_case_to("xxYy", $controller) . "/" . snake_case_to("XxYy", $entityName) . ".php";
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$path)){
+      require_once($path);
+      $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller). "Api";    
+    } 
     else{
-      require_once($dir."_".$name);
-      $className = "_".$className;    
+      require_once("class/api/" . snake_case_to("XxYy", $controller) . ".php");
+      $className = snake_case_to("XxYy", $controller);    
     }
 
     $c = new $className;
     $c->container = $this;
+    $c->entityName = $entityName
     return $c;
   }
 
   public function getController($controller){
+    /**
+     * Controlador
+     */
     $dir = "class/controller/";
     $name = snake_case_to("XxYy", $controller) . ".php";
     $className = snake_case_to("XxYy", $controller);    
     require_once($dir.$name);
     $c = new $className;
     $c->container = $this;
+    return $c;
+  }
+  
+  public function getControllerEntity($controller, $entityName){
+    /**
+     * Controlador asociado a entidad
+     */
+    $path = "class/controller/" . snake_case_to("xxYy", $controller) . "/" . snake_case_to("XxYy", $entityName) . ".php";
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/class/controller/".$path)){
+      require_once($path);
+      $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller);    
+    } else{
+      require_once("class/controller/" . snake_case_to("XxYy", $controller) . ".php");
+      $className = snake_case_to("XxYy", $controller);    
+    }
+
+    $c = new $className;
+    $c->container = $this;
+    $c->entityName = $entityName
     return $c;
   }
 
