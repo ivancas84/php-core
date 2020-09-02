@@ -15,7 +15,17 @@ abstract class ImportElement {
   public $entities = [];
   public $db;
   public $container;
-  
+
+  public function id(){
+    $fields = [];
+    foreach($element->entities as $entity) {
+      foreach($this->_toArray() as $field){
+        if(!Validation::is_empty($field)) array_push($fields, $field);
+       }
+      array_push($fields, $entity->_toString()); 
+    }
+    return implode(",", $fields)
+  }
 
   abstract function setEntities($data);
   /**
