@@ -46,15 +46,12 @@ abstract class ImportElement {
 
   public function persist(){
     try {
-      $this->db->multi_query_transaction($this->sql);
+      $this->container->getDb()->multi_query_transaction($this->sql);
     } catch(Exception $exception){
       $this->logs->addLog("persist","error",$exception->getMessage());
     }
   }
 
-  
-
-  
   public function insert($name){
     if(Validation::is_empty($this->entities[$name]->id())) $this->entities[$name]->setId(uniqid()); 
     $persist = $this->container->getSqlo($name)->insert($this->entities[$name]->_toArray());
@@ -64,7 +61,7 @@ abstract class ImportElement {
 
   public function update($name, $existente){
     $this->entities[$name]->setId($existente->id());
-    $compare =  $this->entities[$name]->_equalTo($existente);
+    $compare =  $this->compare($this->entities[$name], $existente);
     if($compare !== true) {
       $this->logs->addLog("persona","warning","El registro sera actualizado ({$compare})");
       $persist = $this->container->getSqlo($name)->update($this->entities[$name]->_toArray());
@@ -75,6 +72,12 @@ abstract class ImportElement {
     }
   }
 
+  public function compare($nueva, $existente){
+    /**
+     * Se define un metodo independiente de comparacion para facilitar su implementacion
+     */
+    return $nueva->_equalTo($existente);
+  }
 
   public function resetAndCheckEntities(){
     foreach($this->entities as $entityName => &$entity){
