@@ -68,12 +68,12 @@ class Container {
     } 
     else{
       require_once("class/api/" . snake_case_to("XxYy", $controller) . ".php");
-      $className = snake_case_to("XxYy", $controller);    
+      $className = snake_case_to("XxYy", $controller) . "Api";    
     }
 
     $c = new $className;
     $c->container = $this;
-    $c->entityName = $entityName
+    $c->entityName = $entityName;
     return $c;
   }
 
@@ -105,7 +105,7 @@ class Container {
 
     $c = new $className;
     $c->container = $this;
-    $c->entityName = $entityName
+    $c->entityName = $entityName;
     return $c;
   }
 
