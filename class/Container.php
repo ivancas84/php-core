@@ -68,7 +68,7 @@ class Container {
     } 
     else{
       require_once("class/api/" . snake_case_to("XxYy", $controller) . ".php");
-      $className = snake_case_to("XxYy", $controller) . "Api";    
+      $className = snake_case_to("XxYy", $controller)   . "Api";    
     }
 
     $c = new $className;
