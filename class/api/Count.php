@@ -5,6 +5,7 @@ require_once("class/tools/Filter.php");
 
 class CountApi {
   public $entityName;
+  public $container;
 
   public function main() {
     $display = Filter::jsonPost();
