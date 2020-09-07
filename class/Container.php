@@ -114,17 +114,18 @@ class Container {
     $className = snake_case_to("XxYy", $entityName)."Import";    
     require_once($path);
     $c = new $className;
+    $c->entityName = $entityName;
     $c->container = $this;
     return $c;
   }
 
   
-  public function getImportElement($entityName, $index){
+  public function getImportElement($entityName){
     $path = "class/import/" . snake_case_to("xxYy", $entityName) . "/Element.php";
-    $className = snake_case_to("XxYy", $entityName)."ElementImport";    
+    $className = snake_case_to("XxYy", $entityName)."ImportElement";    
     require_once($path);
     $c = new $className;
-    $c->index = $index;
+    $c->entityName = $entityName;
     $c->logs = new Logs();
     $c->container = $this;
     return $c;
