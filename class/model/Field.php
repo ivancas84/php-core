@@ -238,13 +238,13 @@ abstract class Field {
       case "serial": return $this->length = 10;
       case "bigint": return $this->length = 20;
       case "tinyblob": return $this->length = 255; //bytes
-      case "blob": return $this->length = 65535; //bytes (64KB)
-      case "mediumblob": return $this->length = 16777215; //bytes (16MB)
-      case "longblog": return $this->length = 4294967295; //bytes (4GB)
+      case "text": case "blob": return $this->length = 65535; //bytes (64KB)
+      case "mediumtext": case "mediumblob": return $this->length = 16777215; //bytes (16MB)
+      case "longtext": case "longblog": return $this->length = 4294967295; //bytes (4GB)
     }
 
     switch($this->subtype){
-      case "text": return $this->length = 45;
+      //case "text": return $this->length = 45;
       case "cuil": return $this->length = 11;
       case "dni": return $this->length = 8;
     }

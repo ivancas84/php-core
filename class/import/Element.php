@@ -7,7 +7,8 @@ abstract class ImportElement {
   /**
    * Elemento a importar
    */
-  
+
+  public $entityName;
   public $index;
   public $logs;
   public $process = true;
@@ -18,13 +19,13 @@ abstract class ImportElement {
 
   public function id(){
     $fields = [];
-    foreach($element->entities as $entity) {
-      foreach($this->_toArray() as $field){
+    foreach($this->entities as $entity) {
+      /*foreach($entity->_toArray() as $field){
         if(!Validation::is_empty($field)) array_push($fields, $field);
-       }
+      }*/
       array_push($fields, $entity->_toString()); 
     }
-    return implode(",", $fields)
+    return implode(",", $fields);
   }
 
   abstract function setEntities($data);
@@ -50,7 +51,6 @@ abstract class ImportElement {
       $this->process = false;
       return;
     }
-    $this->entities[$name]->_setDefault();
     $this->entities[$name]->_fromArray($data, $prefix);
   }
 
@@ -63,7 +63,8 @@ abstract class ImportElement {
   }
 
   public function insert($name){
-    if(Validation::is_empty($this->entities[$name]->id())) $this->entities[$name]->setId(uniqid()); 
+    if(Validation::is_empty($this->entities[$name]->id())) $this->entities[$name]->setId(uniqid());
+    $this->entities[$name]->_setDefault();
     $persist = $this->container->getSqlo($name)->insert($this->entities[$name]->_toArray());
     $this->entities[$name]->setId($persist["id"]);
     $this->sql .=  $persist["sql"];
