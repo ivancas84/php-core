@@ -11,6 +11,8 @@ abstract class Import {
      * Importacion de elementos
      */
     
+    public $entityName;
+    public $start = 0; //comienzo
     public $id; //identificacion de los datos a procear
     public $source; //fuente de los datos a procesar
     public $pathSummary; //directorio donde se almacena el resumen del procesamiento
@@ -28,7 +30,6 @@ abstract class Import {
     public $container;
     
     public function main(){
-        echo date("Y-m-d H:i:s") . " BEGIN " . $this->id . "<br>";
         $this->define();
         $this->identify();
         $this->query();
@@ -37,21 +38,19 @@ abstract class Import {
         $this->persist();
 
         $this->summary();
-        echo date("Y-m-d H:i:s") . " END " . $this->id."<br>";
     }
 
-    abstract public function element($i, $data);
+    public function element($i, $data){
     /**
-     * En funcion de los datos de entrada, se definen un elemento
+     * Definir elemento y asignarle los datos e indice
      * Un elemento posee todos los datos que posteriormente seran insertados y los posibles errores que puede haber
      * Existe una clase abstracta Element que posee un conjunto de metodos de uso habitual
-     * 
-     * Ejemplo:
-     * {
-     *   $element = new ImportPersonaElement($i, $data); 
-     *   array_push($this->elements, $element);
-     * }
      */
+      $element = $this->container->getImportElement($this->entityName);
+      $element->index = $i;
+      $element->setEntities($data);
+      array_push($this->elements, $element);
+    }
         
     abstract public function identify();
     /**
@@ -131,7 +130,7 @@ abstract class Import {
      * 
      * 
      */
-
+    
     public function summary() {
         $informe = "<h3>Resultado " . $this->id . "</h3>";
         $informe .= "<p>Cantidad de filas procesadas: " . count($this->elements) . "</p>
@@ -139,21 +138,16 @@ abstract class Import {
     
         echo "<pre>";
         foreach($this->elements as $element) {
-          
-          $fields = [];
-          foreach($element->entities as $entity){
-            foreach($entity->_toArray() as $field){
-              if(!Validation::is_empty($field)) array_push($fields, $field); 
-            }
-          }
+          if((!$element->process) && (empty($element->logs->getLogs()))) continue;
 
+          
           $informe .= "
     <div class=\"card\">
     <ul class=\"list-group list-group-flush\">
-        <li class=\"list-group-item active\">FILA " . $element->index . "</li>
+        <li class=\"list-group-item active\">FILA " . ($element->index) . "</li>
 ";        
            
-          $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">" . implode(", ",$fields) . "</li>
+          $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">" . $element->id() . "</li>
 ";
           if($element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">Persistencia realizada</li>
 ";
@@ -181,7 +175,7 @@ abstract class Import {
         if (($gestor = fopen("../../tmp/" . $this->source . ".csv", "r")) !== FALSE) {
             $encabezados = fgetcsv($gestor, 1000, ",");
 
-            $i = 0;
+            $i = 0 + $this->start;
             while (($datos = fgetcsv($gestor, 1000, ",")) !== FALSE) {
                 $i++;
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
@@ -216,7 +210,7 @@ abstract class Import {
             //print_r($datos);
           
             $e = @array_combine($this->headers, $datos);
-            $this->element($i, $e);                  
+            $this->element($i + $this->start, $e);                  
             //if($i==100) break;           
         }
     }
@@ -260,7 +254,7 @@ abstract class Import {
         $render = new Render();
         $render->setSize(false);
         $render->addCondition([$field,"=",$this->ids[$id]]);
-        $rows = $this->db->all($name, $render);
+        $rows = $this->container->getDb()->all($name, $render);
     
         $this->dbs[$id] = array_combine_key(
           $rows,
@@ -270,7 +264,7 @@ abstract class Import {
 
     protected function queryEntityIdentifier($name){        
         if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
-            $this->db->identifier($name, $this->ids[$name]),
+             $this->container->getDb()->identifier($name, $this->ids[$name]),
             $this->container->getEntity($name)->identifier
         );
     }

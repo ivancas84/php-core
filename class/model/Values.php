@@ -52,17 +52,22 @@ abstract class EntityValues {
 
   abstract public function _reset();
     /**
-     * el reseteo consiste en redefinir un valor al atributo en base a ciertas condiciones
-     * no implica que el valor este erroneo, sino que puede ser mejor formateado, aunque en ocasiones el valor puede ser erroneo y al reformatearlo es valido
-     * el seteo realiza un formato inicial, el reseteo un formato adicional que requiere mas tiempo de ejecucion
-     * por ejemplo el usuario ingresa el nombre en mayusculas y conviene que este primero con mayusculas y despues con minusculas
-     * el reseteo debería hacerse antes del chequeo de errores, un valor sin resetear puede ser considerado erroneo
-     * antes de resetear verificar si no esta vacio o indefinido
+     * El reseteo consiste en redefinir un valor al atributo en base a ciertas condiciones,
+     * no implica que el valor este erroneo, sino que puede ser mejor formateado, 
+     * El reseteo debería hacerse antes del chequeo de errores
+     * en ocasiones el valor puede ser erroneo y al reformatearlo es valido.
+     * El seteo realiza un formato inicial, el reseteo un formato adicional que requiere mas tiempo de ejecucion
+     * por ejemplo el usuario ingresa el nombre en mayusculas
+     * y conviene que este primero con mayusculas y despues con minusculas.
+     * Antes de resetear verificar si no esta vacio o indefinido
      * No se realiza el reseteo directamente en el seteo porque demanda tiempo de ejecucion,
-     * sobre todo si el valor se obtiene de la base de datos
-     * si un valor se setea de la base de datos se supone que esta bien
-     * por eso el reseteo se define como un metodo aparte que debe ser invocado si corresponde
-     * un valor correctamente formateado que es reformateado debe conservar su valor original
+     * sobre todo si el valor se obtiene de la base de datos.
+     * Si un valor se setea de la base de datos se supone que esta bien
+     * por eso el reseteo se define como un metodo aparte que debe ser invocado si corresponde.
+     * Un valor correctamente formateado que es reformateado debe conservar su valor original.
+     * En ocasiones el reset puede marcar el valor como UNDEFINED para facilitar la persistencia,
+     * sobre todo cuando se procesan grandes cantidades de datos de fuentes no confiables
+     * en donde se incrementa la probabilidad de cometer errores.
      */
 
   abstract public function _check();
@@ -81,19 +86,37 @@ abstract class EntityValues {
     elseif(is_array($values)) $this->_fromArray($values, $prefix);
   }
 
-  public function _equalTo(EntityValues $entityValues, $strict = false){
+  public function _equalTo(EntityValues $entityValues){
     /**
      * Retorna true si es igual u otro valor si es diferente (false o string con el nombre del campo)
+     * Comparación no estricta, no tiene en cuenta valores nulos o indefinidos
+     */
+    $a = $this->_toArray();
+    $b = $entityValues->_toArray();    
+    foreach($a as $ka => $va) {
+      if(is_null($va) || !key_exists($ka, $b)) continue;
+      if($b[$ka] !== $va) return $ka;
+    }
+    return true;
+  }
+
+  public function _equalToStrict(EntityValues $entityValues){
+    /**
+     * Retorna true si es igual u otro valor si es diferente (false o string con el nombre del campo)
+     * Comparación estricta, los valores deben coincidir si son nulos 
      */
     $a = $this->_toArray();
     $b = $entityValues->_toArray();    
     if($strict) return (empty(array_diff_assoc($a, $b)) && empty(array_diff_assoc($b, $a)))? true : false;
-    foreach($a as $ka => $va) {
-      if(is_null($va) || !key_exists($ka, $b)) continue;
-      if($b[$ka] !== $va) return $ka;
-      
+    
+  }
+
+  public function _toString(){
+    $fields = [];
+    foreach($this->_toArray() as $field){
+      if(!Validation::is_empty($field)) array_push($fields, $field);
     }
-    return true;
+    return implode(", ",$fields);
   }
 
 }

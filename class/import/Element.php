@@ -7,18 +7,25 @@ abstract class ImportElement {
   /**
    * Elemento a importar
    */
-  
+
+  public $entityName;
   public $index;
   public $logs;
   public $process = true;
   public $sql = "";
   public $entities = [];
   public $db;
-  
-  public function __construct($i, $data){
-      $this->index = $i;
-      $this->logs = new Logs();
-      $this->setEntities($data);
+  public $container;
+
+  public function id(){
+    $fields = [];
+    foreach($this->entities as $entity) {
+      /*foreach($entity->_toArray() as $field){
+        if(!Validation::is_empty($field)) array_push($fields, $field);
+      }*/
+      array_push($fields, $entity->_toString()); 
+    }
+    return implode(",", $fields);
   }
 
   abstract function setEntities($data);
@@ -44,23 +51,20 @@ abstract class ImportElement {
       $this->process = false;
       return;
     }
-    $this->entities[$name]->_setDefault();
     $this->entities[$name]->_fromArray($data, $prefix);
   }
 
   public function persist(){
     try {
-      $this->db->multi_query_transaction($this->sql);
+      $this->container->getDb()->multi_query_transaction($this->sql);
     } catch(Exception $exception){
       $this->logs->addLog("persist","error",$exception->getMessage());
     }
   }
 
-  
-
-  
   public function insert($name){
-    if(Validation::is_empty($this->entities[$name]->id())) $this->entities[$name]->setId(uniqid()); 
+    if(Validation::is_empty($this->entities[$name]->id())) $this->entities[$name]->setId(uniqid());
+    $this->entities[$name]->_setDefault();
     $persist = $this->container->getSqlo($name)->insert($this->entities[$name]->_toArray());
     $this->entities[$name]->setId($persist["id"]);
     $this->sql .=  $persist["sql"];
@@ -68,7 +72,7 @@ abstract class ImportElement {
 
   public function update($name, $existente){
     $this->entities[$name]->setId($existente->id());
-    $compare =  $this->entities[$name]->_equalTo($existente);
+    $compare =  $this->compare($this->entities[$name], $existente);
     if($compare !== true) {
       $this->logs->addLog("persona","warning","El registro sera actualizado ({$compare})");
       $persist = $this->container->getSqlo($name)->update($this->entities[$name]->_toArray());
@@ -79,6 +83,12 @@ abstract class ImportElement {
     }
   }
 
+  public function compare($nueva, $existente){
+    /**
+     * Se define un metodo independiente de comparacion para facilitar su implementacion
+     */
+    return $nueva->_equalTo($existente);
+  }
 
   public function resetAndCheckEntities(){
     foreach($this->entities as $entityName => &$entity){

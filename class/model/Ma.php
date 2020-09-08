@@ -50,8 +50,9 @@ class Ma extends Db {
     return $rows;    
   }
 
-  public function unique($entity, array $params, $render = null){ //busqueda por campos unicos
+  public function unique($entity, array $params){
     /**
+     * Busqueda por campos unicos
      * $params
      *   array("nombre_field" => "valor_field", ...)
      */

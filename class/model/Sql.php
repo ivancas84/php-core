@@ -28,8 +28,6 @@ abstract class EntitySql { //Definir SQL
     
   public function prf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; }   //prefijo fields
   public function prt(){ return (empty($this->prefix)) ?  $this->entity->getAlias() : $this->prefix; } //prefijo tabla
-  public function initializeInsert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //inicializar valores para insercion
-  public function initializeUpdate(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //inicializar valores para actualizacion
   public function format(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //formato de sql
 
   public function formatIds(array $ids = []) {
@@ -589,26 +587,6 @@ abstract class EntitySql { //Definir SQL
     }
 
     return $sql;
-  }
-
-  public function isUpdatable(array $row){
-    try {
-      $row_ = $this->initializeUpdate($row);
-      $this->format($row_);
-      return true;
-    } catch(Exception $exception){
-      return $exception->getMessage();
-    }
-  }
-
-  public function isInsertable(array $row){
-    try {
-      $row_ = $this->initializeInsert($row);
-      $this->format($row_);
-      return true;
-    } catch(Exception $exception){
-      return $exception->getMessage();
-    }
   }
 
 

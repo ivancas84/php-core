@@ -148,8 +148,7 @@ WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->sql->formatIds($ids);
-    $r = $this->sql->initializeUpdate($row);
-    $r_ = $this->sql->format($r);
+    $r_ = $this->sql->format($row);
     $sql = "
 {$this->_update($r_)}
 WHERE {$this->entity->getPk()->getName()} IN ({$ids_});
