@@ -50,7 +50,7 @@ class SqlFormat {
     return "(lower({$field}) {$option} lower('{$value}')) ";
   }
 
-  public function conditionTimestamp($field, $value, $option = "="){
+  public function conditionDateTime($field, $value, $option, $format){
     if($c = $this->conditionExists($field, $option, $value)) return $c;
 
     switch($option){
@@ -60,34 +60,7 @@ class SqlFormat {
          * ya que utilizan el formato JSON y la condicion no matchea
          */
         $o = ($option == "!=~") ? "NOT " : "";
-        return "(CAST(DATE_FORMAT({$field}, '%Y-%m-%d %H:%i:%s') AS CHAR) {$o}LIKE '%{$value}%' )";
-      break;
-
-      case "=":
-        if($value === false || $value === "true") return "({$field} IS NULL) ";
-        if($value === true || $value === "false") return "({$field} IS NOT NULL) ";
-
-      case "!=":
-        if($value === true || $value === "true") return "({$field} IS NULL) ";
-        if($value === false || $value === "false") return "({$field} IS NOT NULL) ";
-
-      default:
-        $value = $this->timestamp($value);
-        return "({$field} {$option} {$value})";
-    }  
-  }
-
-  public function conditionYear($field, $value, $option = "="){
-    if($c = $this->conditionExists($field, $option, $value)) return $c;
-
-    switch($option){
-      case "=~": case "!=~":
-        /**
-         * No se recomienda utilizar datepicker para definir condiciones aproximadas,
-         * ya que utilizan el formato JSON y la condicion no matchea
-         */
-        $o = ($option == "!=~") ? "NOT " : "";
-        return "(CAST(DATE_FORMAT({$field}, '%Y') AS CHAR) {$o}LIKE '%{$value}%' )";
+        return "(CAST({$field}) AS CHAR) {$o}LIKE '%{$value}%' )";
       break;
 
       case "=":
@@ -99,39 +72,12 @@ class SqlFormat {
         if($value === false) return "({$field} IS NOT NULL) ";
 
       default:
-        $value = $this->year($value);
-        return "({$field} {$option} {$value})";  
-    }
-  }
-
-  public function conditionDate($field, $value, $option = "="){
-    if($c = $this->conditionExists($field, $option, $value)) return $c;
-
-    switch($option){
-      case "=~": case "!=~":
-        /**
-         * No se recomienda utilizar datepicker para definir condiciones aproximadas,
-         * ya que utilizan el formato JSON y la condicion no matchea
-         */
-        $o = ($option == "!=~") ? "NOT " : "";
-        return "(CAST(DATE_FORMAT({$field}, '%Y-%m-%d') AS CHAR) {$o}LIKE '%{$value}%' )";
-      break;
-
-      case "=":
-        if($value === false) return "({$field} IS NULL) ";
-        if($value === true) return "({$field} IS NOT NULL) ";
-
-      case "!=":
-        if($value === true) return "({$field} IS NULL) ";
-        if($value === false) return "({$field} IS NOT NULL) ";
-
-      default:
-        $value = $this->date($value);
+        $value = $this->datetime($value, $format);
         return "({$field} {$option} {$value})";
     }
   }
 
-  public function conditionTime($field, $value, $option = "="){
+  public function conditionDateTimeAux($field, $value, $option, $format){
     if($c = $this->conditionExists($field, $option, $value)) return $c;
 
     switch($option){
@@ -141,7 +87,7 @@ class SqlFormat {
          * ya que utilizan el formato JSON y la condicion no matchea
          */
         $o = ($option == "!=~") ? "NOT " : "";
-        return "(CAST(DATE_FORMAT({$field}, '%H:%i:%s') AS CHAR) {$o}LIKE '%{$value}%' )";
+        return "(CAST({$field}) AS CHAR) {$o}LIKE '%{$value}%' )";
       break;
 
       case "=":
@@ -153,8 +99,8 @@ class SqlFormat {
         if($value === false) return "({$field} IS NOT NULL) ";
 
       default:
-        $value = $this->date($value);
-        return "({$field} {$option} {$value})";  
+        $value = $this->datetimeAux($value, $format);
+        return "({$field} {$option} {$value})";
     }
   }
 
@@ -185,56 +131,37 @@ class SqlFormat {
     return $value;
   }
 
-  public function date($value){
+  public function datetime($value, $format){
     if($this->isNull($value)) return 'null';
+    if(is_null($format)) $format = "Y-m-d";
 
-    $datetime = (is_object($value) && get_class($value) == "DateTime") ?
+    $datetime = (is_object($value) && ($value instanceof DateTime)) ?
       $value : new DateTime($value);
 
     if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
     $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    return "'" . $datetime->format('Y-m-d') . "'";
+    return "'" . $datetime->format($format) . "'";
   }
 
-  public function time($value){
-    if($this->isNull($value)) return 'null';
-
-    $datetime = (is_object($value) && get_class($value) == "DateTime") ?
-      $value : new DateTime($value);
-
-    if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
-    $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    return "'" . $datetime->format('H:i:s') . "'";
-  }
-
-  public function timestamp($value){
-    if($this->isNull($value)) return 'null';
-
-    $datetime = (is_object($value) && get_class($value) == "DateTime") ?
-      $value : new DateTime($value);
-
-    if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
-    $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    return "'" . $datetime->format('Y-m-d H:i:s') . "'";
-  }
-
-  public function year($value){
+  public function datetimeAux($value, $format){
     /**
      * Metodo similar a datetime pero se agrega un chequeo adicional para crear
      */
     if($this->isNull($value)) return 'null';
+    if(is_null($format)) $format = "Y-m-d";
 
-    if(is_object($value) && (get_class($value) == "DateTime" || get_class($value) == "SpanishDateTime")){
+    if(is_object($value) && ($value instanceof DateTime)){
       $datetime = $value;
     } else {
-      $datetime = DateTime::createFromFormat('Y', $value);
+      $datetime = DateTime::createFromFormat($format, $value);
       if(!$datetime) $datetime = new DateTime($value);
     }
 
-    if ( !$datetime ) throw new Exception('Valor año incorrecto: ' . $value);
+    if ( !$datetime ) throw new Exception('Valor fecha incorrecto: ' . $value);
     $datetime->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    return "'" . $datetime->format('Y') . "'";
+    return "'" . $datetime->format($format) . "'";
   }
+
 
   public function boolean($value){
     if($this->isNull($value)) return 'null';
