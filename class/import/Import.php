@@ -271,20 +271,20 @@ abstract class Import {
 
 
     
-  public function processElement(&$element, $name, $value, $id = null){
+  public function processElement(&$element, $entityName, $value, $id = null){
     /**
-     * @param $name Nombre de la entidad
+     * @param $entityName Nombre de la entidad
      * @param $value Valor de la entidad que la identifica univocamente
      * @param @id Identificador auxiliar de la entidad
      */
-    if(empty($id)) $id = $name;
+    if(empty($id)) $id = $entityName;
     
     if(key_exists($value, $this->dbs[$id])){
-      $existente = $this->container->getValues($name);
+      $existente = $this->container->getValues($entityName);
       $existente->_fromArray($this->dbs[$id][$value]);
-      $element->update($name, $existente);
+      $element->update($entityName, $existente);
     } else {        
-      $element->insert($name);
+      $element->insert($entityName);
     }
   }
     
