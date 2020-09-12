@@ -180,7 +180,7 @@ class Ma extends Db {
 
   public function insert($entity, array $row){ 
     /**
-     * Insercion directa (no realiza chequeo de valores ni log)
+     * Insercion directa (no realiza chequeo de valores)
      */
     $insert = $this->container->getSqlo($entity)->insert($row);
     $result = $this->query_log($insert["sql"]);
@@ -189,12 +189,22 @@ class Ma extends Db {
 
   public function update($entity, array $row){
     /**
-     * Actualizacion directa (no realiza chequeo de valores ni log)
+     * Actualizacion directa (no realiza chequeo de valores)
      */ 
     $update = $this->container->getSql($entity)->update($row);
     $result = $this->query_log($update["sql"]);
     return array("id" => $update["id"], "detail"=>$update["detail"]);
   }
+
+  public function delete($entity, $id){ 
+    /**
+     * Eliminacion directa (no realiza chequeo de valores)
+     */
+    $delete = $this->container->getSqlo($entity)->delete($id);
+    $result = $this->query_log($delete["sql"]);
+    return array("id" => $delete["id"], "detail"=>$delete["detail"]);
+  }
+
 
   public function log($query){
     return;
@@ -204,7 +214,7 @@ class Ma extends Db {
 INSERT INTO log (id, description) 
 VALUES ('" . uniqid() . "', '{$escapedQuery}')
     ";
-    $db = $db = new Db(TXN_HOST,TXN_USER,TXN_PASS, TXN_DBNAME);
+    $db = new Db(TXN_HOST,TXN_USER,TXN_PASS, TXN_DBNAME);
     $db->query($sql);
   }
  
