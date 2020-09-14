@@ -1,8 +1,10 @@
 <?php
 
-
-
 function snake_case_to($format, $string){
+  /**
+   * Debe trabajar con strings utf8 sin acentos ni caracteres especiales
+   * Esta destinado a formatear nombres de metodos y elementos relacionados
+   */
   switch($format){
     case "XxYy": return str_replace(" ", "", ucwords(str_replace("_", " ", strtolower($string))));
     case "xxyy": return strtolower(str_replace("_", "", strtolower($string)));
