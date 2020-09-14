@@ -121,14 +121,14 @@ abstract class EntitySqlo {
      * Puede incluirse un id en el array de parametro, si no esta definido se definira uno automaticamente
      * @return array("id" => "identificador principal actualizado", "sql" => "sql de actualizacion", "detail" => "detalle de campos modificados")
      */
-    $r_ = $this->sql->format($row);
+    $r_ = $this->container->getEntitySqlFormat($this->entity->getName())->_array($row);
     $sql = $this->_insert($r_);
 
     return array("id" => $row["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$row["id"]]);
   }
 
   public function update(array $row) { //sql de actualizacion
-    $r_ = $this->sql->format($row);
+    $r_ = $this->container->getEntitySqlFormat($this->entity->getName())->_array($row);
     $sql = "
 {$this->_update($r_)}
 WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
@@ -148,7 +148,7 @@ WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->sql->formatIds($ids);
-    $r_ = $this->sql->format($row);
+    $r_ = $this->container->getEntitySqlFormat($this->entity->getName())->_array($row);
     $sql = "
 {$this->_update($r_)}
 WHERE {$this->entity->getPk()->getName()} IN ({$ids_});
