@@ -61,6 +61,9 @@ class Render {
     if(!empty($display["order"])) $render->setOrder($display["order"]);
     if(!empty($display["condition"])) $render->setGeneralCondition($display["condition"]);
     if(!empty($display["params"])) $render->setGeneralParams($display["params"]);
+    if(!empty($display["fields"])) $render->setAggregate($display["fields"]);
+    if(!empty($display["group"])) $render->setGroup($display["fields"]);
+    if(!empty($display["having"])) $render->setHaving($display["having"]);
 
     return $render;
   }

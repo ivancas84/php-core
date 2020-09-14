@@ -21,7 +21,7 @@ class Db extends mysqli {
     $this->dbname = $dbname;
     parent::__construct($host, $user, $passwd, $dbname);
     if($this->connect_error) throw new Exception($this->connect_error);
-    //$result = $this->multi_query_last( "SET NAMES 'utf8'; SET lc_time_names = 'es_AR';");
+    $result = $this->multi_query_last( "SET NAMES 'utf8'; SET lc_time_names = 'es_AR';");
     if($this->error) throw new Exception($this->error);
   }
 
