@@ -186,6 +186,23 @@ class Container {
     return $sql;    
   }
 
+  public function getEntityOptions($entity, $class, $prefix = ""){
+    $dir = "class/model/" . $class . "/";
+    $name = snake_case_to("XxYy", $entity) . ".php";
+    $prf = "";
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
+    else{
+      $prf = "_";
+      require_once($dir.$prf.$name);
+    }
+    
+    $className = $prf.snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $class) . "EntityOptions";
+    $c = new $className;
+    if($prefix) $c->prefix = $prefix;
+    $c->container = $this;
+    $c->entity = $this->getEntity($entity);
+    return $c;    
+  }
 
 
 

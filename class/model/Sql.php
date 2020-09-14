@@ -47,11 +47,11 @@ abstract class EntitySql { //Definir SQL
      * Traducir campo para ser interpretado correctamente por el SQL
      * Recorre relaciones (si existen)
      */
-    if($field_ = $this->_mappingField($field)) return $field_;
+    if($field_ = $this->container->getEntityOptions($this->entityName, "mapping")->eval($field)) return $field_;
     throw new Exception("Campo no reconocido para {$this->entity->getName()}: {$field}");
   }
 
-  public function _mappingField($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
+  //public function _mappingField($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
   
   protected function _mappingFieldMain($field){
     /**
