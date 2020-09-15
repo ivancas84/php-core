@@ -27,16 +27,20 @@ class EntityOptions {
 		foreach($this->_switchFieldNames($fieldNames) as $fieldName){
       $call = snake_case_to("xxYy", $method . "_" . $fieldName);
 			$this->$call();
-		}
+    }
+    return $this;
   }
 
   function _toArray($method = "", $fieldNames = null){
+    /**
+     * Por cuestiones operativas, el array resultante no define prefijo
+     */
     $fieldNames = $this->_switchFieldNames($fieldNames);
 
     $row = [];
     foreach($fieldNames as $fieldName){
       $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if($r = $this->$call() !== UNDEFINED) $row[$this->_pt().$fieldName] = $r ;
+      if($r = $this->$call() !== UNDEFINED) $row[$fieldName] = $r ;
     }
 
     return $row;
@@ -50,21 +54,8 @@ class EntityOptions {
       $call = snake_case_to("xxYy", $method . "_" . $fieldName);
       if(array_key_exists($this->_pf().$fieldNames, $row)) $this->$call($row[$this->_pf().$fieldName]);
     }
-  }
 
-  function _array(array $row, $method = "", $fieldNames = null){
-    $fieldNames = $this->_switchFieldNames($fieldNames);
-    if(empty($row)) return;
-
-    $row_ = [];
-    foreach($fieldNames as $fieldName){
-      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if(array_key_exists($this->_pf().$fieldName, $row)){
-        $row_[$fieldName] = $this->$call($row[$this->_pf().$fieldName]);
-      } 
-    }
-
-    return $row_;
+    return $this;
   }
 
   public function _callConcat($glue = ",", $fieldNames = null){

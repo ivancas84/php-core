@@ -112,34 +112,20 @@ abstract class EntitySqlo {
     return $sql;
   }
 
-  protected function _insert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de insercion
-  protected function _update(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de actualizacion
-
-  public function insert(array $row) { //Formatear valores y definir sql de insercion
-    /**
-     * La insercion tiene en cuenta todos los campos correspondientes a la tabla, si no estan definidos, les asigna "null" o valor por defecto
-     * Puede incluirse un id en el array de parametro, si no esta definido se definira uno automaticamente
-     * @return array("id" => "identificador principal actualizado", "sql" => "sql de actualizacion", "detail" => "detalle de campos modificados")
-     */
-    $r_ = $this->container->getEntitySqlFormat($this->entity->getName())->_array($row);
-    $sql = $this->_insert($r_);
-
-    return array("id" => $row["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$row["id"]]);
-  }
+  public function insert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de insercion
+  public function _update(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de actualizacion
 
   public function update(array $row) { //sql de actualizacion
-    $r_ = $this->container->getEntitySqlFormat($this->entity->getName())->_array($row);
-    $sql = "
+    return "
 {$this->_update($r_)}
-WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
+WHERE {$this->entity->getPk()->getName()} = {$row['id']};
 ";
 
-    return array("id" => $row["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$row["id"]]);
   }
 
   public function updateAll($row, array $ids) { //sql de actualizacion para un conjunto de ids
     /**
-     * Formatear valores y definir sql de actualizacion para un conjunto de ids
+
      * La actualizacion solo tiene en cuenta los campos definidos, los que no estan definidos, no seran considerados manteniendo su valor previo.
      * este metodo define codigo que modifica la base de datos, debe utilizarse cuidadosamente
      * debe verificarse la existencia de ids correctos
@@ -164,6 +150,7 @@ WHERE {$this->entity->getPk()->getName()} IN ({$ids_});
   }
 
   public function deleteAll(array $ids) { //eliminar
+    throw new Exception("Debe ser reimplementado, retornar solo sql el resto en el controlador")
     /**
      * Este metodo define codigo que modifica la base de datos, debe utilizarse cuidadosamente
      * debe verificarse la existencia de ids correctos

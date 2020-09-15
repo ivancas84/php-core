@@ -132,7 +132,7 @@ class Container {
   }
 
   public function getValues($entity){
-    throw new Exception("DEPRECATED")
+    throw new Exception("DEPRECATED");
     $dir = "class/model/values/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prf = "";

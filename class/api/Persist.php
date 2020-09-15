@@ -23,8 +23,8 @@ class PersistApi {
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
 
-    $value = $this->container->getValue($this->entityName)->_fromArray($data, "set")->_call("reset");
-    if(!$value->_call("_check") throw new Exception($value->_getLogs()->toString());
+    $value = $this->container->getValue($this->entityName)->_fromArray($data, "set")->_call("reset")->_call("_check");
+    if($value->_getLogs()->isError()) throw new Exception($value->_getLogs()->toString());
     
     $detail = [];
     /**
@@ -36,16 +36,15 @@ class PersistApi {
     //$row_ = $this->container->getDb()->unique($this->entityName, $data);
     //if (!empty($row_)){ $value->setId($row_["id"]);
     if(!Validation::is_empty($value->id())){
-      $persist = $this->container->getSqlo($this->entityName)->update($value->_toArray("sql"));
-      $detail = $persist["detail"];
+      $sql = $this->container->getSqlo($this->entityName)->update($value->_toArray("sql"));
     } else {
       $value->_call("setDefault");
-      $persist = $this->container->getSqlo($this->entityName)->insert($value->_toArray("sql"));
+      $sql = $this->container->getSqlo($this->entityName)->insert($value->_toArray("sql"));
     }
 
-    $this->container->getDb()->multi_query_transaction_log($persist["sql"]);
+    $this->container->getDb()->multi_query_transaction_log($sql);
     
-    return ["id" => $persist["id"], "detail" => $detail];
+    return ["id" => $value->id(), "detail" => $this->$entityName.$value->id()];
   }
 }
 
