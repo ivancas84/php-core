@@ -5,17 +5,7 @@ require_once("class/model/entityOptions/EntityOptions.php");
 class ConditionEntityOptions extends EntityOptions {
 
   public $mapping;
-  public $format;
-
-  public function _pf(){ return $this->mapping->_pf(); } 
-  /**
-   * prefijo fields
-   */
-  
-  public function _pt(){  return $this->mapping->_pt(); }
-  /**
-   * prefijo tabla
-   */
+  public $value;
   
   public function search($option, $value){
     /**
@@ -53,10 +43,6 @@ class ConditionEntityOptions extends EntityOptions {
   }
 
   public function label($option, $value){
-    /**
-     * Utilizar solo como condicion general
-     */
-    $f = $this->mappingField($field);
     return $this->format->conditionText($this->mapping->label($field), $value, $option);
   }
 
@@ -64,10 +50,34 @@ class ConditionEntityOptions extends EntityOptions {
      /**
        * combinacion entre label y search
       */
-    $f = $this->mappingField($p."_label");
-    $cond1 =  $this->format->conditionText($f, $value, $option);
+    $cond1 =  $this->label($option, $value);
     $cond2 =  $this->search($option, $value);
     return "({$cond1} OR {$cond2})";
  
   }
+
+  protected function _exists($field, $option, $value) {
+    if(empty($value) || $value == "true" || $value == "false" || is_bool($value) ) {
+      if (($option != "=") && ($option != "!=")) throw new Exception("La combinacion field-option-value no está permitida");
+
+      $field = $this->mapping->_eval($field);
+      switch(settypebool($value)){
+        case true:
+          return ($option == "=") ? "({$field} IS NOT NULL) " : "({$field} IS NULL) ";
+        default:
+          return ($option == "=") ? "({$field} IS NULL) " : "({$field} IS NOT NULL) ";
+      }
+    }
+  }
+
+  protected function _approxCast($field, $option, $value) {
+    if($option == "=~") return "lower(CAST({$field}) AS CHAR) LIKE lower('%{$value}%') )";
+    if($option == "!=~") return "lower(CAST({$field}) AS CHAR) NOT LIKE lower('%{$value}%') )";
+  }
+
+  protected function _approx($field, $option, $value) {
+    if($option == "=~") return "(lower({$field}) LIKE lower('%{$value}%'))";
+    if($option == "!=~") return "(lower({$field}) NOT LIKE lower('%{$value}%'))";
+  }
+
 }
