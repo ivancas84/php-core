@@ -9,7 +9,7 @@ require_once("function/settypebool.php");
  * Los métodos _  habitulamente utilizan el atributo prefix para poder relacionarse con otras entidades
  * Los métodos no _ habitualmente accede a otras entidades para definir codigo
  */
-abstract class EntitySql { //Definir SQL
+class EntitySql { //Definir SQL
   /**
    * Facilitar la definición de SQL
    * Definir una serie de metodos que son de uso comun para todas las consultas

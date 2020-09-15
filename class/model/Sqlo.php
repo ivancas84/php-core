@@ -5,9 +5,7 @@ require_once("class/model/Sql.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
 
-
-
-abstract class EntitySqlo {
+class EntitySqlo {
   /**
    * SQL Object
    * Definir SQL para ser ejecutado directamente por el motor de base de datos

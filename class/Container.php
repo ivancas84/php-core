@@ -155,18 +155,24 @@ class Container {
     $dir = "class/model/sql/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prf = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prf = "_";
-      require_once($dir.$prf.$name);
+    
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
+      require_once($dir.$name);
+      $className = snake_case_to("XxYy", $entity) . "Sql";
+    
+    } elseif (file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir."_".$name)) {
+      require_once($dir."_".$name);
+      $className = "_".snake_case_to("XxYy", $entity) . "Sql";
+    
+    } else {
+      require_once("class/model/Sql.php");
+      $className = "EntitySql";
     }
     
-    $className = $prf.snake_case_to("XxYy", $entity) . "Sql";
     $sql = new $className;
     if($prefix) $sql->prefix = $prefix;
     $sql->container = $this;
     $sql->entity = $this->getEntity($entity);
-    $sql->format = $this->getSqlFormat();
     return $sql;    
   }
 
