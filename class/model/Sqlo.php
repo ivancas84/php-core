@@ -134,37 +134,32 @@ WHERE {$this->entity->getPk()->getName()} = {$row['id']};
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->sql->formatIds($ids);
-    $r_ = $this->container->getEntitySqlFormat($this->entity->getName())->_array($row);
-    $sql = "
+    $r_ = $this->container->getValue($this->entity->getName())->_fromArray($row, "set")->_toArray("sql");
+    return "
 {$this->_update($r_)}
 WHERE {$this->entity->getPk()->getName()} IN ({$ids_});
 ";
-    $detail = $ids;
-    array_walk($detail, function(&$item) { $item = $this->entity->getName().$item; });
-    return ["ids"=>$ids, "sql"=>$sql, "detail"=>$detail];
   }
 
-  public function delete($id){ //eliminar
-    $delete = $this->deleteAll([$id]);
-    return ["id"=>$delete["ids"][0], "sql"=>$delete["sql"], "detail"=>$delete["detail"]];
-  }
-
-  public function deleteAll(array $ids) { //eliminar
-    throw new Exception("Debe ser reimplementado, retornar solo sql el resto en el controlador")
+  public function delete($id){
     /**
+     * Eliminar un elemento
+     */
+    return $this->deleteAll([$id]);
+  }
+
+  public function deleteAll(array $ids) { 
+    /**
+     * Eliminar varios elementos
      * Este metodo define codigo que modifica la base de datos, debe utilizarse cuidadosamente
      * debe verificarse la existencia de ids correctos
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->sql->formatIds($ids);
-    $sql = "
+    return "
 DELETE FROM {$this->entity->sn_()}
 WHERE id IN ({$ids_});
 ";
-
-    $detail = $ids;
-    array_walk($detail, function(&$item) { $item = $this->entity->getName().$item; });
-    return ["ids"=>$ids, "sql"=>$sql, "detail"=>$detail];
   }
 
   public function unique(array $params, $render = NULL){

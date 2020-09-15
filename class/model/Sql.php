@@ -35,8 +35,9 @@ abstract class EntitySql { //Definir SQL
      */
     $ids_ = [];
     for($i = 0; $i < count($ids); $i++) {
-      $id = $this->container->getEntitySqlFormat($this->entity->getName())->id($ids[$i]);
-      array_push($ids_, $id);
+      $value = $this->container->getValue($this->entity->getName());
+      $value->setId($ids[$i]);
+      array_push($ids_, $value->sqlId(););
     }
     return implode(', ', $ids_);
   }
@@ -391,40 +392,6 @@ abstract class EntitySql { //Definir SQL
 ";
   }
 
-  /* DEPRECATED
-  inner join basico (este metodo esta pensado para armar consultas desde la entidad actual)
-  public function innerJoin($field, $table){
-    $p = $this->prf();
-    $t = $this->prt();
-    return "INNER JOIN {$table} AS {$p}{$table} ON ({$p}{$table}.$field = $t.{$this->entity->getPk()->getName()})
-";
-  }*/
-
-  /* DEPRECATED 
-  inner join basico desde la tabla actual (este metodo esta pensado para armar consultas desde otra entidad)
-  public function _innerJoin($field, $fromTable){
-    $t = $this->prt();
-    return "INNER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
-";
-  }*/
-
-  /* DEPRECATED
-  Por defecto define una relacion simple utilizando LEFT JOIN pero este metodo puede ser sobrescrito para definir relaciones mas complejas e incluso decidir la relacion a definir en funcion del prefijo
-  public function _joinR($field, $fromTable){
-    $t = $this->prt();
-    return "LEFT OUTER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.{$this->entity->getPk()->getName()} = $t.$field)
-";
-  }*/
-
-  /* DEPRECATED
-  Por defecto define una relacion simple utilizando LEFT JOIN pero este metodo puede ser sobrescrito para definir relaciones mas complejas e incluso decidir la relacion a definir en funcion del prefijo
-  public function _innerJoinR($field, $fromTable){
-    $t = $this->prt();
-    return "INNER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.{$this->entity->getPk()->getName()} = $t.$field)
-";
-  }*/
-
-  //Ordenamiento de cadena de relaciones
   protected function orderDefault(){
     /**
      * Ordenamiento por defecto
@@ -455,7 +422,6 @@ abstract class EntitySql { //Definir SQL
     return array_merge($order, $orderDefault);
   }
 
-
   public function orderBy(array $order = null){
     $order = $this->initOrder($order);
     return $this->order($order);
@@ -472,7 +438,6 @@ abstract class EntitySql { //Definir SQL
 
     return $sql;
   }
-
 
   public function having($render) { //busqueda avanzada
     $condition = $render->getHaving();
