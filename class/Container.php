@@ -203,7 +203,6 @@ class Container {
     $c->entity = $this->getEntity($entity);
     return $c;    
   }
-
   
   public function getCondition($entity, $prefix = ""){
     $dir = "class/model/condition/";
@@ -265,8 +264,8 @@ class Container {
     return $c;    
   }
 
-  public function getEntitySqlFormat($entity, $prefix = ""){
-    $dir = "class/model/sqlFormat/";
+  public function getValue($entity, $prefix = ""){
+    $dir = "class/model/value/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prf = "";
     if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
@@ -275,11 +274,10 @@ class Container {
       require_once($dir.$prf.$name);
     }
     
-    $className = $prf.snake_case_to("XxYy", $entity) . "SqlFormat";
+    $className = $prf.snake_case_to("XxYy", $entity) . "Value";
     $c = new $className;
     if($prefix) $c->prefix = $prefix;
     $c->container = $this;
-    $c->format = $this->getSqlFormat();
     $c->entity = $this->getEntity($entity);
     return $c;    
   }
