@@ -230,6 +230,24 @@ abstract class Entity {
     return $fields;
   }
 
+  public function getFieldNames(){ //pk, nf, fk
+    $fields = $this->getFields();
+    $names = [];
+    foreach($fields as $field) array_push($names, $field->getName());
+    return $names;
+  }
+
+  public function getFieldNamesExclusive(){ //pk, nf, fk
+    $fields = $this->getFields();
+    $names = [];
+    foreach($fields as $field) {
+      if($field->isExclusive()) array_push($names, $field->getName());
+    }
+    return $names;
+  }
+
+
+
 
   /**
    * Tiene relaciones?

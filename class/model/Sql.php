@@ -9,7 +9,7 @@ require_once("function/settypebool.php");
  * Los métodos _  habitulamente utilizan el atributo prefix para poder relacionarse con otras entidades
  * Los métodos no _ habitualmente accede a otras entidades para definir codigo
  */
-abstract class EntitySql { //Definir SQL
+class EntitySql { //Definir SQL
   /**
    * Facilitar la definición de SQL
    * Definir una serie de metodos que son de uso comun para todas las consultas
@@ -21,14 +21,11 @@ abstract class EntitySql { //Definir SQL
    * Prefijo de identificacion
    */
 
-  public $entityName;
   public $container;
   public $entity;
-  public $format;
     
   public function prf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; }   //prefijo fields
   public function prt(){ return (empty($this->prefix)) ?  $this->entity->getAlias() : $this->prefix; } //prefijo tabla
-  public function format(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //formato de sql
 
   public function formatIds(array $ids = []) {
     /**
@@ -36,8 +33,9 @@ abstract class EntitySql { //Definir SQL
      */
     $ids_ = [];
     for($i = 0; $i < count($ids); $i++) {
-      $r = $this->format(["id"=>$ids[$i]]);
-      array_push($ids_, $r["id"]);
+      $value = $this->container->getValue($this->entity->getName());
+      $value->setId($ids[$i]);
+      array_push($ids_, $value->sqlId());
     }
     return implode(', ', $ids_);
   }
@@ -47,26 +45,8 @@ abstract class EntitySql { //Definir SQL
      * Traducir campo para ser interpretado correctamente por el SQL
      * Recorre relaciones (si existen)
      */
-    if($field_ = $this->_mappingField($field)) return $field_;
+    if($field_ = $this->container->getMapping($this->entity->getName())->_eval($field)) return $field_;
     throw new Exception("Campo no reconocido para {$this->entity->getName()}: {$field}");
-  }
-
-  public function _mappingField($field){ throw new BadMethodCallException("Not Implemented"); } //traduccion local de campos
-  
-  protected function _mappingFieldMain($field){
-    /**
-     * Traduccion local de campos generales
-     */
-    switch ($field) {
-      case "_count": return "COUNT(*)";
-      case "_identifier":
-        if(empty($this->entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->entity->getName()); 
-        $identifier = [];
-        foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->mappingField($id));
-        return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
-";
-      default: return null;
-    }
   }
 
   public function condition(Render $render) { 
@@ -252,11 +232,11 @@ abstract class EntitySql { //Definir SQL
      * se verifica inicialmente la condicion auxiliar
      * las condiciones auxiliares no siguen la estructura definida de condicion
      */
-    $condition = $this->_conditionFieldAux($field, $option, $value);
+    $condition = $this->container->getConditionAux($this->entity->getName())->_eval($field, [$option, $value]);
     if($condition) return $condition;
     
     if(!is_array($value)) {
-      $condition = $this->_conditionFieldStruct($field, $option, $value);
+      $condition = $this->container->getCondition($this->entity->getName())->_eval($field, [$option, $value]);
       return $condition;
     }
 
@@ -270,7 +250,7 @@ abstract class EntitySql { //Definir SQL
         else throw new Exception("Error al definir opción");
       } else $cond = true;
 
-      $condition_ = $this->_conditionFieldStruct($field, $option, $v);
+      $condition_ = $this->container->getCondition($this->entity->getName())->_eval($field, [$option, $v]);
       if(!$condition_) return "";
       $condition .= $condition_;
     }
@@ -278,57 +258,6 @@ abstract class EntitySql { //Definir SQL
     if(empty($condition)) return "";
     return "(".$condition.")";
   }
-
-  protected function _conditionFieldStructMain($field, $option, $value) { 
-    $p = $this->prf();
-
-    switch($field){
-      case $p."_search": 
-        /**
-         * define la misma condicion y valor para todos los campos de la entidad
-        */
-        return $this->_conditionSearch($option, $value);
-      break;
-
-      case "_identifier":
-        /**
-         * utilizar solo como condicion general
-         * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
-         * No utilizar prefijo para su definicion
-         */
-        $f = $this->mappingField($field);
-        return $this->format->conditionText($f, $value, $option);
-      break;
-      
-      case "_count": 
-        /**
-         * campo de agregacion general: "_count"
-         * utilizar solo como condicion general
-         * No utilizar prefijo para su definicion
-         */
-        $f = $this->mappingField($field);
-        return $this->format->conditionNumber($f, $value, $option);
-      break;
-
-      case $p."_label":
-        /**
-         * campo de agregacion general: "_label"
-         */
-        $f = $this->mappingField($field);
-        return $this->format->conditionText($f, $value, $option);
-
-      case $p."_label_search":
-        /**
-         * ccombinacion entre label y search
-         */
-        $f = $this->mappingField($p."_label");
-        $cond1 =  $this->format->conditionText($f, $value, $option);
-        $cond2 =  $this->_conditionSearch($option, $value);
-        return "({$cond1} OR {$cond2})";
-    }
-  }
-
-
   
   protected function conditionFieldStruct($field, $option, $value){
     /**
@@ -337,7 +266,7 @@ abstract class EntitySql { //Definir SQL
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
      */
-    if($c = $this->_conditionFieldStruct($field, $option, $value)) return $c;
+    if($c = $this->container->getCondition($this->entity->getName())->_eval($field, [$option, $value])) return $c;
   }
   
   protected function conditionFieldAux($field, $option, $value) {
@@ -345,43 +274,11 @@ abstract class EntitySql { //Definir SQL
      * Condicion de field auxiliar (considera relaciones si existen)
      * Se sobrescribe si tiene relaciones
      */
-    if($c = $this->_conditionFieldAux($field, $option, $value)) return $c;
+    if($c = $this->container->getConditionAux($this->entity->getName())->_eval($field, [$option, $value])) return $c;
   }
 
-  protected function _conditionFieldAux($field, $option, $value){
-    return $this->_conditionFieldAuxMain($field, $option, $value);
-  }
-
-  protected function _conditionFieldAuxMain($field, $option, $value){
-    /**
-     * metodo principal de condition field aux
-     */
-    $p = $this->prf();
-
-    switch($field){
-      case "_compare": 
-      /** USO SOLO COMO CONDICION GENERAL */  
-      $f1 = $this->mappingField($value[0]);
-        $f2 = $this->mappingField($value[1]);
-        return "({$f1} {$option} {$f2})";
-      break;
-
-    }
-  }
-
-  public function _fields(){ throw new BadMethodCallException("Not Implemented"); } 
-  /**
-   * Definir sql con los campos de la entidad
-   */
-
-  public function _fieldsExclusive(){ throw new BadMethodCallException("Not Implemented"); } 
-  /**
-   * Definir sql con los campos exclusivos de la entidad
-   */
-
-  public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
-
-
+  
+  //DEPRECATED: public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
 
   public function from(){
     return " FROM " . $this->entity->sna_() . "
@@ -412,20 +309,6 @@ abstract class EntitySql { //Definir SQL
 ";
     }
     return "";
-  }
-
-  protected function _conditionSearch($option, $value){
-    if(($option != "=~") && ($option != "=")) throw new Exception("Opción no permitida para condición " . $this->entity->getName("XxYy") . "Sql._conditionSearch([\"_search\",\"{$option}\",\"{$value}\"]). Solo se admite opcion = o =~");
-    $option = "=~";
-    //condicion estructurada de busqueda que involucra a todos los campos estructurales (excepto booleanos)
-    $conditions = [];
-    foreach($this->entity->getFieldsNf() as $field){
-      if($field->getDataType() == "boolean") continue;
-      $c = $this->_conditionFieldStruct($this->prf().$field->getName(),$option,$value);
-      array_push($conditions, $c);
-    }
-
-    return implode(" OR ", $conditions);
   }
 
   public function conditionUniqueFields(array $params){
@@ -482,7 +365,7 @@ abstract class EntitySql { //Definir SQL
      * Definir sql de campos
      * Sobrescribir si existen relaciones
      */
-    return $this->_fields(); 
+    return $this->container->getFieldAlias($this->entity->getName())->_callConcat();
   }
 
 
@@ -507,40 +390,6 @@ abstract class EntitySql { //Definir SQL
 ";
   }
 
-  /* DEPRECATED
-  inner join basico (este metodo esta pensado para armar consultas desde la entidad actual)
-  public function innerJoin($field, $table){
-    $p = $this->prf();
-    $t = $this->prt();
-    return "INNER JOIN {$table} AS {$p}{$table} ON ({$p}{$table}.$field = $t.{$this->entity->getPk()->getName()})
-";
-  }*/
-
-  /* DEPRECATED 
-  inner join basico desde la tabla actual (este metodo esta pensado para armar consultas desde otra entidad)
-  public function _innerJoin($field, $fromTable){
-    $t = $this->prt();
-    return "INNER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
-";
-  }*/
-
-  /* DEPRECATED
-  Por defecto define una relacion simple utilizando LEFT JOIN pero este metodo puede ser sobrescrito para definir relaciones mas complejas e incluso decidir la relacion a definir en funcion del prefijo
-  public function _joinR($field, $fromTable){
-    $t = $this->prt();
-    return "LEFT OUTER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.{$this->entity->getPk()->getName()} = $t.$field)
-";
-  }*/
-
-  /* DEPRECATED
-  Por defecto define una relacion simple utilizando LEFT JOIN pero este metodo puede ser sobrescrito para definir relaciones mas complejas e incluso decidir la relacion a definir en funcion del prefijo
-  public function _innerJoinR($field, $fromTable){
-    $t = $this->prt();
-    return "INNER JOIN {$this->entity->sn_()} AS $t ON ($fromTable.{$this->entity->getPk()->getName()} = $t.$field)
-";
-  }*/
-
-  //Ordenamiento de cadena de relaciones
   protected function orderDefault(){
     /**
      * Ordenamiento por defecto
@@ -571,7 +420,6 @@ abstract class EntitySql { //Definir SQL
     return array_merge($order, $orderDefault);
   }
 
-
   public function orderBy(array $order = null){
     $order = $this->initOrder($order);
     return $this->order($order);
@@ -588,7 +436,6 @@ abstract class EntitySql { //Definir SQL
 
     return $sql;
   }
-
 
   public function having($render) { //busqueda avanzada
     $condition = $render->getHaving();
@@ -636,8 +483,10 @@ abstract class EntitySql { //Definir SQL
   public function _subSql(Render $render){
     return $this->entity->sn_();
  
- /*return "( SELECT DISTINCT
-{$this->_fieldsExclusive()}
+ /*
+ $fields = $this->container->getFieldAlias($this->entity->getName(), $this->prefix)->_callConcat("EXCLUSIVE");
+ return "( SELECT DISTINCT
+{$fields}
 {$this->_from($render)}
 " . concat($this->_condition($render), 'WHERE ') . ")
 ";*/

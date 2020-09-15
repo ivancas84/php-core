@@ -5,9 +5,7 @@ require_once("class/model/Sql.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
 
-
-
-abstract class EntitySqlo {
+class EntitySqlo {
   /**
    * SQL Object
    * Definir SQL para ser ejecutado directamente por el motor de base de datos
@@ -20,7 +18,9 @@ abstract class EntitySqlo {
 
   public $container;
 
-  public function json(array $row) { return $this->container->getValues($this->entity->getName())->_fromArray($row)->_toArray(); }
+  public function json(array $row) { 
+    return $this->container->getValue($this->entity->getName())->_fromArray($row, "set")->_toArray("json");
+  }
 
   public function values(array $row){ //retornar instancias de EntityValues
     /**
@@ -32,7 +32,7 @@ abstract class EntitySqlo {
      * Este metodo debe sobrescribirse en el caso de que existan relaciones
      */
     $row_ = [];
-    $row_[$this->entity->getName()] = $this->container->getValues($this->entity->getName())->_fromArray($row);
+    $row_[$this->entity->getName()] = $this->container->getValue($this->entity->getName())->_fromArray($row, "set");
     return $row_;
   }
 
@@ -46,7 +46,6 @@ abstract class EntitySqlo {
 {$this->sql->orderBy($r->getOrder())}
 {$this->sql->limit($r->getPage(), $r->getSize())}
 ";
-
     return $sql;
   }
 
@@ -112,34 +111,20 @@ abstract class EntitySqlo {
     return $sql;
   }
 
-  protected function _insert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de insercion
-  protected function _update(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de actualizacion
-
-  public function insert(array $row) { //Formatear valores y definir sql de insercion
-    /**
-     * La insercion tiene en cuenta todos los campos correspondientes a la tabla, si no estan definidos, les asigna "null" o valor por defecto
-     * Puede incluirse un id en el array de parametro, si no esta definido se definira uno automaticamente
-     * @return array("id" => "identificador principal actualizado", "sql" => "sql de actualizacion", "detail" => "detalle de campos modificados")
-     */
-    $r_ = $this->sql->format($row);
-    $sql = $this->_insert($r_);
-
-    return array("id" => $row["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$row["id"]]);
-  }
+  public function insert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de insercion
+  public function _update(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de actualizacion
 
   public function update(array $row) { //sql de actualizacion
-    $r_ = $this->sql->format($row);
-    $sql = "
+    return "
 {$this->_update($r_)}
-WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
+WHERE {$this->entity->getPk()->getName()} = {$row['id']};
 ";
 
-    return array("id" => $row["id"], "sql" => $sql, "detail"=>[$this->entity->getName().$row["id"]]);
   }
 
   public function updateAll($row, array $ids) { //sql de actualizacion para un conjunto de ids
     /**
-     * Formatear valores y definir sql de actualizacion para un conjunto de ids
+
      * La actualizacion solo tiene en cuenta los campos definidos, los que no estan definidos, no seran considerados manteniendo su valor previo.
      * este metodo define codigo que modifica la base de datos, debe utilizarse cuidadosamente
      * debe verificarse la existencia de ids correctos
@@ -148,36 +133,32 @@ WHERE {$this->entity->getPk()->getName()} = {$r_['id']};
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->sql->formatIds($ids);
-    $r_ = $this->sql->format($row);
-    $sql = "
+    $r_ = $this->container->getValue($this->entity->getName())->_fromArray($row, "set")->_toArray("sql");
+    return "
 {$this->_update($r_)}
 WHERE {$this->entity->getPk()->getName()} IN ({$ids_});
 ";
-    $detail = $ids;
-    array_walk($detail, function(&$item) { $item = $this->entity->getName().$item; });
-    return ["ids"=>$ids, "sql"=>$sql, "detail"=>$detail];
   }
 
-  public function delete($id){ //eliminar
-    $delete = $this->deleteAll([$id]);
-    return ["id"=>$delete["ids"][0], "sql"=>$delete["sql"], "detail"=>$delete["detail"]];
-  }
-
-  public function deleteAll(array $ids) { //eliminar
+  public function delete($id){
     /**
+     * Eliminar un elemento
+     */
+    return $this->deleteAll([$id]);
+  }
+
+  public function deleteAll(array $ids) { 
+    /**
+     * Eliminar varios elementos
      * Este metodo define codigo que modifica la base de datos, debe utilizarse cuidadosamente
      * debe verificarse la existencia de ids correctos
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->sql->formatIds($ids);
-    $sql = "
+    return "
 DELETE FROM {$this->entity->sn_()}
 WHERE id IN ({$ids_});
 ";
-
-    $detail = $ids;
-    array_walk($detail, function(&$item) { $item = $this->entity->getName().$item; });
-    return ["ids"=>$ids, "sql"=>$sql, "detail"=>$detail];
   }
 
   public function unique(array $params, $render = NULL){
@@ -204,5 +185,4 @@ WHERE
 
 
   }
-
 }
