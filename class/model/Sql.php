@@ -21,10 +21,8 @@ abstract class EntitySql { //Definir SQL
    * Prefijo de identificacion
    */
 
-  public $entityName;
   public $container;
   public $entity;
-  public $format;
     
   public function prf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; }   //prefijo fields
   public function prt(){ return (empty($this->prefix)) ?  $this->entity->getAlias() : $this->prefix; } //prefijo tabla
@@ -47,7 +45,7 @@ abstract class EntitySql { //Definir SQL
      * Traducir campo para ser interpretado correctamente por el SQL
      * Recorre relaciones (si existen)
      */
-    if($field_ = $this->container->getMapping($this->entityName)->eval($field)) return $field_;
+    if($field_ = $this->container->getMapping($this->entity->getName())->_eval($field)) return $field_;
     throw new Exception("Campo no reconocido para {$this->entity->getName()}: {$field}");
   }
 
@@ -252,7 +250,7 @@ abstract class EntitySql { //Definir SQL
         else throw new Exception("Error al definir opción");
       } else $cond = true;
 
-      $condition_ = $this->container->getCondition($this->entity->getName())->eval($field, [$option, $v]);
+      $condition_ = $this->container->getCondition($this->entity->getName())->_eval($field, [$option, $v]);
       if(!$condition_) return "";
       $condition .= $condition_;
     }
@@ -268,7 +266,7 @@ abstract class EntitySql { //Definir SQL
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
      */
-    if($c = $this->container->getCondition($this->entity->getName())->eval($field, [$option, $value])) return $c;
+    if($c = $this->container->getCondition($this->entity->getName())->_eval($field, [$option, $value])) return $c;
   }
   
   protected function conditionFieldAux($field, $option, $value) {
@@ -276,11 +274,11 @@ abstract class EntitySql { //Definir SQL
      * Condicion de field auxiliar (considera relaciones si existen)
      * Se sobrescribe si tiene relaciones
      */
-    if($c = $this->container->getConditionAux($this->entity->getName())->eval($field, [$option, $value])) return $c;
+    if($c = $this->container->getConditionAux($this->entity->getName())->_eval($field, [$option, $value])) return $c;
   }
 
   
-  public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
+  //DEPRECATED: public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
 
   public function from(){
     return " FROM " . $this->entity->sna_() . "
@@ -367,7 +365,7 @@ abstract class EntitySql { //Definir SQL
      * Definir sql de campos
      * Sobrescribir si existen relaciones
      */
-    return $this->_fields(); 
+    return $this->container->getFieldAlias($this->entity->getName())->_callConcat();
   }
 
 

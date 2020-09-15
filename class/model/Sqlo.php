@@ -20,7 +20,9 @@ abstract class EntitySqlo {
 
   public $container;
 
-  public function json(array $row) { return $this->container->getValues($this->entity->getName())->_fromArray($row)->_toArray(); }
+  public function json(array $row) { 
+    return $this->container->getValue($this->entity->getName())->_fromArray($row, "set")->_toArray("json");
+  }
 
   public function values(array $row){ //retornar instancias de EntityValues
     /**
@@ -32,7 +34,7 @@ abstract class EntitySqlo {
      * Este metodo debe sobrescribirse en el caso de que existan relaciones
      */
     $row_ = [];
-    $row_[$this->entity->getName()] = $this->container->getValues($this->entity->getName())->_fromArray($row);
+    $row_[$this->entity->getName()] = $this->container->getValue($this->entity->getName())->_fromArray($row, "set");
     return $row_;
   }
 
@@ -46,7 +48,6 @@ abstract class EntitySqlo {
 {$this->sql->orderBy($r->getOrder())}
 {$this->sql->limit($r->getPage(), $r->getSize())}
 ";
-
     return $sql;
   }
 
@@ -186,5 +187,4 @@ WHERE
 
 
   }
-
 }
