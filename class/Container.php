@@ -131,23 +131,6 @@ class Container {
     return $c;
   }
 
-  public function getValues($entity){
-    throw new Exception("DEPRECATED");
-    $dir = "class/model/values/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $prf = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prf = "_";
-      require_once($dir.$prf.$name);
-    }
-    
-    $className = $prf.snake_case_to("XxYy", $entity);
-    $c = new $className;
-    $c->_logs = new Logs();
-    return $c;
-  }
-
   public function getSqlo($entity) {
     $dir = "class/model/sqlo/";
     $name = snake_case_to("XxYy", $entity) . ".php";
@@ -280,6 +263,7 @@ class Container {
     if($prefix) $c->prefix = $prefix;
     $c->container = $this;
     $c->entity = $this->getEntity($entity);
+    $c->_logs = new Logs();
     return $c;    
   }
 

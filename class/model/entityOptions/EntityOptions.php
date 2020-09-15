@@ -40,7 +40,8 @@ class EntityOptions {
     $row = [];
     foreach($fieldNames as $fieldName){
       $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if($r = $this->$call() !== UNDEFINED) $row[$fieldName] = $r ;
+      $r = $this->$call();
+      if($r !== UNDEFINED) $row[$fieldName] = $r ;
     }
 
     return $row;
@@ -52,7 +53,7 @@ class EntityOptions {
 
     foreach($fieldNames as $fieldName){
       $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if(array_key_exists($this->_pf().$fieldNames, $row)) $this->$call($row[$this->_pf().$fieldName]);
+      if(array_key_exists($this->_pf().$fieldName, $row)) $this->$call($row[$this->_pf().$fieldName]);
     }
 
     return $this;

@@ -37,7 +37,7 @@ abstract class EntitySql { //Definir SQL
     for($i = 0; $i < count($ids); $i++) {
       $value = $this->container->getValue($this->entity->getName());
       $value->setId($ids[$i]);
-      array_push($ids_, $value->sqlId(););
+      array_push($ids_, $value->sqlId());
     }
     return implode(', ', $ids_);
   }

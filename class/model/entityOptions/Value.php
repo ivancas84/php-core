@@ -3,8 +3,6 @@
 require_once("class/model/entityOptions/EntityOptions.php");
 
 class ValueEntityOptions extends EntityOptions {
-  public $mapping;
-
   public $_logs;
   /**
    * Logs de verificaciones
