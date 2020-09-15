@@ -23,42 +23,42 @@ class EntityOptions {
     }
   }
 
-  function _call($fieldNames = null, $method = ""){
+  function _call($method = "", $fieldNames = null){
 		foreach($this->_switchFieldNames($fieldNames) as $fieldName){
-      $call = snake_case_to("XxYy", $method).snake_case_to("XxYy", $fieldName);
+      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
 			$this->$call();
 		}
   }
 
-  function _toArray($fieldNames = null, $method = ""){
+  function _toArray($method = "", $fieldNames = null){
     $fieldNames = $this->_switchFieldNames($fieldNames);
 
     $row = [];
     foreach($fieldNames as $fieldName){
-      $call = snake_case_to("XxYy", $method).snake_case_to("XxYy", $fieldName);
+      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
       if($r = $this->$call() !== UNDEFINED) $row[$this->_pt().$fieldName] = $r ;
     }
 
     return $row;
   }
   
-  function _fromArray(array $row, $fieldNames = null, $method = ""){
+  function _fromArray(array $row, $method = "", $fieldNames = null){
     $fieldNames = $this->_switchFieldNames($fieldNames);
     if(empty($row)) return;
 
     foreach($fieldNames as $fieldName){
-      $call = snake_case_to("XxYy", $method).snake_case_to("XxYy", $fieldName);
+      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
       if(array_key_exists($this->_pf().$fieldNames, $row)) $this->$call($row[$this->_pf().$fieldName]);
     }
   }
 
-  function _array(array $row, $fieldNames = null, $method = ""){
+  function _array(array $row, $method = "", $fieldNames = null){
     $fieldNames = $this->_switchFieldNames($fieldNames);
     if(empty($row)) return;
 
     $row_ = [];
     foreach($fieldNames as $fieldName){
-      $call = snake_case_to("XxYy", $method).snake_case_to("XxYy", $fieldName);
+      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
       if(array_key_exists($this->_pf().$fieldName, $row)){
         $row_[$fieldName] = $this->$call($row[$this->_pf().$fieldName]);
       } 
@@ -67,7 +67,7 @@ class EntityOptions {
     return $row_;
   }
 
-  public function _callConcat($fieldNames = null, $glue = ","){
+  public function _callConcat($glue = ",", $fieldNames = null){
     $r = [];
     foreach($this->_switchFieldNames($fieldNames) as $fieldName) array_push($r, $this->_evals($fieldName));
     return implode($glue, $r);
