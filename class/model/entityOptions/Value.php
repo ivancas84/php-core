@@ -64,7 +64,7 @@ class ValueEntityOptions extends EntityOptions {
 
   public function _sqlString($value){
     if(Validation::is_empty($value)) return 'null';
-    return "'" . $this->container->getDb()->escape_string($v) . "'";
+    return "'" . $this->container->getDb()->escape_string($value) . "'";
   }
 
   public function _sqlNumber($value){

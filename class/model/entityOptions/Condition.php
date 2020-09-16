@@ -60,7 +60,6 @@ class ConditionEntityOptions extends EntityOptions {
     if(empty($value) || $value == "true" || $value == "false" || is_bool($value) ) {
       if (($option != "=") && ($option != "!=")) throw new Exception("La combinacion field-option-value no está permitida");
 
-      $field = $this->mapping->_eval($field);
       switch(settypebool($value)){
         case true:
           return ($option == "=") ? "({$field} IS NOT NULL) " : "({$field} IS NULL) ";

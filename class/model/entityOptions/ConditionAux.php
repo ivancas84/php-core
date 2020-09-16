@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/model/entityOptions/EntityOptions.php");
+require_once("class/model/entityOptions/Condition.php");
 
 class ConditionAuxEntityOptions extends ConditionEntityOptions {
   /**
