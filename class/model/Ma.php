@@ -33,6 +33,7 @@ class Ma extends Db {
     if(!in_array("_count", $r->getAggregate())) $r->setAggregate(["_count"]);
     
     $sql = $this->container->getSqlo($entity)->advanced($r);
+    
     $result = $this->query($sql);
     $row = $result->fetch_assoc();
     $result->free();

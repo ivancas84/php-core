@@ -2,7 +2,11 @@
 
 require_once("class/model/entityOptions/Condition.php");
 
-class ConditionAuxEntityOptions extends ConditionEntityOptions {
+class ConditionAuxEntityOptions extends EntityOptions {
+ 
+  public $mapping;
+  public $value;
+
   /**
    * Las condiciones auxiliares no siguen una estructura habitual de definicion,
    * deben analizarse de forma independiente al definir el sql.

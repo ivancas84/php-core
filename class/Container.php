@@ -68,6 +68,13 @@ class Container {
     return $c;
   }
 
+  public function getSqlTools(){
+    require_once("class/model/SqlTools.php");
+    $c = new SqlTools;
+    $c->container = $this;
+    return $c;
+  }
+
   public function getController($controller){
     /**
      * Controlador
@@ -201,6 +208,7 @@ class Container {
     $c->container = $this;
     $c->mapping = $this->getMapping($entityName, $prefix);
     $c->value = $this->getValue($entityName, $prefix);
+    $c->sql = $this->getSqlTools();
     $c->entity = $this->getEntity($entityName);
     return $c;    
   }
@@ -222,6 +230,7 @@ class Container {
     if($prefix) $c->prefix = $prefix;
     $c->entity = $this->getEntity($entity);
     $c->mapping = $this->getMapping($entity, $prefix);
+    $c->sql = $this->getSqlTools();
     return $c;
   }
 
@@ -259,6 +268,7 @@ class Container {
     if($prefix) $c->prefix = $prefix;
     $c->container = $this;
     $c->entity = $this->getEntity($entity);
+    $c->sql = $this->getSqlTools();
     $c->_logs = new Logs();
     return $c;    
   }
