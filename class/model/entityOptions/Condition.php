@@ -2,20 +2,11 @@
 
 require_once("class/model/entityOptions/EntityOptions.php");
 
+
 class ConditionEntityOptions extends EntityOptions {
 
   public $mapping;
-  public $format;
-
-  public function _pf(){ return $this->mapping->_pf(); } 
-  /**
-   * prefijo fields
-   */
-  
-  public function _pt(){  return $this->mapping->_pt(); }
-  /**
-   * prefijo tabla
-   */
+  public $value;
   
   public function search($option, $value){
     /**
@@ -37,37 +28,43 @@ class ConditionEntityOptions extends EntityOptions {
 
   public function identifier($option, $value){
     /**
-       * Utilizar solo como condicion general
-       * El identificador se define a partir de campos de la entidad principal y de entidades relacionadas
-       * No utilizar prefijo para su definicion
-       */
-    return $this->format->conditionText($this->mapping->identifier($field), $value, $option);
+     * El identificador se define concatenando campos de la entidad principal y de entidades relacionadas que permitan una identificacion unica
+     */
+    $field = $this->mapping->identifier();
+    if($c = $this->sql->exists($field, $option, $value)) return $c;
+    if($c = $this->sql->approx($field, $option, $value)) return $c;
+    $this->value->setIdentifier($value);
+    return "({$field} {$option} {$this->value->sqlIdentifier()})";
   }
 
   public function count($option, $value){
     /**
-       * Utilizar solo como condicion general
-       * No utilizar prefijo para su definicion
-       */
-    return $this->format->conditionNumber($this->mapping->count($field), $value, $option);
+     * Utilizar solo como condicion general
+     * No utilizar prefijo para su definicion
+     */
+    $field = $this->mapping->count();
+    if($c = $this->sql->exists($field, $option, $value)) return $c;
+    $this->value->setCount($value);
+    return "({$field} {$option} {$this->value->sqlCount()})";
   }
 
   public function label($option, $value){
-    /**
-     * Utilizar solo como condicion general
-     */
-    $f = $this->mappingField($field);
-    return $this->format->conditionText($this->mapping->label($field), $value, $option);
+    $field = $this->mapping->label();
+    if($c = $this->sql->exists($field, $option, $value)) return $c;
+    if($c = $this->sql->approx($field, $option, $value)) return $c;
+    $this->value->setLabel($value);
+    return "({$field} {$option} {$this->value->sqlLabel()})";
   }
 
   public function labelSearch($option, $value){
      /**
        * combinacion entre label y search
       */
-    $f = $this->mappingField($p."_label");
-    $cond1 =  $this->format->conditionText($f, $value, $option);
+    $cond1 =  $this->label($option, $value);
     $cond2 =  $this->search($option, $value);
     return "({$cond1} OR {$cond2})";
  
   }
+
+
 }

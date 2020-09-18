@@ -144,7 +144,7 @@ class EntitySql { //Definir SQL
 
   private function conditionIterable(array $advanced) { 
     /**
-     * metodo de iteracion para definir condiciones avanzadas (considera relaciones)
+     * metodo de iteracion para definir condiciones (considera relaciones)
      */
     $conditionModes = array();
 

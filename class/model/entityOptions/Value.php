@@ -8,16 +8,40 @@ class ValueEntityOptions extends EntityOptions {
    * Logs de verificaciones
    */
 
+  public $sql;
+  /**
+   * SqlTools
+   */
+
   public $identifier = UNDEFINED; 
   /** 
    * El identificador puede estar formado por campos de la tabla actual o relacionadas
+   */
+
+  public $count = UNDEFINED;
+  /**
+   * Field count
+   */
+
+  public $label = UNDEFINED;
+  /**
+   * Field count
    */
   
   
   public function _getLogs(){ return $this->_logs; }
 
-  public function setIdentifier($identifier){ $this->_identifier = $identifier; }
+  public function setIdentifier($identifier){ return $this->_identifier = $identifier; }
   public function identifier($format = null){ return Format::convertCase($this->identifier, $format); }
+  public function sqlIdentifier(){ return $this->sql->string($this->identifier); }
+
+  public function setCount($count){ return $this->count = $count; }
+  public function count(){ return $this->count; }
+  public function sqlCount(){ return $this->sql->number($this->count); }
+
+  public function setLabel($label){ $this->label = $label; }
+  public function label(){ return $this->label; }
+  public function sqlLabel(){ return $this->sql->string($this->count); }
 
   public function _equalTo(EntityValues $entityValues){
     /**
@@ -44,32 +68,6 @@ class ValueEntityOptions extends EntityOptions {
     
   }
 
-  public function _toString(){
-    $fields = [];
-    foreach($this->_toArray() as $field){
-      if(!Validation::is_empty($field)) array_push($fields, $field);
-    }
-    return implode(", ",$fields);
-  }
 
-  public function _sqlDateTime($value, $format){
-    if(Validation::is_empty($value)) return 'null';
-    return "'" . $value->format($format) . "'";
-  }
-
-  public function _sqlBoolean($value){
-    if(Validation::is_empty($value)) return 'null';
-    return ( $value ) ? 'true' : 'false';
-  }
-
-  public function _sqlString($value){
-    if(Validation::is_empty($value)) return 'null';
-    return "'" . $this->container->getDb()->escape_string($v) . "'";
-  }
-
-  public function _sqlNumber($value){
-    if(Validation::is_empty($value)) return 'null';
-    return $value;
-  }
 
 }
