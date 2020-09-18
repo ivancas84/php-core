@@ -201,7 +201,7 @@ class Container {
       $prf = "_";
       require_once($dir.$prf.$name);
     }
-    
+
     $className = $prf.snake_case_to("XxYy", $entityName) . "Condition";
     $c = new $className;
     if($prefix) $c->prefix = $prefix;
@@ -214,11 +214,11 @@ class Container {
   }
 
   public function getConditionAux($entity, $prefix = ""){
-    $dir = "class/model/condition/";
+    $dir = "class/model/conditionAux/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prf = "";
     if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)){
-      $className = $prf.snake_case_to("XxYy", $entity) . "Condition";
+      $className = $prf.snake_case_to("XxYy", $entity) . "ConditionAux";
       require_once($dir.$name);
     } else{
       $className = "ConditionAuxEntityOptions";
