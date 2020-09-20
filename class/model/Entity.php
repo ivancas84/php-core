@@ -8,7 +8,7 @@ require_once("function/snake_case_to.php");
  */
 abstract class Entity {
 
-  protected static $structure = NULL; //array. Estructura de tablas.
+  public $structure = NULL; //array. Estructura de tablas, se asigna en el controlador.
 
   /**
    * Debido a que la estructura utiliza clases concretas, debe asignarse luego de finalizada la generacion de archivos y solo cuando se requiera su uso.
@@ -46,9 +46,9 @@ abstract class Entity {
 
   function getPk() { throw new BadMethodCallException("Not Implemented"); }
 
-  //Debido a que la estructura utiliza clases concretas, debe asignarse luego de finalizada la generacion de archivos
-  public static function setStructure(array $structure){ self::$structure = $structure; }
-  public static function getStructure(){ return self::$structure; }
+  //Debido a que la estructura utiliza clases concretas, debe asignarse luego de finalizada la generacion de archivos en el contenedor
+  public function setStructure(array $structure){ $this->$structure = $structure; }
+  public function getStructure(){ return $this->$structure; }
 
 
   public function getName($format = null) {
@@ -111,9 +111,9 @@ abstract class Entity {
    */
 
   public function getFieldsUm(){
-    if(self::getStructure() == NULL) throw new Exception("Debe setearse la estructura");
+    if($this->getStructure() == NULL) throw new Exception("Debe setearse la estructura");
     $fields = array();
-    foreach(self::getStructure() as $entity){
+    foreach($this->getStructure() as $entity){
       foreach($entity->getFieldsMu() as $field){
         if($field->getEntityRef()->getName() == $this->getName()){
           array_push($fields, $field);
@@ -124,9 +124,9 @@ abstract class Entity {
   }
 
   public function getFieldsU_(){
-    if(self::getStructure() == NULL) throw new Exception("Debe setearse la estructura");
+    if($this->getStructure() == NULL) throw new Exception("Debe setearse la estructura");
     $fields = array();
-    foreach(self::getStructure() as $entity){
+    foreach($this->getStructure() as $entity){
       foreach($entity->getFields_U() as $field){
         if($field->getEntityRef()->getName() == $this->getName()){
           array_push($fields, $field);
@@ -258,5 +258,3 @@ abstract class Entity {
   public function hasRelationsU_(){ return (count($this->getFieldsU_())) ? true : false; }
   public function hasRelationsRef(){ return (count($this->getFieldsRef())) ? true : false; }
 }
-
-require_once("class/model/entity/structure.php");
