@@ -67,7 +67,7 @@ class EntitySqlo {
   public function ids($render = NULL) {
     $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
-{$this->sql->fieldId()}
+{$this->mapping->id()}
 {$this->sql->fromSubSql($r)}
 {$this->sql->join($r)}
 " . concat($this->sql->condition($r), 'WHERE ') . "

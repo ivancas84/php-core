@@ -93,7 +93,7 @@ class Container {
      * Controlador asociado a entidad
      */
     $path = "class/controller/" . snake_case_to("xxYy", $controller) . "/" . snake_case_to("XxYy", $entityName) . ".php";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/class/controller/".$path)){
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$path)){
       require_once($path);
       $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller);    
     } else{
@@ -146,6 +146,7 @@ class Container {
     $c->entity = $this->getEntity($entity);
     $c->sql = $this->getSql($entity);
     $c->container = $this;
+    $c->mapping = $this->getMapping($entity);
     return self::$sqlo[$className] = $c;
   }
 
