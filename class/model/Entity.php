@@ -47,8 +47,8 @@ abstract class Entity {
   function getPk() { throw new BadMethodCallException("Not Implemented"); }
 
   //Debido a que la estructura utiliza clases concretas, debe asignarse luego de finalizada la generacion de archivos en el contenedor
-  public function setStructure(array $structure){ $this->$structure = $structure; }
-  public function getStructure(){ return $this->$structure; }
+  public function setStructure(array $structure){ $this->structure = $structure; }
+  public function getStructure(){ return $this->structure; }
 
 
   public function getName($format = null) {

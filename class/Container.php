@@ -2,6 +2,7 @@
 
 require_once("class/model/Ma.php");
 require_once("function/snake_case_to.php");
+require_once("class/tools/Logs.php");
 
 class Container {
   static $db = null;

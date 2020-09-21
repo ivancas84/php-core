@@ -23,6 +23,9 @@ class PersistApi {
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
     $value = $this->container->getValue($this->entityName)->_fromArray($data, "set")->_call("reset")->_call("_check");
+    print_r($value->_toArray());
+    //$value->;
+    //print_r($value);
     /*if($value->_getLogs()->isError()) throw new Exception($value->_getLogs()->toString());
     
     $detail = [];
