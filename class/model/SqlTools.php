@@ -36,7 +36,6 @@ class SqlTools {
   }
 
   public function boolean($value){
-    if(Validation::is_empty($value)) return 'null';
     return ( $value ) ? 'true' : 'false';
   }
 

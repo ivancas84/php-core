@@ -64,6 +64,7 @@ class Logs {
   }
 
   public function toString(){
+    print_r($this->logs);
     return  implode(', ', array_map(function ($entry) {
      
     return implode(', ', $entry);
