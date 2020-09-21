@@ -8,7 +8,7 @@ require_once("function/snake_case_to.php");
  */
 abstract class Entity {
 
-  public $structure = NULL; //array. Estructura de tablas, se asigna en el controlador.
+  public $structure = NULL; //array. Estructura de tablas, se asigna en el contenedor.
 
   /**
    * Debido a que la estructura utiliza clases concretas, debe asignarse luego de finalizada la generacion de archivos y solo cuando se requiera su uso.
@@ -111,7 +111,6 @@ abstract class Entity {
    */
 
   public function getFieldsUm(){
-    if($this->getStructure() == NULL) throw new Exception("Debe setearse la estructura");
     $fields = array();
     foreach($this->getStructure() as $entity){
       foreach($entity->getFieldsMu() as $field){
@@ -124,7 +123,6 @@ abstract class Entity {
   }
 
   public function getFieldsU_(){
-    if($this->getStructure() == NULL) throw new Exception("Debe setearse la estructura");
     $fields = array();
     foreach($this->getStructure() as $entity){
       foreach($entity->getFields_U() as $field){
@@ -192,6 +190,7 @@ abstract class Entity {
 
   public function getFieldsUnique(){
     /**
+     * @todo este metodo deberia formar parte de StructTools
      * campos unicos simples
      */
     $unique = array();
@@ -201,34 +200,13 @@ abstract class Entity {
     return $unique;
   }
 
-  public function getFieldsUniqueNoPk(){
-    $unique = array();
-    foreach($this->getFieldsNoPk() as $field){
-      if($field->isUnique()) array_push($unique, $field);
-    }
-    return $unique;
-  }
-
   public function getFieldsUniqueMultiple(){ return []; }
   /**
+   * @todo se puede agregar algun atributo en Field para identificar que es uniqueMultiple? que es lo mejor?
    * campos unicos multiples
    * sobrescribir si existen campos unicos multiples
    */
 
-  public function getFieldsByName($fieldName){
-    foreach($this->getFields() as $field){
-      if($field->getName() == $fieldName) return $field;
-    }
-    return null;
-  }
-
-  public function getFieldsBySubtype($subtype){
-    $fields = [];
-    foreach($this->getFields() as $field){
-      if($field->getSubtype() == $subtype) array_push($fields, $field);
-    }
-    return $fields;
-  }
 
   public function getFieldNames(){ //pk, nf, fk
     $fields = $this->getFields();
@@ -236,18 +214,6 @@ abstract class Entity {
     foreach($fields as $field) array_push($names, $field->getName());
     return $names;
   }
-
-  public function getFieldNamesExclusive(){ //pk, nf, fk
-    $fields = $this->getFields();
-    $names = [];
-    foreach($fields as $field) {
-      if($field->isExclusive()) array_push($names, $field->getName());
-    }
-    return $names;
-  }
-
-
-
 
   /**
    * Tiene relaciones?

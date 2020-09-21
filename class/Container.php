@@ -8,6 +8,7 @@ class Container {
   static $sqlo = [];
   static $entity = [];
   static $field = [];
+  static $structure = false; //flag para indicar que se generaron todas las entidades
 
   public function getDb() {
     if (isset(self::$db)) return self::$db;
@@ -16,9 +17,19 @@ class Container {
     return self::$db = $c;
   }
 
-  public function getEntity($entity){
+  public function getStructure(){
+    if(self::$structure) return self::$entity;
+    require_once("function/get_entity_names.php");
+    foreach(get_entity_names() as $entityName) $this->getEntity($entityName);
+    self::$structure = true;
+    return self::$entity;
+  }
+
+  public function getEntity($entityName){
+    if (isset(self::$entity[$entityName])) return self::$entity[$entityName];
+
     $dir = "class/model/entity/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
+    $name = snake_case_to("XxYy", $entityName) . ".php";
     $prefix = "";
     if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
     else{
@@ -26,11 +37,12 @@ class Container {
       require_once($dir.$prefix.$name);
     }
     
-    $className = $prefix.snake_case_to("XxYy", $entity) . "Entity";
-    if (isset(self::$entity[$className])) return self::$entity[$className];
+    $className = $prefix.snake_case_to("XxYy", $entityName) . "Entity";
     $c = new $className;
     $c->container = $this;
-    return self::$entity[$className] = $c;
+    self::$entity[$entityName] = $c; //se asigna previamente como clase estatica antes de llamar a la estructura, la estructura poseera tambien la entidad
+    self::$entity[$entityName]->structure = $this->getStructure();
+    return self::$entity[$entityName];
   }
 
 

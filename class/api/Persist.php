@@ -22,9 +22,8 @@ class PersistApi {
     $data = Filter::jsonPostRequired();
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
-
     $value = $this->container->getValue($this->entityName)->_fromArray($data, "set")->_call("reset")->_call("_check");
-    if($value->_getLogs()->isError()) throw new Exception($value->_getLogs()->toString());
+    /*if($value->_getLogs()->isError()) throw new Exception($value->_getLogs()->toString());
     
     $detail = [];
     /**
@@ -35,7 +34,7 @@ class PersistApi {
     
     //$row_ = $this->container->getDb()->unique($this->entityName, $data);
     //if (!empty($row_)){ $value->setId($row_["id"]);
-    if(!Validation::is_empty($value->id())){
+    /*if(!Validation::is_empty($value->id())){
       $sql = $this->container->getSqlo($this->entityName)->update($value->_toArray("sql"));
     } else {
       $value->_call("setDefault");
@@ -44,7 +43,7 @@ class PersistApi {
 
     $this->container->getDb()->multi_query_transaction_log($sql);
     
-    return ["id" => $value->id(), "detail" => $this->$entityName.$value->id()];
+    return ["id" => $value->id(), "detail" => $this->$entityName.$value->id()];*/
   }
 }
 

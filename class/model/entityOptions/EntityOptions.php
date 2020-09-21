@@ -1,5 +1,7 @@
 <?php
 
+require_once("class/controller/StructTools.php");
+
 class EntityOptions {
 
   public $prefix = "";
@@ -18,7 +20,7 @@ class EntityOptions {
   protected function _switchFieldNames($fieldNames){
     if(is_array($fieldNames)) return $fieldNames;
     switch($fieldNames){
-      case "EXCLUSIVE": return $this->entity->getFieldNamesExclusive();
+      case "EXCLUSIVE": return StructTools::getFieldNamesExclusive($this->entity);
       default: return $this->entity->getFieldNames();
     }
   }
