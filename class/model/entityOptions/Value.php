@@ -1,6 +1,9 @@
 <?php
 
 require_once("class/model/entityOptions/EntityOptions.php");
+require_once("class/tools/Format.php");
+require_once("class/tools/SpanishDateTime.php");
+
 
 class ValueEntityOptions extends EntityOptions {
   public $_logs;

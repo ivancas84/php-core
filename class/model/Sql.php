@@ -365,7 +365,7 @@ class EntitySql { //Definir SQL
      * Definir sql de campos
      * Sobrescribir si existen relaciones
      */
-    return $this->container->getFieldAlias($this->entity->getName())->_callConcat();
+    return implode(",", $this->container->getFieldAlias($this->entity->getName())->_toArray());
   }
 
 
@@ -484,7 +484,8 @@ class EntitySql { //Definir SQL
     return $this->entity->sn_();
  
  /*
- $fields = $this->container->getFieldAlias($this->entity->getName(), $this->prefix)->_callConcat("EXCLUSIVE");
+ $fieldNamesExclusive = StructTools::getFieldNamesExclusive();
+ $fields = implode(",", $this->container->getFieldAlias($this->entity->getName(), $this->prefix)->_toArrayFields($fieldNamesExclusive);
  return "( SELECT DISTINCT
 {$fields}
 {$this->_from($render)}

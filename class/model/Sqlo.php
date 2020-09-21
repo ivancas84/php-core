@@ -116,7 +116,7 @@ class EntitySqlo {
 
   public function update(array $row) { //sql de actualizacion
     return "
-{$this->_update($r_)}
+{$this->_update($row)}
 WHERE {$this->entity->getPk()->getName()} = {$row['id']};
 ";
 
