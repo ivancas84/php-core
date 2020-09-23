@@ -16,7 +16,6 @@ class PersistApi {
 
   public $entityName;
   public $container;
-
   
   public function main(){
     $data = Filter::jsonPostRequired();
