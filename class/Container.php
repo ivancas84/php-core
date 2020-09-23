@@ -6,6 +6,9 @@ require_once("class/tools/Logs.php");
 
 class Container {
   static $db = null;
+  static $modelTools = null;
+  static $sqlTools = null;
+
   static $sqlo = [];
   static $entity = [];
   static $field = [];
@@ -16,6 +19,14 @@ class Container {
     $c = new Ma();
     $c->container = $this;
     return self::$db = $c;
+  }
+
+  public function getMt(){
+    require_once("class/controller/ModelTools.php");
+    if (isset(self::$modelTools)) return self::$modelTools;
+    $c = new ModelTools();
+    $c->container = $this;
+    return self::$modelTools = $c;
   }
 
   public function getStructure(){
@@ -82,6 +93,7 @@ class Container {
   }
 
   public function getSqlTools(){
+    if(self::$sqlTools) return self::$sqlTools;
     require_once("class/model/SqlTools.php");
     $c = new SqlTools;
     $c->container = $this;
