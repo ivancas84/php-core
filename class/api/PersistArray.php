@@ -9,7 +9,7 @@ require_once("class/tools/Validation.php");
 
 require_once("function/stdclass_to_array.php");
 
-class PersistApi {
+class PersistArrayApi {
   /**
    * Comportamiento general de persistencia
    */
@@ -21,11 +21,27 @@ class PersistApi {
     $data = Filter::jsonPostRequired();
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
+
     
+    $ids = [];
+    $sql = "";
+    $detail = [];
     $persistSql = $this->container->getControllerEntity("persist_sql", $this->entityName);
-    $persist = $persistSql->main($row);
-    $this->container->getDb()->multi_query_transaction_log($persist["sql"]);
-    return ["id" => $persist["id"], "detail" => [$this->entityName.$persist["id"]]];
+
+    foreach($data as $row){
+      if($row["_delete"]){
+        $sql .= $this->container->getSqlo($this->entityName)->delete($row["id"]);
+      } else {
+        $persist = $persistSql->main($row);
+        $sql .= $persist["sql"];
+        array_push($ids, $persist["id"]);
+      }
+      array_push($detail, $this->entityName.$row["id"]);
+    }
+
+    $this->container->getDb()->multi_query_transaction_log($sql);
+
+    return ["ids" => $ids, "detail" => $detail];
   }
 }
 
