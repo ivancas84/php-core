@@ -40,15 +40,15 @@ class PersistLog {
   }
 
   public function insert($entity, $row) {
-    $persist = $this->container->getSqlo($entity)->insert($row);
-    array_push($this->logs, ["sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
-    return $persist["id"];
+    $sql = $this->container->getSqlo($entity)->insert($row);
+    array_push($this->logs, ["sql"=>$sql, "detail"=>[$entity.$row["id"]]]);
+    return $row["id"];
   }
 
   public function update($entity, $row) {
-    $persist = $this->container->getSqlo($entity)->update($row);
-    array_push($this->logs, ["sql"=>$persist["sql"], "detail"=>$persist["detail"]]);
-    return $persist["id"];
+    $sql = $this->container->getSqlo($entity)->update($row);
+    array_push($this->logs, ["sql"=>$sql, "detail"=>[$entity.$row["id"]]]);
+    return $row["id"];
   }
 
 }

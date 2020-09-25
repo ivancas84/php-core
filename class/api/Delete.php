@@ -27,7 +27,7 @@ class DeleteApi {
     $this->container->getDb()->multi_query_transaction_log($sql);
     $detail = array_map(array($this, 'concat'), $ids);    
 
-    return ["ids" => $ids, "detail" => [$this->entityName.$value->id()]];
+    return ["ids" => $ids, "detail" => $detail];
   }
 }
 
