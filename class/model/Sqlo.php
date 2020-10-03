@@ -26,10 +26,17 @@ class EntitySqlo {
     /**
      * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
      * El resultado es almacenado en un array asociativo.
-     * Las claves del array son nombres representativo de la entidad que contiene
+     * Las claves del array son nombres representativos de la entidad que contiene
      * Las claves se forman a partir del nombre de la clave foranea
      * Se asigna un numero incremental a la clave en el caso de que se repita
      * Este metodo debe sobrescribirse en el caso de que existan relaciones
+     * A diferencia de otros métodos que retornan valores, 
+     * values utiliza un array asociativo debido a que el valor es un objeto
+     * facilita el acceso directo desde la llave por ejemplo $resultado["nombre_fk"]->metodo()
+     * En el caso por ejemplo del metodo json, debido a que el valor es tambien un un array asociativo, 
+     * tiene sentido acomodarlo como un arbol de valores, identificandolos con el prefijo "_",
+     * por ejemplo $resultado["nombre_fk] = "id_fk"
+     * $resultado["_nombre_fk"] = array asociativo con los valores de la entidad para el id "id_fk"
      */
     $row_ = [];
     $row_[$this->entity->getName()] = $this->container->getValue($this->entity->getName())->_fromArray($row, "set");
