@@ -19,10 +19,16 @@ class EntitySqlo {
   public $container;
 
   public function json(array $row) { 
+    /**
+     * Recorre la cadena de relaciones del resultado de una consulta 
+     * y retorna el resultado en un arbol de array asociativo en formato json.
+     * Ver comentarios del metodo values para una descripcion del valor retornado
+     * Este metodo debe sobscribirse en el caso de que existan relaciones     
+     */ 
     return $this->container->getValue($this->entity->getName())->_fromArray($row, "set")->_toArray("json");
   }
 
-  public function values(array $row){ //retornar instancias de EntityValues
+  public function values(array $row){
     /**
      * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
      * El resultado es almacenado en un array asociativo.
