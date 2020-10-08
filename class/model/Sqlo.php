@@ -124,9 +124,6 @@ class EntitySqlo {
     return $sql;
   }
 
-  public function insert(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de insercion
-  public function _update(array $row) { throw new BadMethodCallException ("Metodo abstracto no implementado"); } //sql de actualizacion
-
   public function update(array $row) { //sql de actualizacion
     return "
 {$this->_update($row)}
@@ -195,7 +192,36 @@ WHERE
 {$conditionUniqueFields}
 " . concat($this->sql->condition($r), 'AND ') . "
 ";
+  }
 
+  public function insert(array $row){
+    /**
+     * El conjunto de valores debe estar previamente formateado
+     */
+    $e = $this->container->getEntity($this->entityName);
+    $fns = StructTools::getFieldNamesExclusive($e);
+    $sql = "
+  INSERT INTO " . $e->sn_() . " (";    
+    $sql .= implode(", ", $fns);    
+    $sql .= ")
+VALUES ( ";
+    foreach($fns as $fn) $sql .= $row[$fn] . ", " ;
+    $sql = substr($sql, 0, -2); //eliminar ultima coma
+    $sql .= ");
+";
 
+    return $sql;
+  }
+
+  public function _update(array $row){
+    $sql = "
+UPDATE " . $this->entity->sn_() . " SET
+";
+    $e = $this->container->getEntity($this->entityName);
+    $fns = StructTools::getFieldNamesExclusive($e);
+    foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
+    $sql = substr($sql, 0, -2); //eliminar ultima coma
+
+    return $sql;
   }
 }
