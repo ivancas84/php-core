@@ -10,6 +10,7 @@ class Container {
   static $sqlTools = null;
 
   static $sqlo = [];
+  static $rel = [];
   static $entity = [];
   static $field = [];
   static $structure = false; //flag para indicar que se generaron todas las entidades
@@ -158,23 +159,24 @@ class Container {
     $dir = "class/model/sqlo/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prefix = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prefix = "_";
-      require_once($dir.$prefix.$name);
+
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
+      require_once($dir.$name);
+      $className = snake_case_to("XxYy", $entity) . "Sqlo";
+    
+    } else {
+      require_once("class/model/Sqlo.php");
+      $className = "EntitySqlo";
     }
     
-    $className = $prefix.snake_case_to("XxYy", $entity) . "Sqlo";
-
     if (isset(self::$sqlo[$className])) return self::$sqlo[$className];
     $c = new $className;
-    $c->entity = $this->getEntity($entity);
-    $c->sql = $this->getSql($entity);
+    $c->entityName = $entity;
     $c->container = $this;
-    $c->mapping = $this->getMapping($entity);
     return self::$sqlo[$className] = $c;
   }
 
+  
   public function getSql($entity, $prefix = null){
     $dir = "class/model/sql/";
     $name = snake_case_to("XxYy", $entity) . ".php";
@@ -184,10 +186,6 @@ class Container {
       require_once($dir.$name);
       $className = snake_case_to("XxYy", $entity) . "Sql";
     
-    } elseif (file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir."_".$name)) {
-      require_once($dir."_".$name);
-      $className = "_".snake_case_to("XxYy", $entity) . "Sql";
-    
     } else {
       require_once("class/model/Sql.php");
       $className = "EntitySql";
@@ -195,10 +193,49 @@ class Container {
     
     $sql = new $className;
     if($prefix) $sql->prefix = $prefix;
-    $sql->container = $this;
-    $sql->entity = $this->getEntity($entity);
+    $sql->container = $this;  
+    $sql->entityName = $entity;    
     return $sql;    
   }
+
+  public function getRel($entity) {
+    $dir = "class/model/rel/";
+    $name = snake_case_to("XxYy", $entity) . ".php";
+    
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
+      require_once($dir.$name);
+      $className = snake_case_to("XxYy", $entity) . "Rel";
+    
+    } elseif (file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir."_".$name)) {
+      require_once($dir."_".$name);
+      $className = "_".snake_case_to("XxYy", $entity) . "Rel";
+    
+    } else {
+      require_once("class/model/Rel.php");
+      $className = "EntityRel";
+    }
+    
+    if (isset(self::$sqlo[$className])) return self::$sqlo[$className];
+    $c = new $className;
+    $c->entityName = $entity;
+    $c->container = $this;
+    return self::$sqlo[$className] = $c;
+
+
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
+    else{
+      $prefix = "_";
+      require_once($dir.$prefix.$name);
+    }
+    
+    $className = $prefix.snake_case_to("XxYy", $entity) . "Rel";
+    if (isset(self::$rel[$className])) return self::$rel[$className];
+    $c = new $className;
+    $c->entityName = $entity;
+    $c->container = $this;
+    return self::$rel[$className] = $c;
+  }
+
 
   public function getMapping($entity, $prefix = ""){
     $dir = "class/model/mapping/";

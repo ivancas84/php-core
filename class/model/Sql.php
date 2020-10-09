@@ -22,10 +22,10 @@ class EntitySql { //Definir SQL
    */
 
   public $container;
-  public $entity;
+  public $entityName;
     
   public function prf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; }   //prefijo fields
-  public function prt(){ return (empty($this->prefix)) ?  $this->entity->getAlias() : $this->prefix; } //prefijo tabla
+  public function prt(){ return (empty($this->prefix)) ?  $this->container->getEntity($this->entityName)->getAlias() : $this->prefix; } //prefijo tabla
 
   public function formatIds(array $ids = []) {
     /**
@@ -33,22 +33,14 @@ class EntitySql { //Definir SQL
      */
     $ids_ = [];
     for($i = 0; $i < count($ids); $i++) {
-      $value = $this->container->getValue($this->entity->getName());
+      $value = $this->container->getValue($this->entityName);
       $value->setId($ids[$i]);
       array_push($ids_, $value->sqlId());
     }
     return implode(', ', $ids_);
   }
 
-  public function mappingField($field){
-    /**
-     * Traducir campo para ser interpretado correctamente por el SQL
-     * Recorre relaciones (si existen)
-     */
-    if($field_ = $this->container->getMapping($this->entity->getName())->_eval($field)) return $field_;
-    throw new Exception("Campo no reconocido para {$this->entity->getName()}: {$field}");
-  }
-
+  
   public function condition(Render $render) { 
     /**
      * busqueda avanzada considerando relaciones
@@ -201,12 +193,12 @@ class EntitySql { //Definir SQL
      * se verifica inicialmente la condicion auxiliar. 
      * las condiciones auxiliares no siguen la estructura definida de condicion
      */    
-    $condition = $this->conditionFieldAux($field, $option, $value);
+    $condition = $this->container->getRel($this->entityName)->conditionAux($field, $option, $value);
     if($condition) return $condition;
     
-    if(!is_array($value)) {
-      $condition = $this->conditionFieldStruct($field, $option, $value);
-      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$this->entity->getName()}.{$field}");
+    if(!is_array($value)) {      
+      $condition = $this->container->getRel($this->entityName)->condition($field, $option, $value);
+      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$this->entityName}.{$field}");
       return $condition;
     }
 
@@ -232,11 +224,11 @@ class EntitySql { //Definir SQL
      * se verifica inicialmente la condicion auxiliar
      * las condiciones auxiliares no siguen la estructura definida de condicion
      */
-    $condition = $this->container->getConditionAux($this->entity->getName())->_eval($field, [$option, $value]);
+    $condition = $this->container->getConditionAux($this->entityName)->_eval($field, [$option, $value]);
     if($condition) return $condition;
     
     if(!is_array($value)) {
-      $condition = $this->container->getCondition($this->entity->getName())->_eval($field, [$option, $value]);
+      $condition = $this->container->getCondition($this->entityName)->_eval($field, [$option, $value]);
       return $condition;
     }
 
@@ -250,7 +242,7 @@ class EntitySql { //Definir SQL
         else throw new Exception("Error al definir opción");
       } else $cond = true;
 
-      $condition_ = $this->container->getCondition($this->entity->getName())->_eval($field, [$option, $v]);
+      $condition_ = $this->container->getCondition($this->entityName)->_eval($field, [$option, $v]);
       if(!$condition_) return "";
       $condition .= $condition_;
     }
@@ -259,29 +251,9 @@ class EntitySql { //Definir SQL
     return "(".$condition.")";
   }
   
-  protected function conditionFieldStruct($field, $option, $value){
-    /**
-     * Condicion avanzada principal
-     * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
-     * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
-     * Si existen relaciones, este metodo debe reimplementarse para contemplarlas
-     */
-    if($c = $this->container->getCondition($this->entity->getName())->_eval($field, [$option, $value])) return $c;
-  }
   
-  protected function conditionFieldAux($field, $option, $value) {
-    /**
-     * Condicion de field auxiliar (considera relaciones si existen)
-     * Se sobrescribe si tiene relaciones
-     */
-    if($c = $this->container->getConditionAux($this->entity->getName())->_eval($field, [$option, $value])) return $c;
-  }
-
-  
-  //DEPRECATED: public function fieldId(){ return $this->entity->getAlias() . "." . $this->entity->getPk()->getName(); } //Se define el identificador en un metodo independiente para facilitar la reimplementacion para aquellos casos en que el id tenga un nombre diferente al requerido, para el framework es obligatorio que todas las entidades tengan una pk con nombre "id"
-
   public function from(){
-    return " FROM " . $this->entity->sna_() . "
+    return " FROM " . $this->container->getEntity($this->entityName)->sna_() . "
 ";
   }
 
@@ -299,7 +271,7 @@ class EntitySql { //Definir SQL
 
   public function _from(){
     $t = $this->prt();    
-    return " FROM " . $this->entity->sn_() . " AS {$t}
+    return " FROM " . $this->container->getEntity($this->entityName)->sn_() . " AS {$t}
 ";
   }
 
@@ -319,8 +291,8 @@ class EntitySql { //Definir SQL
      * los campos unicos simples se definen a traves del atributo Field::$unique
      * los campos unicos multiples se definen a traves del meotodo Entity::getFieldsUniqueMultiple();
      */
-    $uniqueFields = $this->entity->getFieldsUnique();
-    $uniqueFieldsMultiple = $this->entity->getFieldsUniqueMultiple();
+    $uniqueFields = $this->container->getEntity($this->entityName)->getFieldsUnique();
+    $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->getFieldsUniqueMultiple();
 
     $condition = array();
 
@@ -336,11 +308,9 @@ class EntitySql { //Definir SQL
     if($uniqueFieldsMultiple) {
       $conditionMultiple = [];
       $first = true;
-      $count = 0;
       foreach($uniqueFieldsMultiple as $field){
         foreach($params as $key => $value){
           if($key == $field->getName()) {
-            $count++;
             if($first) {
               $con = "or";
               $first = false;
@@ -352,25 +322,13 @@ class EntitySql { //Definir SQL
         }
       }
 
-      if($count == count($uniqueFieldsMultiple)) array_push($condition, $conditionMultiple);
+      if(!empty($conditionMultiple)) array_push($condition, $conditionMultiple);
     }
 
     $render = new Render();
     $render->setCondition($condition);
     return $this->condition($render);
   }
-
-  public function fields(){
-    /**
-     * Definir sql de campos
-     * Sobrescribir si existen relaciones
-     */
-    return implode(",", $this->container->getFieldAlias($this->entity->getName())->_toArray());
-  }
-
-
-
-  public function join(Render $render){ return ""; } //Sobrescribir si existen relaciones fk u_
 
   public function _join($field, $fromTable, Render $render){
     /**
@@ -386,7 +344,7 @@ class EntitySql { //Definir SQL
       " . $this->_subSql($render) . "
 
 
- AS $t ON ($fromTable.$field = $t.{$this->entity->getPk()->getName()})
+ AS $t ON ($fromTable.$field = $t.{$this->container->getEntity($this->entityName)->getPk()->getName()})
 ";
   }
 
@@ -395,18 +353,17 @@ class EntitySql { //Definir SQL
      * Ordenamiento por defecto
      * por defecto se definen los campos principales nf de la tabla principal
      * Si se incluyen campos de relaciones, asegurarse de incluir las relaciones
-     * TODO: El ordenamiento no deberia formar parte de las entidades de generacion de sql?
      */
-    $fields = $this->entity->getFieldsNf();
-    $orderBy = array();
+    $e = $this->container->getEntity($this->entityName);
+    if(!empty($of = $e->getOrderDefault())) return $of;
+        
+    $fieldsMain = $e->main;
+    return array_fill_keys($fieldsMain, "asc");
+  }
 
-    foreach($fields as $field){
-      if($field->isMain()){
-        $orderBy[$field->getName()] = "asc";
-      }
-    }
-
-    return $orderBy;
+  public function orderBy(array $order = null){
+    $order = $this->initOrder($order);
+    return $this->order($order);
   }
 
   protected function initOrder(array $order) {
@@ -420,17 +377,12 @@ class EntitySql { //Definir SQL
     return array_merge($order, $orderDefault);
   }
 
-  public function orderBy(array $order = null){
-    $order = $this->initOrder($order);
-    return $this->order($order);
-  }
-
-  public function order(array $order = null){
+  protected function order(array $order = null){
     $sql = '';
 
     foreach($order as $key => $value){
       $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
-      $sql_ = "{$this->mappingField($key)} IS NULL, {$this->mappingField($key)} {$value}";
+      $sql_ = "{$this->container->getMapping($this->entityName)->_evals($key)} IS NULL, {$this->container->getMapping($this->entityName)->_evals($key)} {$value}";
       $sql .= concat($sql_, ', ', ' ORDER BY', $sql);
     }
 
@@ -481,11 +433,11 @@ class EntitySql { //Definir SQL
 
 
   public function _subSql(Render $render){
-    return $this->entity->sn_();
+    return $this->container->getEntity($this->entityName)->sn_();
  
  /*
  $fieldNamesExclusive = StructTools::getFieldNamesExclusive();
- $fields = implode(",", $this->container->getFieldAlias($this->entity->getName(), $this->prefix)->_toArrayFields($fieldNamesExclusive);
+ $fields = implode(",", $this->container->getFieldAlias($this->entityName, $this->prefix)->_toArrayFields($fieldNamesExclusive);
  return "( SELECT DISTINCT
 {$fields}
 {$this->_from($render)}

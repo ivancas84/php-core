@@ -79,5 +79,17 @@ class EntityOptions {
     return call_user_func_array(array($this, $method), $params);
   }
 
+  function _evals($fieldName, array $params = []){
+    /**
+     * _eval estricto
+     */
+    $count = 1;
+    /**
+     * Si no se especifica count como variable independiente dispara el error Notice: Only variables should be passed by reference in C:\xampp\htdocs\call.php on line 33 field1
+     */
+
+    $method = snake_case_to("xxYy", str_replace($this->_pf(), "", $fieldName, $count));
+    return call_user_func_array(array($this, $method), $params);
+  }
 
 }

@@ -15,8 +15,8 @@ class AllApi {
     $display = Filter::jsonPostRequired(); //siempre se recibe al menos size y page
     $render = Render::getInstanceDisplay($display);
     $rows = $this->container->getDb()->all($this->entityName, $render);
-    $sqlo = $this->container->getSqlo($this->entityName);
-    foreach($rows as &$row) $row = $sqlo->json($row);
+    $rel = $this->container->getRel($this->entityName);
+    foreach($rows as &$row) $row = $rel->json($row);
     return $rows;
   }
 

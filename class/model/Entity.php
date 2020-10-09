@@ -22,6 +22,10 @@ abstract class Entity {
    * En ocasiones el nombre de la tabla de la base de datos puede ser diferente del original
    * Si es null, se considera el mismo nombre que la entidad
    */
+  
+  public $nf = [];
+  public $mu = [];
+  public $_u = [];
 
   public $identifier = [];
   /**
@@ -32,7 +36,33 @@ abstract class Entity {
    * por ejemplo:
    *   public $identifier = ["fecha_anio", "fecha_semestre","alu_per_numero_documento"];
    */
- 
+
+  public $orderDefault = [];
+  /**
+   * Valores por defecto par ordenamiento
+   * Array asociativo, ejemplo: ["field1"=>"asc","field2"=>"desc",...];
+   */
+
+  public $main = ["id"];
+  /**
+   * Valores unicos
+   * Array, ejemplo: ["field1","field2",...];
+   */
+
+  public $unique = ["id"];
+  /**
+   * Valores unicos
+   * Array, ejemplo: ["field1","field2",...];
+   */
+  
+  public $uniqueMultiple = [];
+  /**
+   * Valores unicos multiples
+   * Array, ejemplo: ["field1","field2",...];
+   * Se habia pensado poner un atributo uniqueMultiple en el field, pero es mas sencillo indicarlo en la entidad.
+   * se modifica un solo archivo
+   */
+
   public $container;
 
   /**
@@ -44,7 +74,7 @@ abstract class Entity {
   public function sna_(){ return $this->s_() . $this->n_() . " AS " . $this->alias; } //schema.nombre AS alias
   public function a_(){ return $this->alias . "."; }
 
-  function getPk() { throw new BadMethodCallException("Not Implemented"); }
+  function getPk() { return $this->container->getField($this->getName(), "id"); }
 
   //Debido a que la estructura utiliza clases concretas, debe asignarse luego de finalizada la generacion de archivos en el contenedor
   public function setStructure(array $structure){ $this->structure = $structure; }
@@ -88,22 +118,28 @@ abstract class Entity {
     return array_merge($this->getFieldsNf(), $this->getFieldsFk());
   }
 
-  public function getFieldsNf(){ return array(); }
+  public function getFieldsNf(){
+    $fields = [];
+    foreach($this->nf as $fieldName) array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    return $fields;
+  }
 
   public function getFieldsFk(){ return array_merge($this->getFieldsMu(), $this->getFields_U()); }
   /**
    * fk (mu y _u)
    */
 
-  public function getFieldsMu(){ return array(); }
-  /**
-   * sobrescribir si existen mu
-   */
+  public function getFieldsMu(){
+    $fields = [];
+    foreach($this->mu as $fieldName) array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    return $fields;
+  }
   
-   public function getFields_U(){ return array(); }
-  /**
-   * sobrescribir si existen _u
-   */
+  public function getFields_U(){
+    $fields = [];
+    foreach($this->_u as $fieldName) array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    return $fields;
+  }
 
   public function getFieldsRef(){ return array_merge($this->getFieldsUm(), $this->getFieldsU_()); }
   /**
@@ -188,33 +224,6 @@ abstract class Entity {
     return $fields;
   }
 
-  public function getFieldsUnique(){
-    /**
-     * @todo este metodo deberia formar parte de StructTools
-     * campos unicos simples
-     */
-    $unique = array();
-    foreach($this->getFields() as $field){
-      if($field->isUnique()) array_push($unique, $field);
-    }
-    return $unique;
-  }
-
-  public function getFieldsUniqueMultiple(){ return []; }
-  /**
-   * @todo se puede agregar algun atributo en Field para identificar que es uniqueMultiple? que es lo mejor?
-   * campos unicos multiples
-   * sobrescribir si existen campos unicos multiples
-   */
-
-
-  public function getFieldNames(){ //pk, nf, fk
-    $fields = $this->getFields();
-    $names = [];
-    foreach($fields as $field) array_push($names, $field->getName());
-    return $names;
-  }
-
   /**
    * Tiene relaciones?
    * Utilizado generalmente para verificar si es viable la generacion de cierto codigo que requiere relaciones
@@ -223,4 +232,70 @@ abstract class Entity {
   public function hasRelationsFk(){ return (count($this->getFieldsFk())) ? true : false; }
   public function hasRelationsU_(){ return (count($this->getFieldsU_())) ? true : false; }
   public function hasRelationsRef(){ return (count($this->getFieldsRef())) ? true : false; }
+
+  public function getFieldNames(){ //pk, nf, fk
+    $fields = $this->getFields();
+    $names = [];
+    foreach($fields as $field) array_push($names, $field->getName());
+    return $names;
+  }
+
+  public function getOrderDefault() { return $this->orderDefault; }
+
+  public function getFieldsUnique(){
+    /**
+     * campos unicos simples
+     */
+    $unique = array();
+    foreach($this->unique as $fieldName){
+      array_push($unique, $this->container->getField($this->getName(), $fieldName));
+    }
+    return $unique;
+  }
+
+  public function getFieldsMain(){
+    /**
+     * campos principales
+     */
+    $fields = array();
+    foreach($this->main as $fieldName){
+      array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    }
+    return $fields;
+  }
+
+  public function getFieldsNotNull(){
+    /**
+     * campos principales
+     */
+    $fields = array();
+    foreach($this->notNull as $fieldName){
+      array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    }
+    return $fields;
+  }
+
+  public function getFieldsAdmin(){
+    /**
+     * campos principales
+     */
+    $fields = array();
+    foreach($this->admin as $fieldName){
+      array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    }
+    return $fields;
+  }
+
+  public function getFieldsUniqueMultiple(){ 
+    /**
+     * campos unicos multiples
+     * se habia pensando en poner un atributo "uniqueMultiple" en el field
+     * pero es mas sencillo indicarlo directamente en la entidad
+     */
+    $uniqueMultiple = [];
+    foreach($this->uniqueMultiple as $fieldName){
+      array_push($uniqueMultiple, $this->container->getField($this->getName(), $fieldName));
+    }
+    return $uniqueMultiple;      
+  }
 }
