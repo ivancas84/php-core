@@ -79,10 +79,10 @@ class EntitySqlo {
 {$fieldsQuery}
 {$this->container->getSql($this->entityName)->fromSubSql($render)}
 {$this->container->getRel($this->entityName)->join($render)}
-" . concat($this->container->getRel($this->entityName)->condition($render), 'WHERE ') . "
+" . concat($this->container->getSql($this->entityName)->condition($render), 'WHERE ') . "
 {$group}
 {$having}
-{$this->container->getSql($this->entityName)->order($render->getOrder())}
+{$this->container->getSql($this->entityName)->orderBy($render->getOrder())}
 {$this->container->getSql($this->entityName)->limit($render->getPage(), $render->getSize())}
 ";
 

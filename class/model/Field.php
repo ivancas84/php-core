@@ -9,6 +9,8 @@ abstract class Field {
 
   public $container;
   public $name;
+  public $entityName;
+  public $entityRefName;
   public $alias;
   public $default;
   /**
@@ -26,12 +28,6 @@ abstract class Field {
     * longitud minima del field
     * false: El dato no tiene definida longitud
     */
-
-  public $notNull;
-  /**
-   * Flag para indicar si es campo no nulo
-   * true | false
-   */
 
   public $type;
   /**
@@ -60,8 +56,6 @@ abstract class Field {
     //"mu": Clave foranea muchos a uno
     //"_u": Clave foranea uno a uno
 
-  public $unique; //flag para indicar si es un campo unico
-
   public $subtype = null; //tipo de datos avanzado
     //text texto simple
     //textarea texto grande
@@ -76,23 +70,9 @@ abstract class Field {
     //typeahead (fk)
     //file (fk)
 
-  public $main = false; //flag para indicar si es un campo principal.
-    //Por defecto se define la clave primaria como campo principal. En versiones anteriores se hacia la siguiente logica:
-    // Si tiene algun campo main, se define el main
-    // Si no tiene campo main, se define el unique
-    // Si no tiene campo unique, se define la pk.
-    // Pero debido a la complicacion en la logica y a la confusion que generaba se decidio dejar por defecto a la pk como campo principal siempre y definir adicionalmente a la pk los campos unique. El desarrollador debera cambiar este comportamiento manualmente.
-
   public $selectValues = array();
     //si subtype = "select_text", deben asignarse valores "text"
     //si subtype = "select_int", deben asignarse valores "int"
-
-  public $admin = true;
-  /** 
-   * Administracion
-   * si = false, no se incluye en los formularios de administracion 
-   * si = false, no se incluye en la persistencia
-   */
 
   public $exclusive = true;
   /**
@@ -106,13 +86,17 @@ abstract class Field {
   public function __construct() {
     $this->defineDataType();
     $this->defineSubtype();
-    $this->defineNotNull();
     $this->defineLength();
   }
 
   //Retornar instancia de Entity correspondiente al field
-  abstract function getEntity();
-  public function getEntityRef(){ return null; } //Retornar instancia de Entity referenciado por el field
+  public function getEntity() {
+    return $this->container->getEntity($this->entityName);
+  }
+
+  public function getEntityRef(){
+    return ($this->entityRefName) ? $this->container->getEntity($this->entityRefName) : null;
+  }
   /**
    * Debe sobrescribirse para aquellos fields que sean fk
    */
@@ -124,19 +108,13 @@ abstract class Field {
   public function getDataType(){ return $this->dataType; }
   public function getSelectValues(){ return $this->selectValues; }
   public function getType() { return $this->type; }
-  public function isMain(){ return $this->main; }
-  public function isNotNull(){ return $this->notNull; }
-  public function isUnique(){ return $this->unique; }  
-  public function isAdmin(){ return $this->admin; }
   public function isExclusive(){ return $this->exclusive; }
-  
-  public function isUniqueMultiple(){ 
-    $fields = $this->getEntity()->getFieldsUniqueMultiple();
-    foreach($fields as $field){
-      if($this->getName() == $field->getName()) return true;
-    }
-    return false;
-  }
+
+  public function isAdmin(){  return (in_array($this->getName(), $this->getEntity()->admin)) ? true : false; }
+  public function isNotNull(){  return (in_array($this->getName(), $this->getEntity()->notNull)) ? true : false; }
+  public function isUnique(){ return (in_array($this->getName(), $this->getEntity()->unique)) ? true : false; }
+  public function isMain(){ return (in_array($this->getName(), $this->getEntity()->main)) ? true : false; }
+  public function isUniqueMultiple(){  return (in_array($this->getName(), $this->getEntity()->uniqueMultiple)) ? true : false; }
 
   public function getAlias($format = null) {
     switch($format){
@@ -160,12 +138,6 @@ abstract class Field {
       case "_.":  return $this->getEntity()->getName() . "." . $this->getName();
 
       default: return $this->name;
-    }
-  }
-
-  protected function defineNotNull(){
-    if ( is_null($this->notNull) ) {
-      $this->notNull = ( ( $this->subtype == "checkbox" ) ) ? true : false;
     }
   }
 

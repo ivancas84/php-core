@@ -206,8 +206,8 @@ class Container {
       require_once($dir.$name);
       $className = snake_case_to("XxYy", $entity) . "Rel";
     
-    } elseif (file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/_".$dir.$name)) {
-      require_once("_".$dir.$name);
+    } elseif (file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir."_".$name)) {
+      require_once($dir."_".$name);
       $className = "_".snake_case_to("XxYy", $entity) . "Rel";
     
     } else {

@@ -10,12 +10,12 @@ class StructTools {
     return $fields;
   }
 
-  public static function getFieldsUniqueNoPk($entity){
-    $unique = array();
+  public static function getFieldsMainNoPk($entity){
+    $fields = array();
     foreach($entity->getFieldsNoPk() as $field){
-      if($field->isUnique()) array_push($unique, $field);
+      if($field->isMain()) array_push($fields, $field);
     }
-    return $unique;
+    return $fields;
   }
 
   public static function getFieldsByName($entity, array $fieldNames){

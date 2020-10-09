@@ -196,7 +196,7 @@ class EntitySql { //Definir SQL
     $condition = $this->container->getRel($this->entityName)->conditionAux($field, $option, $value);
     if($condition) return $condition;
     
-    if(!is_array($value)) {
+    if(!is_array($value)) {      
       $condition = $this->container->getRel($this->entityName)->condition($field, $option, $value);
       if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$this->entityName}.{$field}");
       return $condition;
@@ -308,11 +308,9 @@ class EntitySql { //Definir SQL
     if($uniqueFieldsMultiple) {
       $conditionMultiple = [];
       $first = true;
-      $count = 0;
       foreach($uniqueFieldsMultiple as $field){
         foreach($params as $key => $value){
           if($key == $field->getName()) {
-            $count++;
             if($first) {
               $con = "or";
               $first = false;
@@ -324,7 +322,7 @@ class EntitySql { //Definir SQL
         }
       }
 
-      if($count == count($uniqueFieldsMultiple)) array_push($condition, $conditionMultiple);
+      if(!empty($conditionMultiple)) array_push($condition, $conditionMultiple);
     }
 
     $render = new Render();
@@ -355,18 +353,17 @@ class EntitySql { //Definir SQL
      * Ordenamiento por defecto
      * por defecto se definen los campos principales nf de la tabla principal
      * Si se incluyen campos de relaciones, asegurarse de incluir las relaciones
-     * TODO: El ordenamiento no deberia formar parte de las entidades de generacion de sql?
      */
-    $fields = $this->container->getEntity($this->entityName)->getFieldsNf();
-    $orderBy = array();
+    $e = $this->container->getEntity($this->entityName);
+    if(!empty($of = $e->getOrderDefault())) return $of;
+        
+    $fieldsMain = $e->main;
+    return array_fill_keys($fieldsMain, "asc");
+  }
 
-    foreach($fields as $field){
-      if($field->isMain()){
-        $orderBy[$field->getName()] = "asc";
-      }
-    }
-
-    return $orderBy;
+  public function orderBy(array $order = null){
+    $order = $this->initOrder($order);
+    return $this->order($order);
   }
 
   protected function initOrder(array $order) {
@@ -380,12 +377,7 @@ class EntitySql { //Definir SQL
     return array_merge($order, $orderDefault);
   }
 
-  public function orderBy(array $order = null){
-    $order = $this->initOrder($order);
-    return $this->order($order);
-  }
-
-  public function order(array $order = null){
+  protected function order(array $order = null){
     $sql = '';
 
     foreach($order as $key => $value){
