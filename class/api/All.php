@@ -6,6 +6,10 @@ require_once("class/tools/Filter.php");
 class AllApi {
   /**
    * Obtener todos los datos de una determinada entidad
+   * Cada elemento de datos generalmente corresponde a una entidad simple, 
+   * cuyos datos derivados se calculan con elementos directos
+   * Si los datos derivados dependen de un conjunto avanzado de relaciones,
+   * debe utilizarse la clase BaseApi
    */
 
   public $entityName;

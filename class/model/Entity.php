@@ -43,6 +43,8 @@ abstract class Entity {
    * Array asociativo, ejemplo: ["field1"=>"asc","field2"=>"desc",...];
    */
 
+  public $admin = [];
+
   public $main = ["id"];
   /**
    * Valores unicos

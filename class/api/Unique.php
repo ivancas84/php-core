@@ -13,7 +13,7 @@ class UniqueApi {
   public function main() {
     $params = Filter::jsonPostRequired();
     $row = $this->container->getDb()->unique($this->entityName, $params);
-    return $this->container->getSqlo($this->entityName)->json($row);
+    return $this->container->getRel($this->entityName)->json($row);
   }
 
 }
