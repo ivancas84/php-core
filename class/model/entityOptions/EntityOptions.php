@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/controller/StructTools.php");
+require_once("class/model/StructTools.php");
 
 class EntityOptions {
 

@@ -31,20 +31,24 @@ class SqlTools {
 
 
   public function dateTime($value, $format){
+    if(Validation::is_undefined($value)) return UNDEFINED;
     if(Validation::is_empty($value)) return 'null';
     return "'" . $value->format($format) . "'";
   }
 
   public function boolean($value){
+    if(Validation::is_undefined($value)) return UNDEFINED;
     return ( $value ) ? 'true' : 'false';
   }
 
   public function string($value){
+    if(Validation::is_undefined($value)) return UNDEFINED;
     if(Validation::is_empty($value)) return 'null';
     return "'" . $this->container->getDb()->escape_string($value) . "'";
   }
 
   public function number($value){
+    if(Validation::is_undefined($value)) return UNDEFINED;
     if(Validation::is_empty($value)) return 'null';
     return $value;
   }
