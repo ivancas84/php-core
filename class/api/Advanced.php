@@ -7,9 +7,6 @@ class AdvancedApi {
   /**
    * Consultas avanzadas a una entidad
    * Las consultas avanzadas pueden acceder a campos no habituales
-   * No se realiza un formato json de los campos obtenidos
-   * Se devuelve el formato de la base pudiendo no coincidir con el esperado
-   * Hacer un chequeo del valor recibido para ver si coincide con el formato esperado
    */
 
   public $entityName;

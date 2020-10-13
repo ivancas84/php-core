@@ -4,6 +4,9 @@ require_once("class/model/StructTools.php");
 
 class EntityOptions {
 
+  /**
+   * Todos los metodos en general se ejecutan comparando el valor UNDEFINED
+   */
   public $prefix = "";
   public $entity;
   
@@ -65,13 +68,11 @@ class EntityOptions {
     return $this->_fromArrayFields($row, $this->entity->getFieldNames(), $method);
   }
 
-  function _eval($fieldName, array $params = []){
-    /**
-     * @todo No deberia retornar UNDEFINED? no estoy seguro
-     */
+  function _eval($fieldName, array $params = []){    
     $count = 1;
     /**
-     * Si no se especifica count como variable independiente dispara el error Notice: Only variables should be passed by reference in C:\xampp\htdocs\call.php on line 33 field1
+     * Si no se especifica count como variable independiente, dispara el error 
+     * Notice: Only variables should be passed by reference ...
      */
 
     $method = snake_case_to("xxYy", str_replace($this->_pf(), "", $fieldName, $count));
@@ -85,7 +86,8 @@ class EntityOptions {
      */
     $count = 1;
     /**
-     * Si no se especifica count como variable independiente dispara el error Notice: Only variables should be passed by reference in C:\xampp\htdocs\call.php on line 33 field1
+     * Si no se especifica count como variable independiente, dispara el error 
+     * Notice: Only variables should be passed by reference ...
      */
 
     $method = snake_case_to("xxYy", str_replace($this->_pf(), "", $fieldName, $count));

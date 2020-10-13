@@ -108,9 +108,9 @@ abstract class Field {
   public function getDataType(){ return $this->dataType; }
   public function getSelectValues(){ return $this->selectValues; }
   public function getType() { return $this->type; }
-  public function isExclusive(){ return $this->exclusive; }
 
-  public function isAdmin(){  return (in_array($this->getName(), $this->getEntity()->admin)) ? true : false; }
+  public function isAdmin(){ return (in_array($this->getName(), $this->getEntity()->noAdmin)) ? false : true; }
+  public function isExclusive(){ return (in_array($this->getName(), $this->getEntity()->noExclusive)) ? false : true; }
   public function isNotNull(){  return (in_array($this->getName(), $this->getEntity()->notNull)) ? true : false; }
   public function isUnique(){ return (in_array($this->getName(), $this->getEntity()->unique)) ? true : false; }
   public function isMain(){ return (in_array($this->getName(), $this->getEntity()->main)) ? true : false; }
