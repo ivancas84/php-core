@@ -382,7 +382,7 @@ class EntitySql { //Definir SQL
 
     foreach($order as $key => $value){
       $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
-      $sql_ = "{$this->container->getMapping($this->entityName)->_evals($key)} IS NULL, {$this->container->getMapping($this->entityName)->_evals($key)} {$value}";
+      $sql_ = "{$this->container->getRel($this->entityName)->mapping($key)} IS NULL, {$this->container->getRel($this->entityName)->mapping($key)} {$value}";
       $sql .= concat($sql_, ', ', ' ORDER BY', $sql);
     }
 

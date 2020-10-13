@@ -6,6 +6,12 @@ require_once("class/tools/SpanishDateTime.php");
 
 
 class ValueEntityOptions extends EntityOptions {
+
+  /**
+   * Cuidado con los metodos setDefault, solo setean el valor por defecto si el campo es UNDEFINED,
+   * si es otro valor o null, son ignorados y no setean el valor por defecto.   
+   */
+
   public $_logs;
   /**
    * Logs de verificaciones
@@ -36,14 +42,17 @@ class ValueEntityOptions extends EntityOptions {
 
   public function setIdentifier($identifier){ return $this->_identifier = $identifier; }
   public function identifier($format = null){ return Format::convertCase($this->identifier, $format); }
+  public function jsonIdentifier($format = null){ return $this->identifier(); }
   public function sqlIdentifier(){ return $this->sql->string($this->identifier); }
 
   public function setCount($count){ return $this->count = $count; }
   public function count(){ return $this->count; }
+  public function jsonCount(){ return $this->count(); }
   public function sqlCount(){ return $this->sql->number($this->count); }
 
   public function setLabel($label){ $this->label = $label; }
   public function label(){ return $this->label; }
+  public function jsonLabel(){ return $this->label(); }
   public function sqlLabel(){ return $this->sql->string($this->count); }
 
   public function _equalTo(EntityValues $entityValues){
@@ -70,7 +79,5 @@ class ValueEntityOptions extends EntityOptions {
     if($strict) return (empty(array_diff_assoc($a, $b)) && empty(array_diff_assoc($b, $a)))? true : false;
     
   }
-
-
 
 }

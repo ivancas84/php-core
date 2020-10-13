@@ -4,6 +4,8 @@ require_once("function/snake_case_to.php");
 require_once("class/model/Sql.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
+require_once("function/get_entity_relations.php");
+
 
 class EntityRel {
   /**
@@ -17,7 +19,10 @@ class EntityRel {
     /**
      * Traducir campo para ser interpretado correctamente por el SQL
      */
-    if($field_ = $this->container->getMapping($this->entityName)->_eval($field)) return $field_;
+    if($f = $this->container->getMapping($this->entityName)->_eval($field)) return $f;
+    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
+      if($f = $this->container->getMapping($entityName, $prefix)->_eval($field)) return $f;
+    }
     throw new Exception("Campo no reconocido para {$this->entityName}: {$field}");
   }
   
@@ -28,28 +33,39 @@ class EntityRel {
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      */
     if($c = $this->container->getCondition($this->entityName)->_eval($field, [$option, $value])) return $c;
+    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
+      if($c = $this->container->getCondition($entityName, $prefix)->_eval($field, [$option, $value])) return $c;
+    }
   }
   
   public function conditionAux($field, $option, $value) {
     /**
-     * Condicion de field auxiliar (considera relaciones si existen)
-     * Se sobrescribe si tiene relaciones
+     * Condicion de field auxiliar
      */
     if($c = $this->container->getConditionAux($this->entityName)->_eval($field, [$option, $value])) return $c;
+    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
+      if($c = $this->container->getConditionAux($entityName, $prefix)->_eval($field, [$option, $value])) return $c;
+    }
+
   }
 
 
   public function fields(){
     /**
-     * Definir sql de campos
-     * Sobrescribir si existen relaciones
+     * Definir sql de campos     
      */
-    return implode(",", $this->container->getFieldAlias($this->entityName)->_toArray());
+    $fields = [implode(",", $this->container->getFieldAlias($this->entityName)->_toArray())];
+    foreach(get_entity_relations($this->entityName) as $prefix => $entityName) 
+      array_push($fields, implode(", ", $this->container->getFieldAlias($entityName, $prefix)->_toArray()));
+    
+    return implode(',
+', $fields);
   }
 
 
 
-  public function join(Render $render){ return ""; } //Sobrescribir si existen relaciones fk u_
+  public function join(Render $render){ return "";  }
+  /** Sobrescribir si existen relaciones */
 
 
   public function json(array $row) { 

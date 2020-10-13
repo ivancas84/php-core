@@ -39,13 +39,25 @@ abstract class Entity {
 
   public $orderDefault = [];
   /**
-   * Valores por defecto par ordenamiento
+   * Valores por defecto para ordenamiento
    * Array asociativo, ejemplo: ["field1"=>"asc","field2"=>"desc",...];
+   */
+
+  public $noAdmin = [];
+  /**
+   * Valores no administrables
+   * Array, ejemplo: ["field1","field2",...];
+   */
+
+  public $noExclusive = [];
+  /**
+   * Valores no exclusivos
+   * Array, ejemplo: ["field1","field2",...];
    */
 
   public $main = ["id"];
   /**
-   * Valores unicos
+   * Valores principales
    * Array, ejemplo: ["field1","field2",...];
    */
 
@@ -233,12 +245,7 @@ abstract class Entity {
   public function hasRelationsU_(){ return (count($this->getFieldsU_())) ? true : false; }
   public function hasRelationsRef(){ return (count($this->getFieldsRef())) ? true : false; }
 
-  public function getFieldNames(){ //pk, nf, fk
-    $fields = $this->getFields();
-    $names = [];
-    foreach($fields as $field) array_push($names, $field->getName());
-    return $names;
-  }
+  public function getFieldNames(){ return array_merge(["id"], $this->nf, $this->mu, $this->_u); }
 
   public function getOrderDefault() { return $this->orderDefault; }
 

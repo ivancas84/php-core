@@ -1,33 +1,52 @@
 <?php
 
-require_once("class/model/Ma.php");
 require_once("function/snake_case_to.php");
 require_once("class/tools/Logs.php");
 
 class Container {
+  /**
+   * Si una clase debe utilizar container, 
+   * entonces es un controlador o alguno de sus derivados (api, import, etc.).
+   * Si una clase debe utilizar container, 
+   * entonces debe instanciarse desde container y no deberia tener elementos static.   
+   * Si un elemento puede almacenarse en un atributo estatico para ser reutilizado,
+   * debe definirse un método de instanciacion exclusivo en el contenedor
+   */
   static $db = null;
   static $modelTools = null;
   static $sqlTools = null;
+  static $persist = null;
 
-  static $sqlo = [];
-  static $rel = [];
-  static $entity = [];
-  static $field = [];
+  static $sqlo = []; //las instancias dependen de la entidad
+  static $rel = []; //las instancias dependen de la entidad
+  static $entity = []; //las instancias dependen de la entidad
+  static $field = []; //las instancias dependen de la entidad
   static $structure = false; //flag para indicar que se generaron todas las entidades
 
   public function getDb() {
     if (isset(self::$db)) return self::$db;
+    require_once("class/model/Ma.php");
     $c = new Ma();
     $c->container = $this;
     return self::$db = $c;
   }
 
   public function getMt(){
-    require_once("class/controller/ModelTools.php");
     if (isset(self::$modelTools)) return self::$modelTools;
+    require_once("class/controller/ModelTools.php");
     $c = new ModelTools();
     $c->container = $this;
     return self::$modelTools = $c;
+  }
+
+  public function getModelTools() { $this->getMt(); }
+
+  public function getPersist() {
+    if (isset(self::$persist)) return self::$persist;
+    require_once("class/model/Persist.php");
+    $c = new Persist();
+    $c->container = $this;
+    return self::$persist = $c;
   }
 
   public function getStructure(){
@@ -60,6 +79,8 @@ class Container {
 
 
   public function getField($entity, $field){
+    if (isset(self::$field[$entity.$field])) return self::$field[$entity.$field]; 
+
     $dir = "class/model/field/" . snake_case_to("xxYy", $entity) . "/";
     $name = snake_case_to("XxYy", $field) . ".php";
     $prefix = "";
@@ -70,10 +91,9 @@ class Container {
     }
     
     $className = $prefix."Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);
-    if (isset(self::$field[$className])) return self::$field[$className]; 
     $c = new $className;
     $c->container = $this;
-    return self::$field[$className] = $c; 
+    return self::$field[$entity.$field] = $c; 
   }
 
   public function getApi($controller, $entityName){
@@ -156,6 +176,8 @@ class Container {
   }
 
   public function getSqlo($entity) {
+    if (isset(self::$sqlo[$entity])) return self::$sqlo[$entity];
+
     $dir = "class/model/sqlo/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prefix = "";
@@ -168,12 +190,11 @@ class Container {
       require_once("class/model/Sqlo.php");
       $className = "EntitySqlo";
     }
-    
-    if (isset(self::$sqlo[$className])) return self::$sqlo[$className];
+
     $c = new $className;
     $c->entityName = $entity;
     $c->container = $this;
-    return self::$sqlo[$className] = $c;
+    return self::$sqlo[$entity] = $c;
   }
 
   
@@ -199,6 +220,8 @@ class Container {
   }
 
   public function getRel($entity) {
+    if (isset(self::$rel[$entity])) return self::$rel[$entity];
+
     $dir = "class/model/rel/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     
@@ -214,26 +237,11 @@ class Container {
       require_once("class/model/Rel.php");
       $className = "EntityRel";
     }
-    
-    if (isset(self::$sqlo[$className])) return self::$sqlo[$className];
+      
     $c = new $className;
     $c->entityName = $entity;
     $c->container = $this;
-    return self::$sqlo[$className] = $c;
-
-
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prefix = "_";
-      require_once($dir.$prefix.$name);
-    }
-    
-    $className = $prefix.snake_case_to("XxYy", $entity) . "Rel";
-    if (isset(self::$rel[$className])) return self::$rel[$className];
-    $c = new $className;
-    $c->entityName = $entity;
-    $c->container = $this;
-    return self::$rel[$className] = $c;
+    return self::$rel[$entity] = $c;
   }
 
 

@@ -4,20 +4,11 @@ require_once("class/model/Render.php");
 require_once("class/tools/Filter.php");
 
 
-class TestApi {
+class TestApi extends BaseApi {
   /**
-   * Controlador base
-   * Todos los controladores que no se adaptan a las estructuras existentes pueden definirse con Base
-   * El usuario puede retornar el valor que desee 
-   * Data esta pensado para ser llamado a traves de una api
-   * En el caso de que no se utilice una api, conviene utilizar directamente ModelTools.
+   * Controlador de prueba
    **/
-  
-  public $entityName; 
-  public $container;
 
-  public function main(){
-    return $this->entityName;
-  }
+  public function main(){ return $this->entityName; }
 
 }

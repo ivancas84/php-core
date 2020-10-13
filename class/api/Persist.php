@@ -22,8 +22,8 @@ class PersistApi {
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
     
-    $persistSql = $this->container->getControllerEntity("persist_sql", $this->entityName);
-    $persist = $persistSql->main($data);
+    $p = $this->container->getPersist();
+    $persist = $p->id($this->entityName, $data);
     $this->container->getDb()->multi_query_transaction_log($persist["sql"]);
     return ["id" => $persist["id"], "detail" => [$this->entityName.$persist["id"]]];
   }

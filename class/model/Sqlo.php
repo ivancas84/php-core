@@ -15,6 +15,7 @@ class EntitySqlo {
   public $entityName;
 
   public function all($render = NULL) {
+    
     $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
 {$this->container->getRel($this->entityName)->fields()}
@@ -48,7 +49,7 @@ class EntitySqlo {
 {$this->container->getMapping($this->entityName)->id()}
 {$this->container->getSql($this->entityName)->fromSubSql($r)}
 {$this->container->getRel($this->entityName)->join($r)}
-" . concat($this->container->getRel($this->entityName)->condition($r), 'WHERE ') . "
+" . concat($this->container->getSql($this->entityName)->condition($r), 'WHERE ') . "
 {$this->container->getSql($this->entityName)->orderBy($r->getOrder())}
 {$this->container->getSql($this->entityName)->limit($r->getPage(), $r->getSize())}
 ";
@@ -155,7 +156,7 @@ WHERE id IN ({$ids_});
 {$this->container->getRel($this->entityName)->join($r)}
 WHERE
 {$conditionUniqueFields}
-" . concat($this->container->getRel($this->entityName)->condition($r), 'AND ') . "
+" . concat($this->container->getSql($this->entityName)->condition($r), 'AND ') . "
 ";
   }
 
@@ -163,6 +164,7 @@ WHERE
     /**
      * El conjunto de valores debe estar previamente formateado
      */
+
     $fns = StructTools::getFieldNamesExclusive($this->container->getEntity($this->entityName));
     $sql = "
   INSERT INTO " . $this->container->getEntity($this->entityName)->sn_() . " (";    

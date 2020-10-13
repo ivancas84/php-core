@@ -14,8 +14,8 @@ class GetAllApi {
     $ids = Filter::jsonPostRequired(); //siempre deben recibirse ids
     if(empty($ids)) throw new Exception("Identificadores no definidos");
     $rows = $this->container->getDb()->getAll($this->entityName, $ids);
-    $sqlo = $this->container->getSqlo($this->entityName);
-    foreach($rows as &$row) $row = $sqlo->json($row);
+    $rel = $this->container->getRel($this->entityName);
+    foreach($rows as &$row) $row = $rel->json($row);
     return $rows;
     
   }
