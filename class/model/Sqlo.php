@@ -30,6 +30,7 @@ class EntitySqlo {
 
   public function getAll(array $ids, $render = NULL) {
     $r = Render::getInstance($render);
+    $r->setSize(false); //se asigna size 0, la cantidad esta definida por los ids recibidos
     //Para dar soporte a distintos tipos de id, se define la condicion de ids a traves del metodo conditionAdvanced en vez de utilizar IN como se hacia habitualmente
     $advanced = [];
     for($i = 0; $i < count($ids); $i++) {
@@ -62,7 +63,7 @@ class EntitySqlo {
 
     $fieldsQuery_ = [];
     foreach($fields as $field){
-      $f = $this->container->getMapping($this->entityName)->_evals($field);
+      $f = $this->container->getRel($this->entityName)->mapping($field);
       array_push($fieldsQuery_, "{$f} AS {$field}");
     }
 
