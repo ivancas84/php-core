@@ -62,30 +62,21 @@ class EntityRel {
 ', $fields);
   }
 
-
-
-  public function join(Render $render){ return "";  }
-  /** Sobrescribir si existen relaciones */
-
-
-  public function json(array $row) { 
-    /**
-     * Recorre la cadena de relaciones del resultado de una consulta 
-     * y retorna el resultado en un arbol de array asociativo en formato json.
-     * Ver comentarios del metodo values para una descripcion del valor retornado
-     * Este metodo debe sobscribirse en el caso de que existan relaciones     
-     */ 
-    return $this->container->getValue($this->entityName)->_fromArray($row, "set")->_toArray("json");
+  public function join(Render $render){
+    return $this->container->getRelJoin($this->entityName)->main($render);
   }
 
-  public function value(array $row){
+  public function json($row){
+    return $this->container->getRelJson($this->entityName)->main($row);
+  }
+
+  public function value($row){
     /**
      * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
      * El resultado es almacenado en un array asociativo.
-     * Las claves del array son nombres representativos de la entidad que contiene
+     * Las claves del array son identificadores unicos representativos del nombre del campo
      * Las claves se forman a partir del nombre de la clave foranea
      * Se asigna un numero incremental a la clave en el caso de que se repita
-     * Este metodo debe sobrescribirse en el caso de que existan relaciones
      * A diferencia de otros métodos que retornan valores, 
      * values utiliza un array asociativo debido a que el valor es un objeto
      * facilita el acceso directo desde la llave por ejemplo $resultado["nombre_fk"]->metodo()
@@ -94,11 +85,6 @@ class EntityRel {
      * por ejemplo $resultado["nombre_fk] = "id_fk"
      * $resultado["_nombre_fk"] = array asociativo con los valores de la entidad para el id "id_fk"
      */
-    $row_ = [];
-    $row_[$this->entityName] = $this->container->getValue($this->entityName)->_fromArray($row, "set");
-    return $row_;
+    return $this->container->getRelValue($this->entityName)->main($row);
   }
-
-
-
 }

@@ -219,6 +219,48 @@ class Container {
     return $sql;    
   }
 
+  public function getRelJoin($entityName, $render){
+    /**
+     * No almacenar el variable estatica
+     * $render es almacenado en un atributo, por lo tanto se mantendria en memoria un valor no utilizado de row
+     */
+    require_once("class/model/RelJoin.php");
+    
+    $join = new RelJoin;
+    $join->container = $this;
+    $join->render = $render;
+    $join->entityName = $entityName;
+    return $join;    
+  }
+
+  public function getRelJson($entityName, $row){
+    /**
+     * No almacenar el variable estatica
+     * $row es almacenado en un atributo, por lo tanto se mantendria en memoria un valor no utilizado de row
+     */
+    require_once("class/model/RelJson.php");
+    
+    $json = new RelJson;
+    $json->row = $row;
+    $json->container = $this;
+    $json->entityName = $entityName;
+    return $json;    
+  }
+
+  public function getRelValue($entityName, $row){
+    /**
+     * No almacenar el variable estatica
+     * $row es almacenado en un atributo, por lo tanto se mantendria en memoria un valor no utilizado de row
+     */
+    require_once("class/model/RelValue.php");
+    
+    $c = new RelValue;
+    $c->row = $row;
+    $c->container = $this;
+    $c->entityName = $entityName;
+    return $c;
+  }
+
   public function getRel($entity) {
     if (isset(self::$rel[$entity])) return self::$rel[$entity];
 
@@ -228,10 +270,6 @@ class Container {
     if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
       require_once($dir.$name);
       $className = snake_case_to("XxYy", $entity) . "Rel";
-    
-    } elseif (file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir."_".$name)) {
-      require_once($dir."_".$name);
-      $className = "_".snake_case_to("XxYy", $entity) . "Rel";
     
     } else {
       require_once("class/model/Rel.php");
