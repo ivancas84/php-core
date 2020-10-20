@@ -58,18 +58,25 @@ class EntitySqlo {
     return $sql;
   }
 
-  public function advanced(Render $render) { //consulta avanzada
+  public function advanced(Render $render) {
     $fields = array_merge($render->getGroup(), $render->getAggregate());
 
     $fieldsQuery_ = [];
     foreach($fields as $field){
-      $f = $this->container->getRel($this->entityName)->mapping($field);
-      array_push($fieldsQuery_, "{$f} AS {$field}");
+      $f = $this->container->getRel($this->entityName)->fieldAlias($field);
+      array_push($fieldsQuery_, $f);
     }
 
     $fieldsQuery = implode(', ', $fieldsQuery_);
 
-    $group_ = $render->getGroup();
+    $group_ = [];
+    if(!empty($render->getGroup())){
+      foreach($render->getGroup() as $field){
+        $f = $this->container->getRel($this->entityName)->mapping($field);
+        array_push($group_, $f);
+      }
+    }
+
     $group = empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
 ";
 

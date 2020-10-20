@@ -21,11 +21,7 @@ class EntityOptions {
    */
 
   function _callFields($fieldNames, $method = ""){
-		foreach($fieldNames as $fieldName){
-      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if(!method_exists($this, $call)) continue;
-			$this->$call();
-    }
+		foreach($fieldNames as $fieldName) call_user_func_array([$this, "_".$method],[$fieldName]);
     return $this;
   }
 
@@ -39,9 +35,7 @@ class EntityOptions {
      */
     $row = [];
     foreach($fieldNames as $fieldName){
-      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if(!method_exists($this, $call)) continue;
-      $r = $this->$call();
+      $r = call_user_func_array([$this, "_".$method],[$fieldName]);
       if($r !== UNDEFINED) $row[$fieldName] = $r ;
     }
 
@@ -56,9 +50,7 @@ class EntityOptions {
     if(empty($row)) return $this;
 
     foreach($fieldNames as $fieldName){
-      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if(!method_exists($this, $call)) continue;
-      if(array_key_exists($this->_pf().$fieldName, $row)) $this->$call($row[$this->_pf().$fieldName]);
+      if(array_key_exists($this->_pf().$fieldName, $row)) call_user_func_array([$this, "_".$method],[$fieldName, $row]);
     }
 
     return $this;
@@ -67,31 +59,5 @@ class EntityOptions {
   function _fromArray(array $row, $method = ""){
     return $this->_fromArrayFields($row, $this->entity->getFieldNames(), $method);
   }
-
-  function _eval($fieldName, array $params = []){    
-    $count = 1;
-    /**
-     * Si no se especifica count como variable independiente, dispara el error 
-     * Notice: Only variables should be passed by reference ...
-     */
-
-    $method = snake_case_to("xxYy", str_replace($this->_pf(), "", $fieldName, $count));
-    if(!method_exists($this, $method)) return;
-    return call_user_func_array(array($this, $method), $params);
-  }
-
-  function _evals($fieldName, array $params = []){
-    /**
-     * _eval estricto
-     */
-    $count = 1;
-    /**
-     * Si no se especifica count como variable independiente, dispara el error 
-     * Notice: Only variables should be passed by reference ...
-     */
-
-    $method = snake_case_to("xxYy", str_replace($this->_pf(), "", $fieldName, $count));
-    return call_user_func_array(array($this, $method), $params);
-  }
-
+  
 }

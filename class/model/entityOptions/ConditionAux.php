@@ -26,5 +26,9 @@ class ConditionAuxEntityOptions extends EntityOptions {
     return "({$f1} {$option} {$f2})";
   }
   
+  public function _($fieldName, $option, $value){
+    $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
+    if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$option, $value]);
+  }
 
 }
