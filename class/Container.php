@@ -224,6 +224,30 @@ class Container {
     return $sql;    
   }
 
+  public function getSqlCondition($entityName){
+    require_once("class/model/SqlCondition.php");
+    $c = new SqlCondition;
+    $c->container = $this;  
+    $c->entityName = $entityName;    
+    return $c;
+  }
+
+  public function getSqlCondition_($entityName){
+    require_once("class/model/SqlCondition_.php");
+    $c = new SqlCondition_;
+    $c->container = $this;
+    $c->entityName = $entityName;
+    return $c;
+  }
+
+  public function getSqlOrder($entityName){
+    require_once("class/model/SqlOrder.php");
+    $c = new SqlOrder;
+    $c->container = $this;
+    $c->entityName = $entityName;
+    return $c;
+  }
+
   public function getRelJoin($entityName){
     /**
      * No almacenar el variable estatica
