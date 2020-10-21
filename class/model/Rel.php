@@ -19,10 +19,13 @@ class EntityRel {
     /**
      * Traducir campo para ser interpretado correctamente por el SQL
      */
+    $f = explode("-",$field);
+    if(count($f) == 2) {
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      if($r = $this->container->getMapping($entityName, $prefix)->_($f[1])) return $r;
+    } 
     if($f = $this->container->getMapping($this->entityName)->_($field)) return $f;
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
-      if($f = $this->container->getMapping($entityName, $prefix)->_($field)) return $f;
-    }
     throw new Exception("Campo no reconocido para {$this->entityName}: {$field}");
   }
   
@@ -32,21 +35,27 @@ class EntityRel {
      * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      */
-    if($c = $this->container->getCondition($this->entityName)->_($field, $option, $value)) return $c;
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
-      if($c = $this->container->getCondition($entityName, $prefix)->_($field, $option, $value)) return $c;
-    }
+    
+    $f = explode("-",$field);
+    if(count($f) == 2) {
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      return $this->container->getCondition($entityName, $prefix)->_($f[1], $option, $value);
+    } 
+    return $this->container->getCondition($this->entityName)->_($field, $option, $value);
   }
   
   public function conditionAux($field, $option, $value) {
     /**
      * Condicion de field auxiliar
      */
+    $f = explode("-",$field);
+    if(count($f) == 2) {
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      if($c = $this->container->getConditionAux($entityName, $prefix)->_($f[1], $option, $value)) return $c;
+    } 
     if($c = $this->container->getConditionAux($this->entityName)->_($field, $option, $value)) return $c;
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
-      if($c = $this->container->getConditionAux($entityName, $prefix)->_($field, $option, $value)) return $c;
-    }
-
   }
 
 
@@ -63,15 +72,15 @@ class EntityRel {
   }
   
   public function fieldAlias($field){
-    /**
-     * Traducir campo para ser interpretado correctamente por el SQL
-     */
-    if($f = $this->container->getFieldAlias($this->entityName)->_($field)) return $f;
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
-      if($f = $this->container->getFieldAlias($entityName, $prefix)->_($field)) return $f;
-    }
-    throw new Exception("Campo no reconocido para {$this->entityName}: {$field}");
+    $f = explode("-",$field);
+    if(count($f) == 2) {      
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      return $this->container->getFieldAlias($this->entityName, $prefix)->_($f[1]);
+    } 
+    return $this->container->getFieldAlias($this->entityName)->_($field);
   }
+
   public function join(Render $render){
     return $this->container->getRelJoin($this->entityName)->main($render);
   }

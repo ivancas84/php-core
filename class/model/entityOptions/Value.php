@@ -16,45 +16,14 @@ class ValueEntityOptions extends EntityOptions {
    * Logs de verificaciones
    */
 
-  public $sql;
+  public $_sql;
   /**
    * SqlTools
    */
 
-  public $identifier = UNDEFINED; 
-  /** 
-   * El identificador puede estar formado por campos de la tabla actual o relacionadas
-   */
-
-  public $count = UNDEFINED;
-  /**
-   * Field count
-   */
-
-  public $label = UNDEFINED;
-  /**
-   * Field count
-   */
-  
   public $_value = [];
-
   
   public function _getLogs(){ return $this->_logs; }
-
-  public function setIdentifier($identifier){ return $this->_identifier = $identifier; }
-  public function identifier($format = null){ return Format::convertCase($this->identifier, $format); }
-  public function jsonIdentifier($format = null){ return $this->identifier(); }
-  public function sqlIdentifier(){ return $this->sql->string($this->identifier); }
-
-  public function setCount($count){ return $this->count = $count; }
-  public function count(){ return $this->count; }
-  public function jsonCount(){ return $this->count(); }
-  public function sqlCount(){ return $this->sql->number($this->count); }
-
-  public function setLabel($label){ $this->label = $label; }
-  public function label(){ return $this->label; }
-  public function jsonLabel(){ return $this->label(); }
-  public function sqlLabel(){ return $this->sql->string($this->count); }
 
   public function _equalTo(EntityValues $entityValues){
     /**
@@ -98,7 +67,7 @@ class ValueEntityOptions extends EntityOptions {
       case "count": return "_setInteger";      
       case "year": case "y": return "_setYear"; 
       case "date": case "ym": case "hm": case "time": return "_setDatetime"; 
-      default: return $this->defineSet($param[0]);
+      default: return $this->_defineSet($param[0]);
     }
   }
 
@@ -129,7 +98,10 @@ class ValueEntityOptions extends EntityOptions {
       return $this->_value[$fieldName] = $p;
   }
 
-  protected function _setString($fieldName, $p) { return $this->_value[$fieldName] = (string)$p; }
+  protected function _setString($fieldName, $p) {
+    $this->_value[$fieldName] = (string)$p; 
+    return $this->_value[$fieldName];
+  }
   protected function _setInteger($fieldName, $p) { return $this->_value[$fieldName] = (is_null($p)) ? null : intval($p); }
   protected function _setFloat($fieldName, $p) { return $this->_value[$fieldName] = (is_null($p)) ? null : floatval($p); }
   protected function _setBoolean($fieldName, $p) { return $this->_value[$fieldName] = settypebool($p); }
@@ -139,18 +111,18 @@ class ValueEntityOptions extends EntityOptions {
     if(count($param) == 1) {
       switch($this->container->getField($this->entityName, $param[0])->getDataType()) {
         case "year": return "_setYear";
-        case "time": case "date": case "timestamp": return "_setFastDatetime";
-        case "integer": return "_setFastInteger";
-        case "float": return "_setFastFloat";
-        case "boolean": return "_setFastBoolean";
-        default: return "_setFastString";
+        case "time": case "date": case "timestamp": return "_fastSetDatetime";
+        case "integer": return "_fastSetInteger";
+        case "float": return "_fastSetFloat";
+        case "boolean": return "_fastSetBoolean";
+        default: return "_fastSetString";
       }
     } 
 
     switch($param[1]){
-      case "count": return "_setFastInteger";      
+      case "count": return "_fastSetInteger";      
       case "year": case "y": return "_setYear"; 
-      case "date": case "ym": case "hm": case "time": return "_setFastDatetime";     
+      case "date": case "ym": case "hm": case "time": return "_fastSetDatetime";     
       default: return $this->defineFastSet($param[0]);
     }
   }
@@ -164,7 +136,7 @@ class ValueEntityOptions extends EntityOptions {
      */
     $m = "fastSet".snake_case_to("XxYy", str_replace(".","_",$fieldName));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$value]);
-    $m = $this->_defineValueFastSet($fieldName);
+    $m = $this->_defineFastSet($fieldName);
     return call_user_func_array(array($this, $m), [$fieldName, $value]); 
   }
 
@@ -181,8 +153,8 @@ class ValueEntityOptions extends EntityOptions {
     $field = $this->container->getField($this->entityName, $param[0]);
     switch($field->getDataType()){
       case "date": case "timestamp": case "year": case "time": 
-        return (strpos(strtolower($field->getDefault()), "current") !== false) ? date('c') : $field->getDefault();      
-      default: return $this->getDefault();
+        return (strpos(strtolower($field->getDefault()), "current") !== false) ? date('c') : $field->getDefault();
+      default: return $field->getDefault();
     }
   }
 
@@ -259,7 +231,7 @@ class ValueEntityOptions extends EntityOptions {
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$format]);
     $m = $this->_defineGet($fieldName);
     
-    return call_user_func_array(array($this, "_get_".$m), [$fieldName, $format]); 
+    return call_user_func_array(array($this, $m), [$fieldName, $format]); 
   }
 
   protected function _getDatetime($fieldName, $format){ return Format::date($this->_value[$fieldName], $format); }
@@ -335,15 +307,15 @@ class ValueEntityOptions extends EntityOptions {
     return call_user_func_array(array($this, $m), [$fieldName]);    
   }
 
-  protected function _sqlDate($fieldName){ return $this->sql->dateTime($this->_value[$fieldName], "Y-m-d"); }
-  protected function _sqlTime($fieldName){ return $this->sql->dateTime($this->_value[$fieldName], "H:i:s"); }
-  protected function _sqlTimestamp($fieldName){ return $this->sql->dateTime($this->_value[$fieldName], "Y-m-d H:i:s"); }
-  protected function _sqlHm($fieldName){ return $this->sql->dateTime($this->_value[$fieldName], "H:i"); }
-  protected function _sqlYm($fieldName){ return $this->sql->dateTime($this->_value[$fieldName], "Y-m"); }
-  protected function _sqlY($fieldName){ return $this->sql->dateTime($this->_value[$fieldName], "Y"); }
-  protected function _sqlBoolean($fieldName){ return $this->sql->boolean($this->_value[$fieldName], "Y-m"); }
-  protected function _sqlNumber($fieldName){ return $this->sql->number($this->_value[$fieldName], "Y-m"); }
-  protected function _sqlString($fieldName){ return $this->sql->string($this->_value[$fieldName], "Y-m"); }
+  protected function _sqlDate($fieldName){ return $this->_sql->dateTime($this->_value[$fieldName], "Y-m-d"); }
+  protected function _sqlTime($fieldName){ return $this->_sql->dateTime($this->_value[$fieldName], "H:i:s"); }
+  protected function _sqlTimestamp($fieldName){ return $this->_sql->dateTime($this->_value[$fieldName], "Y-m-d H:i:s"); }
+  protected function _sqlHm($fieldName){ return $this->_sql->dateTime($this->_value[$fieldName], "H:i"); }
+  protected function _sqlYm($fieldName){ return $this->_sql->dateTime($this->_value[$fieldName], "Y-m"); }
+  protected function _sqlY($fieldName){ return $this->_sql->dateTime($this->_value[$fieldName], "Y"); }
+  protected function _sqlBoolean($fieldName){ return $this->_sql->boolean($this->_value[$fieldName], "Y-m"); }
+  protected function _sqlNumber($fieldName){ return $this->_sql->number($this->_value[$fieldName], "Y-m"); }
+  protected function _sqlString($fieldName){ return $this->_sql->string($this->_value[$fieldName], "Y-m"); }
 
   protected function _defineCheck($fieldName){
     $param = explode(".",$fieldName);
@@ -356,8 +328,8 @@ class ValueEntityOptions extends EntityOptions {
         case "boolean"; $ret["type"] = "boolean"; break;
         case "integer": break;
         default: 
-          if($field->getLength()) $ret["max"] = $l;
-          if($field->getMinLength()) $ret["min"] = $l;
+          if($field->getLength()) $ret["max"] = $field->getLength();
+          if($field->getMinLength()) $ret["min"] = $field->getMinLength();
           return $ret;
       }
     } else {
@@ -387,7 +359,7 @@ class ValueEntityOptions extends EntityOptions {
     foreach($m as $check => $value){
       switch($check) {
         case "type": case "required": call_user_func(array($v, $value)); break;
-        case "min": case "max": call_user_func_array(array($v, $key), [$value]); break;
+        case "min": case "max": call_user_func_array(array($v, $check), [$value]); break;
       }
     }
 

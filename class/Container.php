@@ -82,17 +82,22 @@ class Container {
     if (isset(self::$field[$entity.$field])) return self::$field[$entity.$field]; 
 
     $dir = "class/model/field/" . snake_case_to("xxYy", $entity) . "/";
-    $name = snake_case_to("XxYy", $field) . ".php";
+    $name = snake_case_to("XxYy", $field) . ".php";    
     $prefix = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prefix = "_";
-      require_once($dir.$prefix.$name);
+    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
+      require_once($dir.$name);
+      $className = "Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);  
+    } elseif(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir."_".$name)) {
+      require_once($dir."_".$name);
+      $className = "_Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);  
+    } else {
+      require_once("class/model/field/".$name);
+      $className = "_Field".snake_case_to("XxYy", $field);  
     }
     
-    $className = $prefix."Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);
     $c = new $className;
     $c->container = $this;
+    $c->entityName = $entity;
     return self::$field[$entity.$field] = $c; 
   }
 
@@ -298,6 +303,15 @@ class Container {
     $c->entity = $this->getEntity($entityName);
     return $c;    
   }
+
+  public function getMappingLabel($entityName, $prefix = ""){
+    require_once("class/model/entityOptions/MappingLabel.php");    
+    $c = new MappingLabelEntityOptions;
+    if($prefix) $c->prefix = $prefix;
+    $c->entityName = $entityName;
+    $c->container = $this;
+    return $c;    
+  }
   
   public function getCondition($entityName, $prefix = ""){
     $dir = "class/model/condition/";
@@ -378,9 +392,9 @@ class Container {
     $c = new $className;
     if($prefix) $c->prefix = $prefix;
     $c->container = $this;
-    $c->entity = $this->getEntity($entityName);
+    //$c->entity = $this->getEntity($entityName);
     $c->entityName = $entityName;
-    $c->sql = $this->getSqlTools();
+    $c->_sql = $this->getSqlTools();
     $c->_logs = new Logs();
     return $c;    
   }

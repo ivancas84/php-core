@@ -14,7 +14,7 @@ class FieldAliasEntityOptions extends EntityOptions {
      */
     $m = snake_case_to("xxYy", $fieldName);
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), $params);
-    return $this->mapping->_($fieldName) . " AS \"" . $this->_pf() . $fieldName . "\""; 
+    return $this->mapping->_($fieldName) . " AS " . $this->_pf() . str_replace(".","_",$fieldName); 
   }
 
   function _toArrayFields($fieldNames, $method = ""){

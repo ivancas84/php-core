@@ -15,10 +15,17 @@ class MappingEntityOptions extends EntityOptions {
   }
 
   public function label(){
-    /**
-     * @todo Desarrollar metodo recursivo que permita retornar el label
-     */
-    return $this->_("id");
+    return $this->container->getMappingLabel($this->entityName, $this->prefix)->main();
+  }
+
+  public function search(){
+
+    $fields = $this->container->getEntity($this->entityName)->nf;
+
+    array_walk($fields, function(&$field) { 
+      $field = $this->container->getMapping($this->entityName, $this->prefix)->_($field); });
+
+    return "CONCAT_WS(' ', " . implode(",", $fields). ")";
   }
 
   public function _($fieldName, array $params = []){
@@ -43,6 +50,7 @@ class MappingEntityOptions extends EntityOptions {
   public function _avg($field) { return "AVG({$this->_pt()}.{$field})"; }
   public function _min($field) { return "MIN({$this->_pt()}.{$field})"; }
   public function _max($field) { return "MAX({$this->_pt()}.{$field})"; }
+  public function _sum($field) { return "SUM({$this->_pt()}.{$field})"; }
   public function _count($field) { return "COUNT({$this->_pt()}.{$field})"; }
   public function _exists($field) { return $this->_default($field); }
 

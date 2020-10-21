@@ -34,8 +34,8 @@ class EntitySql { //Definir SQL
     $ids_ = [];
     for($i = 0; $i < count($ids); $i++) {
       $value = $this->container->getValue($this->entityName);
-      $value->setId($ids[$i]);
-      array_push($ids_, $value->sqlId());
+      $value->_set("id",$ids[$i]);
+      array_push($ids_, $value->_sql("id"));
     }
     return implode(', ', $ids_);
   }
@@ -188,7 +188,7 @@ class EntitySql { //Definir SQL
     return ["condition"=>"(".$condition.")", "mode"=>$modeReturn];
   }
 
-  protected function conditionField($field, $option, $value){
+  protected function conditionField($field, $option, $value){    
     /**
      * se verifica inicialmente la condicion auxiliar. 
      * las condiciones auxiliares no siguen la estructura definida de condicion

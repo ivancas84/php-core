@@ -15,8 +15,8 @@ class EntitySqlo {
   public $entityName;
 
   public function all($render = NULL) {
+    $r = Render::getInstance($render);    
     
-    $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
 {$this->container->getRel($this->entityName)->fields()}
 {$this->container->getSql($this->entityName)->fromSubSql($r)}
@@ -47,14 +47,13 @@ class EntitySqlo {
   public function ids($render = NULL) {
     $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
-{$this->container->getMapping($this->entityName)->id()}
+{$this->container->getMapping($this->entityName)->_('id')}
 {$this->container->getSql($this->entityName)->fromSubSql($r)}
 {$this->container->getRel($this->entityName)->join($r)}
 " . concat($this->container->getSql($this->entityName)->condition($r), 'WHERE ') . "
 {$this->container->getSql($this->entityName)->orderBy($r->getOrder())}
 {$this->container->getSql($this->entityName)->limit($r->getPage(), $r->getSize())}
 ";
-
     return $sql;
   }
 
