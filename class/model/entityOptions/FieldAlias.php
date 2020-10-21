@@ -17,16 +17,4 @@ class FieldAliasEntityOptions extends EntityOptions {
     return $this->mapping->_($fieldName) . " AS " . $this->_pf() . str_replace(".","_",$fieldName); 
   }
 
-  function _toArrayFields($fieldNames, $method = ""){
-    /**
-     * Por cuestiones operativas, el array resultante no define prefijo
-     */
-    $row = [];
-    foreach($fieldNames as $fieldName){
-      $r = $this->_($fieldName);
-      if($r !== UNDEFINED) $row[$fieldName] = $r ;
-    }
-
-    return $row;
-  }
 }

@@ -7,6 +7,7 @@ class ConditionEntityOptions extends EntityOptions {
 
   public $mapping;
   public $value;
+  public $sql;
 
   protected function labelSearch($option, $value){
      /**
@@ -58,7 +59,7 @@ class ConditionEntityOptions extends EntityOptions {
     if($c = $this->sql->exists($field, $option, $value)) return $c;
     if($c = $this->sql->approx($field, $option, $value)) return $c;
     $this->value->_set($fieldName, $value);  
-    if(!$this->value->_check($fieldName)) throw new Exception("Valor incorrecto: " . $field . " ". $option . " " .$value);
+    if(!$this->value->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _string: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
     return "({$field} {$option} {$this->value->_sql($fieldName)}) ";  
   }
 
@@ -66,7 +67,7 @@ class ConditionEntityOptions extends EntityOptions {
     $field = $this->mapping->_($fieldName);
     if($c = $this->sql->exists($field, $option, $value)) return $c;
     $this->value->_set($fieldName, $value);
-    if(!$this->value->_check($fieldName)) throw new Exception("Valor incorrecto: " . $field . " ". $option . " " .$value);
+    if(!$this->value->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _boolean: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
     return "({$field} {$option} {$this->value->_sql($fieldName)}) ";  
   }
 

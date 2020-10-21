@@ -394,8 +394,8 @@ class Container {
     $c->container = $this;
     //$c->entity = $this->getEntity($entityName);
     $c->entityName = $entityName;
-    $c->_sql = $this->getSqlTools();
-    $c->_logs = new Logs();
+    $c->sql = $this->getSqlTools();
+    $c->logs = new Logs();
     return $c;    
   }
 

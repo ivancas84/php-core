@@ -19,12 +19,8 @@ class MappingEntityOptions extends EntityOptions {
   }
 
   public function search(){
-
     $fields = $this->container->getEntity($this->entityName)->nf;
-
-    array_walk($fields, function(&$field) { 
-      $field = $this->container->getMapping($this->entityName, $this->prefix)->_($field); });
-
+    array_walk($fields, function(&$field) { $field = $this->container->getMapping($this->entityName, $this->prefix)->_($field); });
     return "CONCAT_WS(' ', " . implode(",", $fields). ")";
   }
 
