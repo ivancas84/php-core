@@ -226,9 +226,10 @@ class ValueEntityOptions extends EntityOptions {
      *   _get("nombre", "Xx Yy")
      *   _get("nombre.max");
      */
-    if(!array_key_exists($fieldName, $this->value)) return UNDEFINED;
+
     $m = "get".snake_case_to("XxYy", str_replace(".","_",$fieldName));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$format]);
+    if(!array_key_exists($fieldName, $this->value)) return UNDEFINED;
     $m = $this->_defineGet($fieldName);
     
     return call_user_func_array(array($this, $m), [$fieldName, $format]); 
@@ -329,7 +330,8 @@ class ValueEntityOptions extends EntityOptions {
         case "integer": break;
         default: 
           if($field->getLength()) $ret["max"] = $field->getLength();
-          if($field->getMinLength()) $ret["min"] = $field->getMinLength();
+          if($field->getMin()) $ret["min"] = $field->getMin();
+          if($field->getMax()) $ret["max"] = $field->getMax();
           return $ret;
       }
     } else {
