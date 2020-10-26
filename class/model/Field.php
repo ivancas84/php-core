@@ -19,15 +19,18 @@ abstract class Field {
   
   public $length = null;
   /**
-   * longitud maxima del field
-   * false: El dato no tiene definida longitud
+   * longitud del field
    */
 
-  public $minLength; 
-   /**
-    * longitud minima del field
-    * false: El dato no tiene definida longitud
-    */
+  public $max = null; 
+  /**
+   * Valor maximo
+   */
+   
+  public $min = null; 
+  /**
+  * valor minimo
+  */
 
   public $type;
   /**
@@ -108,7 +111,8 @@ abstract class Field {
   public function getDefault(){ return $this->default; }
   public function getFieldType(){ return $this->fieldType; }
   public function getLength(){ return $this->length; }
-  public function getMinLength(){ return $this->minLength; }
+  public function getMax(){ return $this->max; }
+  public function getMin(){ return $this->min; }
   public function getSubtype(){ return $this->subtype; }
   public function getDataType(){ return $this->dataType; }
   public function getSelectValues(){ return $this->selectValues; }
