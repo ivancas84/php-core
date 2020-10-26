@@ -6,8 +6,6 @@ require_once("class/model/Ma.php");
 require_once("class/model/Sqlo.php");
 require_once("class/tools/Validation.php");
 
-require_once("function/stdclass_to_array.php");
-
 class DeleteApi {
   /**
    * Comportamiento general de eliminacion
