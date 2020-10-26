@@ -30,12 +30,12 @@ class MappingEntityOptions extends EntityOptions {
      *   _("nombre")
      *   _("fecha_alta.max");
      *   _("edad.avg")
-     */
-    $m = snake_case_to("xxYy", $fieldName);
+     */    
+    $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), $params);
 
     $p = explode(".",$fieldName);
-    $m = (count($p) == 1) ? "_default" : "_".$p[1];
+    $m = (count($p) == 1) ? "_default" : "_".snake_case_to("xxYy", $p[1]);
     return call_user_func_array(array($this, $m), [$p[0]]); 
   }
 
@@ -49,8 +49,7 @@ class MappingEntityOptions extends EntityOptions {
   public function _sum($field) { return "SUM({$this->_pt()}.{$field})"; }
   public function _count($field) { return "COUNT({$this->_pt()}.{$field})"; }
   public function _exists($field) { return $this->_default($field); }
-
- 
+  public function _isSet($field) { return $this->_default($field); }
 
 }
 
