@@ -1,7 +1,5 @@
 <?php
 
-require_once("function/stdclass_to_array.php");
-
 class Filter {
   /**
    * Administracion de parametros
@@ -92,13 +90,13 @@ class Filter {
     
   public static function jsonPost(){ 
     $data = file_get_contents("php://input");
-    return stdclass_to_array(json_decode($data));
+    return json_decode($data, true);
   }
 
   public static function jsonGet(){
     $data = [];
-    foreach(self::getAll() as $key => $value) $data[$key] = json_decode($value);
-    return stdclass_to_array($data);
+    foreach(self::getAll() as $key => $value) $data[$key] = json_decode($value, true);
+    return $data;
   }
   
   public static function jsonPostRequired(){
