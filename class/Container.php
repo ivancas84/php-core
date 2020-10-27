@@ -121,7 +121,6 @@ class Container {
     $c = new $className;
     $c->container = $this;
     $c->entityName = $entityName;
-    $c->action = $action;
     return $c;
   }
 
