@@ -5,15 +5,12 @@ require_once("class/tools/Filter.php");
 
 class AllApi {
   /**
-   * Obtener todos los datos de una determinada entidad
-   * Cada elemento de datos generalmente corresponde a una entidad simple, 
-   * cuyos datos derivados se calculan con elementos directos
-   * Si los datos derivados dependen de un conjunto avanzado de relaciones,
-   * debe utilizarse la clase BaseApi
+   * Obtener todos los datos de una determinada entidad   
    */
 
   public $entityName;
   public $container;
+  public $action = "all";
 
   public function main() {
     $display = Filter::jsonPostRequired(); //siempre se recibe al menos size y page

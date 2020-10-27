@@ -41,6 +41,12 @@ class Container {
 
   public function getModelTools() { $this->getMt(); }
 
+  public function getAuth(){
+    require_once("class/tools/Auth.php");
+    $c = new Auth();
+    return $c;
+  }
+
   public function getPersist() {
     if (isset(self::$persist)) return self::$persist;
     require_once("class/model/Persist.php");
@@ -101,20 +107,21 @@ class Container {
     return self::$field[$entity.$field] = $c; 
   }
 
-  public function getApi($controller, $entityName){
-    $path = "class/api/" . snake_case_to("xxYy", $controller) . "/" . snake_case_to("XxYy", $entityName) . ".php";
+  public function getApi($action, $entityName) {
+    $path = "class/api/" . snake_case_to("xxYy", $action) . "/" . snake_case_to("XxYy", $entityName) . ".php";
     if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$path)){
       require_once($path);
-      $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller). "Api";    
+      $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $action). "Api";
     } 
     else{
-      require_once("class/api/" . snake_case_to("XxYy", $controller) . ".php");
-      $className = snake_case_to("XxYy", $controller)   . "Api";    
+      require_once("class/api/" . snake_case_to("XxYy", $action) . ".php");
+      $className = snake_case_to("XxYy", $action)   . "Api";
     }
 
     $c = new $className;
     $c->container = $this;
     $c->entityName = $entityName;
+    $c->action = $action;
     return $c;
   }
 
