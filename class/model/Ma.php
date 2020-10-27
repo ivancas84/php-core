@@ -6,7 +6,7 @@
 
 require_once("class/model/Db.php");
 require_once("class/model/Render.php");
-require_once("function/toString.php");
+
 
 class Ma extends Db {
   /**
@@ -68,12 +68,14 @@ class Ma extends Db {
     return null;
   }
 
-  public function ids($entity, $render = null){
+  public function ids($entity, $render = null){    
     $sql = $this->container->getSqlo($entity)->ids($render);
     $result = $this->query($sql);
     $ids = $this->fetch_all_columns($result, 0);
     $result->free();
-    array_walk($ids, "toString"); 
+    
+    require_once("function/to_string.php");
+    array_walk($ids, "to_string"); 
     /**
      * los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
      */
