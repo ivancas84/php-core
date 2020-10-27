@@ -64,12 +64,19 @@ class Logs {
   }
 
   public function toString(){
-    return  implode(', ', array_map(function ($entry) {
-     
-    return implode(', ', $entry);
-     
-    }, $this->logs));
-    
-  }
+    $str = "";
+    $first = true;
+    foreach($this->logs as $entity => $log) {
+      (!$first) ? $str .= " | " : $first = false;
+      $str .= $entity . ": ";
 
+      $first_ = true;
+      for($i = 0; $i < count($log); $i++) {
+        (!$first_) ? $str .= " - " : $first_ = false;
+        $str .= $log[$i]["data"] . " ";
+      }
+    }
+    return $str;
+  }
+  
 }
