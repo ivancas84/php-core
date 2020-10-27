@@ -14,12 +14,16 @@ class UploadApi {
   public $entityName;
   public $sufix = "";
   public $directory;
+  public $container;
+  public $permission = "write";
     
   public function __construct (){
     $this->uploadPath = date("Y/m/");
   }
 
   public function main() {
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
     $file = Filter::fileRequired("file"); 
 
     if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");

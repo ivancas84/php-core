@@ -10,9 +10,11 @@ class AllApi {
 
   public $entityName;
   public $container;
-  public $action = "all";
+  public $permission = "read";
 
   public function main() {
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
     $display = Filter::jsonPostRequired(); //siempre se recibe al menos size y page
     $render = Render::getInstanceDisplay($display);
     $rows = $this->container->getDb()->all($this->entityName, $render);
@@ -20,5 +22,6 @@ class AllApi {
     foreach($rows as &$row) $row = $rel->json($row);
     return $rows;
   }
+
 
 }

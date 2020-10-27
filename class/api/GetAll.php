@@ -9,8 +9,12 @@ class GetAllApi {
    */
 
   public $entityName;
+  public $container;
+  public $permission = "read";
   
   public function main() {
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
     $ids = Filter::jsonPostRequired(); //siempre deben recibirse ids
     if(empty($ids)) throw new Exception("Identificadores no definidos");
     $rows = $this->container->getDb()->getAll($this->entityName, $ids);

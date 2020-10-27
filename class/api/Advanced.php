@@ -11,8 +11,11 @@ class AdvancedApi {
 
   public $entityName;
   public $container;
+  public $permission = "read";
 
   public function main() {
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
     $display = Filter::jsonPostRequired();
     $render = Render::getInstanceDisplay($display);
     $rows = $this->container->getDb()->advanced($this->entityName, $render);

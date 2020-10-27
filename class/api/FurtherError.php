@@ -12,6 +12,7 @@ abstract class FurtherErrorApi {
 
   public $entityName;
   public $container;
+  public $permission = "read";
 
   abstract public function main();
 

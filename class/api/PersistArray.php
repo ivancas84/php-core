@@ -14,8 +14,11 @@ class PersistArrayApi {
 
   public $entityName;
   public $container;
-  
+  public $permission = "write";
+
   public function main(){
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
     $data = Filter::jsonPostRequired();
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");

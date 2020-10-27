@@ -14,12 +14,15 @@ class DeleteApi {
 
   public $entityName;
   public $container;
+  public $permission = "write";
 
   public function concat($id) {
     return($this->entityName . $id);
   }  
 
   public function main(){
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
     $ids = Filter::jsonPostRequired();
     $sql = $this->container->getSqlo($this->entityName)->deleteAll($ids);
     $this->container->getDb()->multi_query_transaction_log($sql);

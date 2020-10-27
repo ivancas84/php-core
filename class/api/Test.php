@@ -5,6 +5,14 @@ class TestApi {
    * Controlador de prueba
    **/
 
-  public function main(){ return ["entity_name"=>$this->entityName]; }
+  public $entityName;
+  public $container;
+  public $permission = "read";
+
+  public function main(){ 
+    $this->container->getAuth()->authorize($entityName, $permission);
+
+    return ["entity_name"=>$this->entityName]; 
+  }
 
 }
