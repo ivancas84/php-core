@@ -329,7 +329,7 @@ class ValueEntityOptions extends EntityOptions {
         case "boolean"; $ret["type"] = "boolean"; break;
         case "integer": break;
         default: 
-          if($field->getLength()) $ret["max"] = $field->getLength();
+          if($field->getLength()) $ret["maxLength"] = $field->getLength();
           if($field->getMin()) $ret["min"] = $field->getMin();
           if($field->getMax()) $ret["max"] = $field->getMax();
           return $ret;
@@ -360,8 +360,10 @@ class ValueEntityOptions extends EntityOptions {
 
     foreach($m as $check => $value){
       switch($check) {
-        case "type": case "required": call_user_func(array($v, $value)); break;
-        case "min": case "max": call_user_func_array(array($v, $check), [$value]); break;
+        case "type": case "required": 
+          call_user_func(array($v, $value)); break;
+        case "min": case "max": case "maxLength": 
+          call_user_func_array(array($v, $check), [$value]); break;
       }
     }
 
