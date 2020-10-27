@@ -51,24 +51,21 @@ class Auth {
   }
 
   
-  public function authorize($action, $entityName, $options = ["aud"]){
-    require_once("function/get_public_scope.php");
-    if(array_key_exists($entityName, get_public_scope())
-      && in_array($action, get_public_scope()[$entityName])) return true;
+  public function authorize($entityName, $permission, $options = ["aud"]){
+    require_once("function/public_scope.php");
+    if(array_key_exists($permission, public_scope())
+      && in_array($entityName, public_scope()[$permission])) return true;
     
     $token = $this->authenticate($options);
 
-    require_once("function/get_private_scope.php");
-    if(array_key_exists($entityName, get_private_scope())
-      && in_array($action, get_private_scope()[$entityName])) return true;
+    require_once("function/private_scope.php");
+    if(array_key_exists($permission, private_scope())
+      && in_array($entityName, private_scope()[$permission])) return true;
 
-    require_once("function/get_scope.php");
-    foreach($token->scope as $rol){
-      if(!key_exists($rol, get_scope())) continue;
-      if(!key_exists($entityName, get_scope()[$rol])) continue;
-      if(in_array($action, get_scope()[$rol][$entityName])) return true;
-    }
-    return true;
+    if(array_key_exists($permission, $token->scope)
+      && in_array($entityName, $token->scope[$permission])) return true;
+
+    throw new Exception("Usuario no autorizado");
   }
 
 }
