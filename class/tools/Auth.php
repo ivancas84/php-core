@@ -1,5 +1,7 @@
 <?php
 
+use Firebase\JWT\JWT;
+require_once $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_ROOT . '/vendor/autoload.php';
 
 
 class Auth {
@@ -32,40 +34,64 @@ class Auth {
     return sha1($iss);
   }
   
-  public function authenticate($options = []) {
-    $authHeader = array_key_exists('Authorization', apache_request_headers()) ?  apache_request_headers()['Authorization'] : null;
-    list($jwt) = sscanf( $authHeader, 'Authorization: Bearer %s');
-    if(!$jwt) throw new Exception("No tiene permisos para acceder al recurso solicitado", "401");
-    
-    $token = JWT::decode($jwt, $key, array('HS256'));
+  public function login($user){
 
+    $payload = [
+       "aud" => $this->aud(),
+       "iat" => time(),
+       "exp" => time() + (60 * 60),
+       "user" => $user,
+       "scope" => user_scope()[$user]["scope"]
+    ];
+    $jwt = JWT::encode($payload, JWT_KEY);
+    //$token = JWT::decode($jwt, JWT_KEY, ['HS256']);
+    return $jwt;
+  }
+
+  public function authenticate($options = ["aud"]) {
+    $jwt = filter_input(INPUT_GET, 'jwt', FILTER_SANITIZE_SPECIAL_CHARS);
+    if(empty($jwt)) throw new Exception("Token no definido", 401);
+    $payload = JWT::decode($jwt, JWT_KEY, ['HS256']);
+    
     if(in_array("aud", $options)){
-      if($token->aud !== aud()) throw new Exception("Error al verificar token", 401);
+      if($payload->aud !== $this->aud()) throw new Exception("Error al verificar token", 401);
     }
 
     if(in_array("iss", $options)){
-      if($token->iss !== iss()) throw new Exception("Error al verificar token", 401);
+      if($payload->iss !== $this->iss()) throw new Exception("Error al verificar token", 401);
     }
 
-    return $token;
+    return $payload;
   }
 
   
-  public function authorize($entityName, $permission, $options = ["aud"]){
-    require_once("function/public_scope.php");
-    if(array_key_exists($permission, public_scope())
-      && in_array($entityName, public_scope()[$permission])) return true;
-    
+  protected function authorizePermissions($entityName, $permissions, $scope){
+    $authorized = false;
+    foreach($scope as $sc){
+      $s = explode(".", $sc);
+      if($s[0] == $entityName){
+        $authorized = true;
+        foreach(str_split($permissions) as $p_){
+          if(strpos($s[1], $p_) === false) {
+            $authorized = false;
+            break;
+          }
+        }
+        if(!$authorized) break;
+      }
+    }
+    if($authorized) return true;
+  }
+
+  public function authorize($entityName, $permissions, $options = ["aud"]){
+    require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_CONFIG . "/public_scope.php");
+    if($this->authorizePermissions($entityName, $permissions, public_scope())) return true;
     $token = $this->authenticate($options);
-
-    require_once("function/private_scope.php");
-    if(array_key_exists($permission, private_scope())
-      && in_array($entityName, private_scope()[$permission])) return true;
-
-    if(array_key_exists($permission, $token->scope)
-      && in_array($entityName, $token->scope[$permission])) return true;
-
-    throw new Exception("Usuario no autorizado");
+/*
+    require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_CONFIG . "/private_scope.php");
+    if($this->authorizePermissions($entityName, $permissions, private_scope())) return true;
+    if($this->authorizePermissions($entityName, $permissions, $token->scope)) return true;
+    throw new Exception("Usuario no autorizado");*/
   }
 
 }

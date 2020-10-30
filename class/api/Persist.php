@@ -1,7 +1,7 @@
 <?php
 
 
-require_once("class/tools/Filter.php");
+
 require_once("class/model/Ma.php");
 
 require_once("class/model/Sqlo.php");
@@ -14,12 +14,15 @@ class PersistApi {
 
   public $entityName;
   public $container;
-  public $permission = "write";
+  public $permission = "w";
 
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $data = Filter::jsonPostRequired();
+    $data = file_get_contents("php://input");
+    if(!$data) throw new Exception("Error al obtener datos de input");
+    $data = json_decode($data, true);
+
 
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
     

@@ -1,7 +1,7 @@
 <?php
 require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
-require_once("class/tools/Filter.php");
+
 
 class AdvancedApi {
   /**
@@ -11,12 +11,15 @@ class AdvancedApi {
 
   public $entityName;
   public $container;
-  public $permission = "read";
+  public $permission = "r";
 
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $display = Filter::jsonPostRequired();
+    $data = file_get_contents("php://input");
+    if(!$data) throw new Exception("Error al obtener datos de input");
+    $display = json_decode($data, true);
+
     $render = Render::getInstanceDisplay($display);
     $rows = $this->container->getDb()->advanced($this->entityName, $render);
     return $rows;

@@ -1,7 +1,7 @@
 <?php
 
 
-require_once("class/tools/Filter.php");
+
 require_once("class/model/Ma.php");
 
 require_once("class/model/Sqlo.php");
@@ -14,7 +14,7 @@ class PersistArrayApi {
 
   public $entityName;
   public $container;
-  public $permission = "write";
+  public $permission = "w";
 
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);

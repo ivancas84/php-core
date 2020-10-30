@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/tools/Filter.php");
+
 require_once("class/model/Ma.php");
 
 require_once("class/model/Sqlo.php");
@@ -14,7 +14,7 @@ class DeleteApi {
 
   public $entityName;
   public $container;
-  public $permission = "write";
+  public $permission = "w";
 
   public function concat($id) {
     return($this->entityName . $id);
@@ -23,7 +23,10 @@ class DeleteApi {
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $ids = Filter::jsonPostRequired();
+    $data = file_get_contents("php://input");
+    if(!$data) throw new Exception("Error al obtener datos de input");
+    $ids = json_decode($data, true);
+
     $sql = $this->container->getSqlo($this->entityName)->deleteAll($ids);
     $this->container->getDb()->multi_query_transaction_log($sql);
     $detail = array_map(array($this, 'concat'), $ids);    

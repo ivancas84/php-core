@@ -7,7 +7,7 @@ class TestApi {
 
   public $entityName;
   public $container;
-  public $permission = "read";
+  public $permission = "r";
 
   public function main(){ 
     $this->container->getAuth()->authorize($entityName, $permission);

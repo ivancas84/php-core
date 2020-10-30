@@ -1,7 +1,7 @@
 <?php
 require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
-require_once("class/tools/Filter.php");
+
 require_once("class/model/Sqlo.php");
 require_once("class/model/Values.php");
 
@@ -15,7 +15,7 @@ class UploadApi {
   public $sufix = "";
   public $directory;
   public $container;
-  public $permission = "write";
+  public $permission = "w";
     
   public function __construct (){
     $this->uploadPath = date("Y/m/");
@@ -24,7 +24,10 @@ class UploadApi {
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $file = Filter::fileRequired("file"); 
+    $args = array("file" => array('filter'=> FILTER_DEFAULT,  'flags' => FILTER_REQUIRE_ARRAY));
+    $files = filter_var_array($_FILES, $args);
+    if(!isset($files["file"])) throw new Exception("Archivo " . "file" . " sin definir");
+    $file = $files["file"];
 
     if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
 
