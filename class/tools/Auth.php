@@ -48,23 +48,22 @@ class Auth {
     return $jwt;
   }
 
-  public function authenticate($options = ["aud"]) {
+  public function authenticate() {
     $jwt = filter_input(INPUT_GET, 'jwt', FILTER_SANITIZE_SPECIAL_CHARS);
-    if(empty($jwt)) throw new Exception("Token no definido", 401);
+    if(empty($jwt)) throw new Exception("Usuario no autorizado", 401);
     $payload = JWT::decode($jwt, JWT_KEY, ['HS256']);
     
-    if(in_array("aud", $options)){
-      if($payload->aud !== $this->aud()) throw new Exception("Error al verificar token", 401);
+    if(isset($payload->aud)){
+      if($payload->aud !== $this->aud()) throw new Exception("Usuario no autorizado", 401);
     }
 
-    if(in_array("iss", $options)){
-      if($payload->iss !== $this->iss()) throw new Exception("Error al verificar token", 401);
+    if(isset($payload->iss)){
+      if($payload->iss !== $this->iss()) throw new Exception("Usuario no autorizado", 401);
     }
 
     return $payload;
   }
 
-  
   protected function authorizePermissions($entityName, $permissions, $scope){
     $authorized = false;
     foreach($scope as $sc){
