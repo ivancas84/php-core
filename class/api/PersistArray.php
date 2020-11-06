@@ -6,6 +6,7 @@ require_once("class/model/Ma.php");
 
 require_once("class/model/Sqlo.php");
 require_once("class/tools/Validation.php");
+require_once("function/php_input.php");
 
 class PersistArrayApi {
   /**
@@ -19,8 +20,7 @@ class PersistArrayApi {
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $data = Filter::jsonPostRequired();
-
+    $data = php_input();
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
 
     

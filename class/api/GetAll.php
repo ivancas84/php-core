@@ -10,7 +10,7 @@ class GetAllApi {
 
   public $entityName;
   public $container;
-  public $permission = "w";
+  public $permission = "r";
   
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);

@@ -3,12 +3,10 @@
 use Firebase\JWT\JWT;
 require_once $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_ROOT . '/vendor/autoload.php';
 
-
 class Auth {
 
   public $jwt = null;
   public $valid = false;
-
 
   protected function aud() {
       $aud = '';
@@ -35,7 +33,6 @@ class Auth {
   }
   
   public function login($user){
-
     $payload = [
        "aud" => $this->aud(),
        "iat" => time(),
@@ -48,10 +45,46 @@ class Auth {
     return $jwt;
   }
 
-  public function authenticate() {
-    $jwt = filter_input(INPUT_GET, 'jwt', FILTER_SANITIZE_SPECIAL_CHARS);
+  protected function getAuthorizationHeader(){
+    $headers = null;
+    if (isset($_SERVER['Authorization'])) {
+        $headers = trim($_SERVER["Authorization"]);
+    }
+    else if (isset($_SERVER['HTTP_AUTHORIZATION'])) { //Nginx or fast CGI
+        $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+    } elseif (function_exists('apache_request_headers')) {
+        $requestHeaders = apache_request_headers();
+        // Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
+        $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
+        //print_r($requestHeaders);
+        if (isset($requestHeaders['Authorization'])) {
+            $headers = trim($requestHeaders['Authorization']);
+        }
+    }
+    return $headers;
+  }
+  
+  protected function getBearerToken() {
+    $headers = $this->getAuthorizationHeader();
+    // HEADER: Get the access token from the header
+    if (!empty($headers)) {
+      if (preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
+          return $matches[1];
+      }
+    }
+    return null;
+  }
+
+
+  public function payload(){
+    $jwt = $this->getBearerToken();
+    //$jwt = filter_input(INPUT_GET, 'jwt', FILTER_SANITIZE_SPECIAL_CHARS);
     if(empty($jwt)) throw new Exception("Usuario no autorizado", 401);
-    $payload = JWT::decode($jwt, JWT_KEY, ['HS256']);
+    return JWT::decode($jwt, JWT_KEY, ['HS256']);
+  }
+
+  public function authenticate() {
+    $payload = $this->payload();
     
     if(isset($payload->aud)){
       if($payload->aud !== $this->aud()) throw new Exception("Usuario no autorizado", 401);
@@ -86,11 +119,10 @@ class Auth {
     require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_CONFIG . "/public_scope.php");
     if($this->authorizePermissions($entityName, $permissions, public_scope())) return true;
     $token = $this->authenticate($options);
-/*
     require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_CONFIG . "/private_scope.php");
     if($this->authorizePermissions($entityName, $permissions, private_scope())) return true;
     if($this->authorizePermissions($entityName, $permissions, $token->scope)) return true;
-    throw new Exception("Usuario no autorizado");*/
+    throw new Exception("Usuario no autorizado");
   }
 
 }
