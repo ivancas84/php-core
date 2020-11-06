@@ -1,6 +1,6 @@
 <?php
-require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
+require_once("function/php_input.php");
 
 
 class GetAllApi {
@@ -15,13 +15,11 @@ class GetAllApi {
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $data = file_get_contents("php://input");
-    if(!$data) throw new Exception("Error al obtener datos de input");
-    $ids = json_decode($data, true);
-
+    $ids = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main(null);
     if(empty($ids)) throw new Exception("Identificadores no definidos");
-    $rows = $this->container->getDb()->getAll($this->entityName, $ids);
-    $rel = $this->container->getRel($this->entityName);
+    $rows = $this->container->getDb()->getAll($render->entityName, $ids);
+    $rel = $this->container->getRel($render->entityName);
     foreach($rows as &$row) $row = $rel->json($row);
     return $rows;
     

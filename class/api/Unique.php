@@ -15,12 +15,11 @@ class UniqueApi {
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $data = file_get_contents("php://input");
-    if(!$data) throw new Exception("Error al obtener datos de input");
-    $params = json_decode($data, true);
+    $params = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
 
-    $row = $this->container->getDb()->unique($this->entityName, $params);
-    return $this->container->getRel($this->entityName)->json($row);
+    $row = $this->container->getDb()->unique($render->entityName, $params);
+    return $this->container->getRel($render->entityName)->json($row);
   }
 
 }

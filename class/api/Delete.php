@@ -1,10 +1,7 @@
 <?php
 
 
-require_once("class/model/Ma.php");
-
-require_once("class/model/Sqlo.php");
-require_once("class/tools/Validation.php");
+require_once("function/php_input.php");
 
 class DeleteApi {
   /**
@@ -21,13 +18,12 @@ class DeleteApi {
   }  
 
   public function main(){
+    //@todo falta corroborar que los ida a eliminar pertenezcan verdaderamente a la entidad (sobre todo si se esta utilizando una entidad ficticia)
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $data = file_get_contents("php://input");
-    if(!$data) throw new Exception("Error al obtener datos de input");
-    $ids = json_decode($data, true);
-
-    $sql = $this->container->getSqlo($this->entityName)->deleteAll($ids);
+    $ids = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
+    $sql = $this->container->getSqlo($render->entityName)->deleteAll($ids);
     $this->container->getDb()->multi_query_transaction_log($sql);
     $detail = array_map(array($this, 'concat'), $ids);    
 

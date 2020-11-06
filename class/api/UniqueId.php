@@ -11,11 +11,10 @@ class UniqueIdApi {
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $data = file_get_contents("php://input");
-    if(!$data) throw new Exception("Error al obtener datos de input");
-    $params = json_decode($data, true);
-
-    $row = $this->container->getDb()->unique($this->entityName, $params);
+    $params = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
+    
+    $row = $this->container->getDb()->unique($render->entityName, $params);
     return ($row) ? $row["id"] : null;
   }
 

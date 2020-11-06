@@ -2,6 +2,7 @@
 
 class Render {
 
+  public $entityName; //entidad principal a la que esta destinada la consulta
   public $condition = array(); //array multiple cuya raiz es [field,option,value], 
   /**
    * ejemplo:  [
@@ -135,5 +136,8 @@ class Render {
 
   public function setHaving (array $having = null) { $this->having = $having; }
   public function getHaving () { return $this->having; }
+
+  public function setEntityName (array $entityName = null) { $this->entityName = $entityName; }
+  public function getEntityName () { return $this->entityName; }
 
 }

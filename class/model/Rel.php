@@ -106,4 +106,11 @@ class EntityRel {
      */
     return $this->container->getRelValue($this->entityName)->main($row);
   }
+
+
+  public function jsonAll($rows){
+    foreach($rows as &$row) $row = $rel->json($row);
+    return $rows;
+  }
+
 }

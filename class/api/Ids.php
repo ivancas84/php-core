@@ -1,5 +1,5 @@
 <?php
-require_once("class/model/Ma.php");
+require_once("function/php_input.php");
 require_once("class/model/Render.php");
 
 
@@ -15,11 +15,8 @@ class IdsApi {
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $data = file_get_contents("php://input");
-    if(!$data) throw new Exception("Error al obtener datos de input");
-    $display = json_decode($data, true);
-
-    $render = Render::getInstanceDisplay($display);
+    $display = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
     return $this->container->getDb()->ids($this->entityName, $render);    
   }
 
