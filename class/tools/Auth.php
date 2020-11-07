@@ -38,7 +38,8 @@ class Auth {
        "iat" => time(),
        "exp" => time() + (60 * 60),
        "user" => $user,
-       "scope" => user_scope()[$user]["scope"]
+       "scope" => user_scope()[$user]["scope"],
+       "view" => user_scope()[$user]["view"]
     ];
     $jwt = JWT::encode($payload, JWT_KEY);
     //$token = JWT::decode($jwt, JWT_KEY, ['HS256']);
