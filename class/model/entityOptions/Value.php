@@ -8,7 +8,10 @@ class ValueEntityOptions extends EntityOptions {
 
   /**
    * Cuidado con los metodos setDefault, solo setean el valor por defecto si el campo es UNDEFINED,
-   * si es otro valor o null, son ignorados y no setean el valor por defecto.   
+   * si es otro valor o null, son ignorados y no setean el valor por defecto. 
+   * Este era un error habitual al asignar el valor por defecto del id, por lo que en versiones actuales
+   * el valor por defecto del id se carga en null, el programador debe exlicitamente indicar el valor por defeto del id
+   * habitualmente utilizando la funcion uniqid()
    */
 
   public $logs;
@@ -291,6 +294,7 @@ class ValueEntityOptions extends EntityOptions {
       case "year": case "y": return "_sqlY"; 
       case "ym": return "_sqlYm"; 
       case "hm": return "_sqlHm"; 
+      case "date": return "_sqlDate";
       default: return $this->_defineSql($param[0]);
     }
   }
