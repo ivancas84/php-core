@@ -1,64 +1,66 @@
 <?php
-require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
-
-require_once("class/model/Sqlo.php");
-require_once("class/model/Values.php");
-
+require_once("function/filter_file.php");
 
 class UploadApi {
   /**
    * Controlador de procesamiento de un solo archivo
    */
-
-  public $entityName;
-  public $sufix = "";
-  public $directory;
   public $container;
+  public $entityName;
   public $permission = "w";
-    
+
+  public $dir = ""; //directorio relativo donde se almacenara el archivo (sera incluido en el content del fileValue)
+  /**
+   * Si se define debe poseer DIRECTORY_SEPARATOR al final
+   */
+  public $file; //archivo subido obtenido del formulario
+  public $fileValue; //metadatos (valores) definidos para archivo (id, content)
+  /**
+   * La ruta resultante del archivo: $_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_UPLOAD . DIRECTORY_SEPARATOR . $this->fileValue->_get("content");
+   */
+  
+
   public function __construct (){
-    $this->uploadPath = date("Y/m/");
+    $this->dir = date("Y") . DIRECTORY_SEPARATOR . date("m") . DIRECTORY_SEPARATOR;
   }
 
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $args = array("file" => array('filter'=> FILTER_DEFAULT,  'flags' => FILTER_REQUIRE_ARRAY));
-    $files = filter_var_array($_FILES, $args);
-    if(!isset($files["file"])) throw new Exception("Archivo " . "file" . " sin definir");
-    $file = $files["file"];
+    $this->file = filter_file("file");
+    if ( $this->file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
 
-    if ( $file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
-
-    $this->createDir();
-    $fileValue = $this->createFileValue($file);
-    $destination = $this->moveUploadedFile($file, $fileValue);
-    return $this->insertFile($fileValue);
+    $this->createDir(); //1 crear directorio en base a dir
+    $this->createFileValue(); //2 definir "fileValue", poseera entre otras cosas el content (nombre del archivo)
+    $this->moveUploadedFile(); //3 mover archivo segun lo definido en 1 y 2
+    $this->insertFile(); //4 insertar datos en la base de datos utilizando 2
+    return ["id" => $this->fileValue->_get("id"), "detail" => ["file".$this->fileValue->_get("id")], "file"=>$this->fileValue->_toArray("json")];
   }
 
   public function createDir(){
-    $dir = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $this->uploadPath;
-    if(!empty($this->uploadPath) && (!file_exists($dir))) mkdir($dir, 0755, true);
+    $absoluteDir = $_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_UPLOAD . DIRECTORY_SEPARATOR . $this->dir;
+    if(!empty($this->dir) && (!file_exists($absoluteDir))) mkdir($absoluteDir, 0755, true);
   }
 
-  public function createFileValue($file){
-    $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
-    $fileValue = $this->container->getValues("file")->_fromArray($file)->_setDefault();
-    $fileValue->setContent($this->uploadPath.$fileValue->id().$this->sufix.".".$ext);
-    return $fileValue;
+  public function createFileValue(){
+    $ext = pathinfo($this->file["name"], PATHINFO_EXTENSION);
+    $this->fileValue = $this->container->getValue("file")->_fromArray($this->file,"set")->_call("setDefault");
+    $this->fileValue->_set("id",uniqid());
+    $this->fileValue->_set("content",$this->dir.$this->fileValue->_get("id").".".$ext);    
+    $this->fileValue->_call("reset")->_call("check");
+    if($this->fileValue->logs->isError()) throw new Exception($this->fileValue->logs->toString());
   }
 
-  public function moveUploadedFile($file, $fileValue){
-    $destination = $_SERVER["DOCUMENT_ROOT"] . "/" . PATH_UPLOAD . "/" . $fileValue->content();
-    if ( !move_uploaded_file($file["tmp_name"], $destination) ) throw new Exception( "Error al mover archivo" );
-    unset($file["tmp_name"]);
-    return $destination;
+  public function moveUploadedFile(){
+    $destination = $_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_UPLOAD . DIRECTORY_SEPARATOR . $this->fileValue->_get("content");
+    if ( !move_uploaded_file($this->file["tmp_name"], $destination) ) throw new Exception( "Error al mover archivo" );
+    unset($this->file["tmp_name"]);
   }
 
-  public function insertFile($fileValue){
-    $f = $fileValue->_toArray();
-    $this->container->getDb()->insert("file", $f);
-    return $f;
+  public function insertFile(){
+    $sql = $this->container->getSqlo("file")->insert($this->fileValue->_toArray("sql"));
+    $this->container->getDb()->multi_query_transaction_log($sql);
   }
 }
+
