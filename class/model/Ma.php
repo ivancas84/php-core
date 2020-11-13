@@ -177,7 +177,15 @@ class Ma extends Db {
       return $this->update($entity, $row);
     }
 
-    else { return $this->insert($entity, $row); }
+    return $this->insert($entity, $row);
+  }
+
+  public function persistId($entity, array $row){
+    /**
+     * Persistencia directa (no realiza chequeo de valores ni log)
+     */
+    if (!empty($row["id"])) return $this->update($entity, $row);
+    return $this->insert($entity, $row);
   }
 
   public function insert($entity, array $row){ 
@@ -185,7 +193,7 @@ class Ma extends Db {
      * Insercion directa (no realiza chequeo de valores)
      */
     $insert = $this->container->getSqlo($entity)->insert($row);
-    $result = $this->query_log($insert["sql"]);
+    $result = $this->query($insert["sql"]);
     return array("id" => $insert["id"], "detail"=>$insert["detail"]);
   }
 
@@ -194,7 +202,7 @@ class Ma extends Db {
      * Actualizacion directa (no realiza chequeo de valores)
      */ 
     $update = $this->container->getSql($entity)->update($row);
-    $result = $this->query_log($update["sql"]);
+    $result = $this->query($update["sql"]);
     return array("id" => $update["id"], "detail"=>$update["detail"]);
   }
 
@@ -203,51 +211,8 @@ class Ma extends Db {
      * Eliminacion directa (no realiza chequeo de valores)
      */
     $delete = $this->container->getSqlo($entity)->delete($id);
-    $result = $this->query_log($delete["sql"]);
+    $result = $this->query($delete["sql"]);
     return array("id" => $delete["id"], "detail"=>$delete["detail"]);
   }
 
-
-  public function log($query){
-    return;
-    $escapedQuery = $this->escape_string($query);
-
-    $sql = "
-INSERT INTO log (id, description) 
-VALUES ('" . uniqid() . "', '{$escapedQuery}')
-    ";
-    $db = new Db(TXN_HOST,TXN_USER,TXN_PASS, TXN_DBNAME);
-    $db->query($sql);
-  }
- 
-  public function query_log($query, $resultmode = MYSQLI_STORE_RESULT){
-    $result = $this->query($query, $resultmode);
-    $this->log($query);
-    return $result;    
-  }
-
-  public function multi_query_log($query){
-    /**
-     * cuidado, siempre espera que se recorran los resultados.
-     * Se recomienda utilizar multi_query_last si se quiere evitar procesamiento adicional
-     */
-    if(!$result = parent::multi_query($query)) throw new Exception($this->error);
-    $this->log($query);
-    return $result;
-  }
-
-  public function multi_query_last_log($query){
-    /**
-     * si corresponde,  devuelve el ultimo resultado si existe, sino devuelve false
-     */
-    $result = $this->multi_query_last($query);
-    $this->log($query);
-    return $result;
-  }
-
-  public function multi_query_transaction_log($query){
-    $result = $this->multi_query_transaction($query);
-    $this->log($query);
-    return $result;
-  }
 }

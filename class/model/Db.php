@@ -4,17 +4,8 @@ require_once("function/settypebool.php");
 
 class Db extends mysqli {
   /**
-   * Extiende la clase mysqli para implementar instancia abierta reutilizable, excepciones y metodos adicionales
+   * Extiende la clase mysqli para implementar excepciones y metodos adicionales
    */
-  public static $dbInstance = [];
-
-  /*
-  public static function open($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
-    if (!key_exists($host.$dbname, self::$dbInstance)) {
-      self::$dbInstance[$host.$dbname] = new self($host, $user, $passwd, $dbname);
-    } 
-    return self::$dbInstance[$host.$dbname];
-  }*/
 
   public function __construct($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
     $this->host = $host;
@@ -26,9 +17,6 @@ class Db extends mysqli {
   }
 
   public function __destruct(){
-    if (key_exists($this->host.$this->dbname, self::$dbInstance) && ($this->thread_id == self::$dbInstance[$this->host.$this->dbname]->thread_id)) {
-      unset(self::$dbInstance[$this->host.$this->dbname]);
-    }
     parent::close();
   }
 

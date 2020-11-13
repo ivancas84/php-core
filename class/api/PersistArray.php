@@ -41,7 +41,7 @@ class PersistArrayApi {
       array_push($detail, $render->entityName.$row["id"]);
     }
 
-    $this->container->getDb()->multi_query_transaction_log($sql);
+    $this->container->getDb()->multi_query_transaction($sql);
 
     return ["ids" => $ids, "detail" => $detail];
   }

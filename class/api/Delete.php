@@ -24,7 +24,7 @@ class DeleteApi {
     $ids = php_input();
     $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
     $sql = $this->container->getSqlo($render->entityName)->deleteAll($ids);
-    $this->container->getDb()->multi_query_transaction_log($sql);
+    $this->container->getDb()->multi_query_transaction($sql);
     $detail = array_map(array($this, 'concat'), $ids);    
 
     return ["ids" => $ids, "detail" => $detail];

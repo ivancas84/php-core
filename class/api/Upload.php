@@ -60,7 +60,7 @@ class UploadApi {
 
   public function insertFile(){
     $sql = $this->container->getSqlo("file")->insert($this->fileValue->_toArray("sql"));
-    $this->container->getDb()->multi_query_transaction_log($sql);
+    $this->container->getDb()->multi_query_transaction($sql);
   }
 }
 
