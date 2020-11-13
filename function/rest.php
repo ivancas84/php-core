@@ -1,8 +1,6 @@
 <?php
 
 function rest($url, $entityName, $api, array $display = null){
-  //echo json_encode($display);
-  //echo $url . "/" . $entityName . "/" . $api;
     $curl = curl_init();
 
     curl_setopt($curl, CURLOPT_POST, 1);

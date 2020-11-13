@@ -48,7 +48,7 @@ class Aliases{
      $nameAux = "";
      if(count($pieces) > 1) {
        foreach($pieces as $piece){
-         $nameAux .= $piece{0};
+         $nameAux .= $piece[0];
        }
        $this->name = $nameAux;
      }
@@ -60,8 +60,8 @@ class Aliases{
        $aliasAux = "";
 
        for($j = 0; $j < 2; $j++) {
-         if(isset($this->name{$j})){
-           $aliasAux .= $this->name{$j};
+         if(isset($this->name[$j])){
+           $aliasAux .= $this->name[$j];
          }
        }
 
