@@ -12,7 +12,6 @@ INSERT INTO log (" . implode(",", array_keys($data)) . ")
 VALUES ('" . implode("', '", $data) . "');
 ";
 
-
   $db->query($sql);
   return $data["id"];
 }
