@@ -8,7 +8,7 @@ class SqlTools {
 
   public function exists($field, $option, $value) {
     if(empty($value) || $value == "true" || $value == "false" || is_bool($value) ) {
-      if (($option != "=") && ($option != "!=")) throw new Exception("La combinacion field-option-value no está permitida");
+      if (($option != "=") && ($option != "!=")) throw new Exception("La combinacion field-option-value no está permitida para definir existencia: " . $field. " " . $option . " " . $value, 404);
 
       switch(settypebool($value)){
         case true:

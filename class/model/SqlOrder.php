@@ -16,15 +16,16 @@ class SqlOrder {
 
   protected function default(){
     /**
-     * Ordenamiento por defecto
-     * por defecto se definen los campos principales nf de la tabla principal
-     * Si se incluyen campos de relaciones, asegurarse de incluir las relaciones
+     * Definir ordenamiento por defecto.
+     * El ordenamiento por defecto se define en la clase Entity.
+     * Si no existe ordenamiento por defecto,
+     * se definen los campos principales nf de la entidad principal    
      */
     $e = $this->container->getEntity($this->entityName);
-    if(!empty($of = $e->getOrderDefault())) return $of;
+    if(!empty($of = $e->getOrderDefault())) return $of; //se retorna ordenamiento por defecto definido
         
     $fieldsMain = $e->main;
-    return array_fill_keys($fieldsMain, "asc");
+    return array_fill_keys($fieldsMain, "asc"); //se retorna ordenamiento por defecto considerando campos principales nf de la entidad principal
   }
   
   protected function init(array $order) {
