@@ -7,6 +7,8 @@ class Db extends mysqli {
    * Extiende la clase mysqli para implementar excepciones y metodos adicionales
    */
 
+  public static $connections = 0; //Uso opcional en contenedor
+
   public function __construct($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
     $this->host = $host;
     $this->dbname = $dbname;
@@ -16,18 +18,19 @@ class Db extends mysqli {
     if($this->error) throw new Exception($this->error);
   }
 
-  public function __destruct(){
-    parent::close();
-  }
-
-  public function close(){
-    throw new BadMethodCallException("El cierre del recurso se realiza en el __destruct");
-  }
-
   public function query($query, $resultmode = MYSQLI_STORE_RESULT){
     $result = parent::query($query, $resultmode);
     if(!$result) throw new Exception($this->error);
     return $result;
+  }
+
+  public function close(){
+    self::$connections--;  //si hay multiples conexiones abiertas, no se cierra se reduce la cantidad
+    if(self::$connections <= 0){
+      if(!parent::close()) throw new Exception($this->error);
+      self::$connections = 0;
+    }
+    return true;
   }
 
   public function multi_query($query){
