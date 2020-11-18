@@ -2,29 +2,18 @@
 
 require_once("class/tools/EntityRecursiveFk.php");
 
-class MappingLabelEntityOptions extends EntityRecursiveFk {
+class MappingLabel extends EntityRecursiveFk {
 
   public $entityName;
   public $container;
-  public $prefix = "";
   protected $fields = [];
-  public function _pf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; } 
-  /**
-   * prefijo fields
-   */
-  
-  public function _pt(){ return (empty($this->prefix)) ?  $this->container->getEntity($this->entityName)->getAlias() : $this->prefix; }
-  /**
-   * prefijo tabla
-   */
 
-
-  public function main(){
+  public function main($prefix){    
     $entity = $this->container->getEntity($this->entityName);
     $this->body($entity);
     $this->recursive($entity);
     array_walk($this->fields, function(&$field) { 
-      $field =  $this->container->getMapping($this->entityName, $this->prefix)->_($field); });
+      $field =  $this->container->getMapping($this->entityName, $prefix)->_($field); });
 
     return "CONCAT_WS(' ', " . implode(",", $this->fields). ")";
   }

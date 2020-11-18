@@ -29,7 +29,7 @@ class Aliases{
       $this->aliases = array();
     }
     $this->length = $length;
-    $this->reserved = array("not", "as", "div", "mod", "sum", "avg", "count", "max", "min");
+    $this->reserved = array("not", "as", "div", "mod", "sum", "avg", "count", "max", "min", "log");
   }
 
   public static function createAndGetAlias($name, array $aliases = NULL, $length = 3){

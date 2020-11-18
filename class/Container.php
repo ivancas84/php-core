@@ -1,7 +1,6 @@
 <?php
 
 require_once("function/snake_case_to.php");
-require_once("class/tools/Logs.php");
 
 class Container {
   /**
@@ -13,9 +12,6 @@ class Container {
    * debe definirse un método de instanciacion exclusivo en el contenedor
    */
   static $db = null;
-  static $modelTools = null;
-  static $sqlTools = null;
-  static $persist = null;
 
   static $sqlo = []; //las instancias dependen de la entidad
   static $rel = []; //las instancias dependen de la entidad
@@ -27,32 +23,15 @@ class Container {
     if (isset(self::$db)) return self::$db;
     require_once("class/model/Ma.php");
     $c = new Ma();
+    $c::$connections++;
     $c->container = $this;
     return self::$db = $c;
   }
-
-  public function getMt(){
-    if (isset(self::$modelTools)) return self::$modelTools;
-    require_once("class/controller/ModelTools.php");
-    $c = new ModelTools();
-    $c->container = $this;
-    return self::$modelTools = $c;
-  }
-
-  public function getModelTools() { $this->getMt(); }
 
   public function getAuth(){
     require_once("class/tools/Auth.php");
     $c = new Auth();
     return $c;
-  }
-
-  public function getPersist() {
-    if (isset(self::$persist)) return self::$persist;
-    require_once("class/model/Persist.php");
-    $c = new Persist();
-    $c->container = $this;
-    return self::$persist = $c;
   }
 
   public function getStructure(){
@@ -68,14 +47,14 @@ class Container {
 
     $dir = "class/model/entity/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
-    $prefix = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) require_once($dir.$name);
-    else{
-      $prefix = "_";
-      require_once($dir.$prefix.$name);
+
+    if((@include_once $dir.$name) == true) 
+      $className = snake_case_to("XxYy", $entityName) . "Entity";
+    else{      
+      require_once($dir."_".$name);
+      $className = "_".snake_case_to("XxYy", $entityName) . "Entity";
     }
     
-    $className = $prefix.snake_case_to("XxYy", $entityName) . "Entity";
     $c = new $className;
     $c->container = $this;
     self::$entity[$entityName] = $c; //se asigna previamente como clase estatica antes de llamar a la estructura, la estructura poseera tambien la entidad
@@ -90,12 +69,11 @@ class Container {
     $dir = "class/model/field/" . snake_case_to("xxYy", $entity) . "/";
     $name = snake_case_to("XxYy", $field) . ".php";    
     $prefix = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
-      require_once($dir.$name);
+
+    if((@include_once $dir.$name) == true){
       $className = "Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);  
-    } elseif(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir."_".$name)) {
-      require_once($dir."_".$name);
-      $className = "_Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);  
+    } elseif((@include_once $dir."_".$name) == true) {
+        $className = "_Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);  
     } else {
       require_once("class/model/field/".$name);
       $className = "_Field".snake_case_to("XxYy", $field);  
@@ -109,11 +87,9 @@ class Container {
 
   public function getApi($action, $entityName) {
     $path = "class/api/" . snake_case_to("xxYy", $action) . "/" . snake_case_to("XxYy", $entityName) . ".php";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$path)){
-      require_once($path);
+    if((@include_once $path) == true){
       $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $action). "Api";
-    } 
-    else{
+    } else{
       require_once("class/api/" . snake_case_to("XxYy", $action) . ".php");
       $className = snake_case_to("XxYy", $action)   . "Api";
     }
@@ -124,17 +100,10 @@ class Container {
     return $c;
   }
 
-  public function getSqlTools(){
-    if(self::$sqlTools) return self::$sqlTools;
-    require_once("class/model/SqlTools.php");
-    $c = new SqlTools;
-    $c->container = $this;
-    return $c;
-  }
 
   public function getController($controller){
     /**
-     * Controlador
+     * Controlador (si utilizan container o algun elemento que pueda instanciarse desde container entonces es un controlador)
      */
     $dir = "class/controller/";
     $name = snake_case_to("XxYy", $controller) . ".php";
@@ -144,14 +113,26 @@ class Container {
     $c->container = $this;
     return $c;
   }
+
+  public function getTool($tool){
+    /**
+     * Tools (no se les asigna ningun parametro adicional)
+     */
+    $dir = "class/tools/";
+    $name = snake_case_to("XxYy", $tool) . ".php";
+    $className = snake_case_to("XxYy", $tool);    
+    require_once($dir.$name);
+    $c = new $className;
+    return $c;
+  }
   
   public function getControllerEntity($controller, $entityName){
     /**
      * Controlador asociado a entidad
      */
     $path = "class/controller/" . snake_case_to("xxYy", $controller) . "/" . snake_case_to("XxYy", $entityName) . ".php";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$path)){
-      require_once($path);
+    
+    if((@include_once $path) == true){
       $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller);    
     } else{
       require_once("class/controller/" . snake_case_to("XxYy", $controller) . ".php");
@@ -181,7 +162,7 @@ class Container {
     require_once($path);
     $c = new $className;
     $c->entityName = $entityName;
-    $c->logs = new Logs();
+    $c->logs = $this->getTool("logs");
     $c->container = $this;
     return $c;
   }
@@ -193,10 +174,8 @@ class Container {
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prefix = "";
 
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
-      require_once($dir.$name);
+    if((@include_once $dir.$name) == true){
       $className = snake_case_to("XxYy", $entity) . "Sqlo";
-    
     } else {
       require_once("class/model/Sqlo.php");
       $className = "EntitySqlo";
@@ -213,9 +192,8 @@ class Container {
     $dir = "class/model/sql/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     $prf = "";
-    
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
-      require_once($dir.$name);
+
+    if((@include_once $dir.$name) == true){
       $className = snake_case_to("XxYy", $entity) . "Sql";
     
     } else {
@@ -230,77 +208,13 @@ class Container {
     return $sql;    
   }
 
-  public function getSqlCondition($entityName){
-    require_once("class/model/SqlCondition.php");
-    $c = new SqlCondition;
-    $c->container = $this;  
-    $c->entityName = $entityName;    
-    return $c;
-  }
-
-  public function getSqlCondition_($entityName){
-    require_once("class/model/SqlCondition_.php");
-    $c = new SqlCondition_;
-    $c->container = $this;
-    $c->entityName = $entityName;
-    return $c;
-  }
-
-  public function getSqlOrder($entityName){
-    require_once("class/model/SqlOrder.php");
-    $c = new SqlOrder;
-    $c->container = $this;
-    $c->entityName = $entityName;
-    return $c;
-  }
-
-  public function getRelJoin($entityName){
-    /**
-     * No almacenar el variable estatica
-     * $render es almacenado en un atributo, por lo tanto se mantendria en memoria un valor no utilizado de row
-     */
-    require_once("class/model/RelJoin.php");
-    
-    $join = new RelJoin;
-    $join->container = $this;
-    $join->entityName = $entityName;
-    return $join;    
-  }
-
-  public function getRelJson($entityName){
-    /**
-     * No almacenar el variable estatica
-     * $row es almacenado en un atributo, por lo tanto se mantendria en memoria un valor no utilizado de row
-     */
-    require_once("class/model/RelJson.php");
-    
-    $json = new RelJson;
-    $json->container = $this;
-    $json->entityName = $entityName;
-    return $json;    
-  }
-
-  public function getRelValue($entityName){
-    /**
-     * No almacenar el variable estatica
-     * $row es almacenado en un atributo, por lo tanto se mantendria en memoria un valor no utilizado de row
-     */
-    require_once("class/model/RelValue.php");
-    
-    $c = new RelValue;
-    $c->container = $this;
-    $c->entityName = $entityName;
-    return $c;
-  }
-
   public function getRel($entity) {
     if (isset(self::$rel[$entity])) return self::$rel[$entity];
 
     $dir = "class/model/rel/";
     $name = snake_case_to("XxYy", $entity) . ".php";
     
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
-      require_once($dir.$name);
+    if((@include_once $dir.$name) == true){
       $className = snake_case_to("XxYy", $entity) . "Rel";
     
     } else {
@@ -318,8 +232,7 @@ class Container {
   public function getMapping($entityName, $prefix = ""){
     $dir = "class/model/mapping/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
-      require_once($dir.$name);
+    if((@include_once $dir.$name) == true){
       $className = snake_case_to("XxYy", $entityName) . "Mapping";
     } else{
       require_once("class/model/entityOptions/Mapping.php");
@@ -333,21 +246,11 @@ class Container {
     $c->entity = $this->getEntity($entityName);
     return $c;    
   }
-
-  public function getMappingLabel($entityName, $prefix = ""){
-    require_once("class/model/entityOptions/MappingLabel.php");    
-    $c = new MappingLabelEntityOptions;
-    if($prefix) $c->prefix = $prefix;
-    $c->entityName = $entityName;
-    $c->container = $this;
-    return $c;    
-  }
   
   public function getCondition($entityName, $prefix = ""){
     $dir = "class/model/condition/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
-      require_once($dir.$name);
+    if((@include_once $dir.$name) == true){      
       $className = $prf.snake_case_to("XxYy", $entityName) . "Condition";
     } else {
       require_once("class/model/entityOptions/Condition.php");
@@ -359,7 +262,7 @@ class Container {
     $c->container = $this;
     $c->mapping = $this->getMapping($entityName, $prefix);
     $c->value = $this->getValue($entityName, $prefix);
-    $c->sql = $this->getSqlTools();
+    $c->sql = $this->getController("sql_tools");;
     $c->entity = $this->getEntity($entityName);
     $c->entityName = $entityName;
     return $c;    
@@ -369,12 +272,11 @@ class Container {
     $dir = "class/model/conditionAux/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
     $prf = "";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)){
-      $className = $prf.snake_case_to("XxYy", $entityName) . "ConditionAux";
-      require_once($dir.$name);
+    if((@include_once $dir.$name) == true){
+      $className = $prf.snake_case_to("XxYy", $entityName) . "ConditionAux";      
     } else{
-      $className = "ConditionAuxEntityOptions";
       require_once("class/model/entityOptions/ConditionAux.php");
+      $className = "ConditionAuxEntityOptions";
     }
     
     $c = new $className;
@@ -383,20 +285,18 @@ class Container {
     $c->entity = $this->getEntity($entityName);
     $c->entityName = $entityName;
     $c->mapping = $this->getMapping($entityName, $prefix);
-    $c->sql = $this->getSqlTools();
+    $c->sql = $this->getController("sql_tools");
     return $c;
   }
 
   public function getFieldAlias($entityName, $prefix = ""){
     $dir = "class/model/fieldAlias/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
-      require_once($dir.$name);
+    if((@include_once $dir.$name) == true){
       $className = $prf.snake_case_to("XxYy", $entityName) . "FieldAlias";
     } else {
       require_once("class/model/entityOptions/FieldAlias.php");
       $className = "FieldAliasEntityOptions";
-
     }
     
     $c = new $className;
@@ -411,8 +311,7 @@ class Container {
   public function getValue($entityName, $prefix = ""){
     $dir = "class/model/value/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
-    if(file_exists($_SERVER["DOCUMENT_ROOT"]."/".PATH_SRC."/".$dir.$name)) {
-      require_once($dir.$name);
+    if((@include_once $dir.$name) == true){
       $className = snake_case_to("XxYy", $entityName) . "Value";
     } else {
       require_once("class/model/entityOptions/Value.php");
@@ -422,10 +321,9 @@ class Container {
     $c = new $className;
     if($prefix) $c->prefix = $prefix;
     $c->container = $this;
-    //$c->entity = $this->getEntity($entityName);
     $c->entityName = $entityName;
-    $c->sql = $this->getSqlTools();
-    $c->logs = new Logs();
+    $c->sql = $this->getController("sql_tools");
+    $c->logs = $this->getTool("logs");
     return $c;    
   }
 

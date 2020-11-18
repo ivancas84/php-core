@@ -82,11 +82,11 @@ class EntityRel {
   }
 
   public function join(Render $render){
-    return $this->container->getRelJoin($this->entityName)->main($render);
+    return $this->container->getControllerEntity("rel_join", $this->entityName)->main($render);
   }
 
   public function json($row){
-    return $this->container->getRelJson($this->entityName)->main($row);
+    return $this->container->getControllerEntity("rel_json", $this->entityName)->main($row);
   }
 
   public function value($row){
@@ -104,7 +104,7 @@ class EntityRel {
      * por ejemplo $resultado["nombre_fk] = "id_fk"
      * $resultado["_nombre_fk"] = array asociativo con los valores de la entidad para el id "id_fk"
      */
-    return $this->container->getRelValue($this->entityName)->main($row);
+    return $this->container->getControllerEntity("rel_value", $this->entityName)->main($row);
   }
 
 

@@ -4,7 +4,7 @@ require_once("function/snake_case_to.php");
 require_once("function/concat.php");
 require_once("function/settypebool.php");
 
-class SqlCondition_ {
+class SqlConditionRel {
 
   public $container;
   public $entityName;

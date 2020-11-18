@@ -15,7 +15,7 @@ class MappingEntityOptions extends EntityOptions {
   }
 
   public function label(){
-    return $this->container->getMappingLabel($this->entityName, $this->prefix)->main();
+    return $this->container->getControllerEntity("mapping_label", $this->entityName)->main($this->prefix);
   }
 
   public function search(){

@@ -30,7 +30,7 @@ class Ma extends Db {
     $r->setPage(1);
     $r->setOrder([]);
 
-    if(!in_array("_count", $r->getAggregate())) $r->setAggregate(["_count"]);
+    if(!in_array("_count", $r->getFields())) $r->setFields(["_count"]);
     
     $sql = $this->container->getSqlo($entity)->advanced($r);
     $result = $this->query($sql);

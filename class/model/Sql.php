@@ -35,19 +35,19 @@ class EntitySql {
   }
 
   public function condition(Render $render) { 
-    return $this->container->getSqlCondition($this->entityName)->main(array_merge($render->condition, $render->generalCondition));
+    return $this->container->getControllerEntity("sql_condition", $this->entityName)->main(array_merge($render->condition, $render->generalCondition));
   }
 
   public function _condition(Render $render) {
-    return $this->container->getSqlCondition_($this->entityName)->main($render->getCondition());
+    return $this->container->getControllerEntity("sql_condition_rel", $this->entityName)->main($render->getCondition());
   }
   
   public function having($render) {
-    return $this->container->getSqlCondition($this->entityName)->main($render->getHaving());    
+    return $this->container->getControllerEntity("sql_condition", $this->entityName)->main($render->getHaving());    
   }
 
   public function _having($render) { //busqueda avanzada
-    return $this->container->getSqlCondition_($this->entityName)->main($render->getHaving());    
+    return $this->container->getControllerEntity("sql_condition_rel", $this->entityName)->main($render->getHaving());    
   }
 
   
@@ -146,14 +146,14 @@ class EntitySql {
 
 
   public function orderBy(array $order = null){
-    return $this->container->getSqlOrder($this->entityName)->main($order);
+    return $this->container->getControllerEntity("sql_order", $this->entityName)->main($order);
   }
 
   public function _subSql(Render $render){
     return $this->container->getEntity($this->entityName)->sn_();
  
  /*
- $fieldNamesExclusive = StructTools::getFieldNamesExclusive();
+ $fieldNamesExclusive = $this->container->getController("struct_tools")->getFieldNamesExclusive();
  $fields = implode(",", $this->container->getFieldAlias($this->entityName, $this->prefix)->_toArrayFields($fieldNamesExclusive);
  return "( SELECT DISTINCT
 {$fields}

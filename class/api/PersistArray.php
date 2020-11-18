@@ -28,7 +28,7 @@ class PersistArrayApi {
     $ids = [];
     $sql = "";
     $detail = [];
-    $p = $this->container->getPersist();
+    $p = $this->container->getController("persist_sql");
 
     foreach($data as $row){
       if($row["_delete"]){

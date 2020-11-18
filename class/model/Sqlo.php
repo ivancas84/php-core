@@ -1,9 +1,9 @@
 <?php
 
 require_once("function/snake_case_to.php");
-require_once("class/model/Sql.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
+
 
 class EntitySqlo {
   /**
@@ -25,6 +25,7 @@ class EntitySqlo {
 {$this->container->getSql($this->entityName)->orderBy($r->getOrder())}
 {$this->container->getSql($this->entityName)->limit($r->getPage(), $r->getSize())}
 ";
+
     return $sql;
   }
 
@@ -58,7 +59,7 @@ class EntitySqlo {
   }
 
   public function advanced(Render $render) {
-    $fields = array_merge($render->getGroup(), $render->getAggregate());
+    $fields = array_merge($render->getGroup(), $render->getFields());
 
     $fieldsQuery_ = [];
     foreach($fields as $field){
@@ -172,7 +173,7 @@ WHERE
      * El conjunto de valores debe estar previamente formateado
      */
 
-    $fns = StructTools::getFieldNamesExclusive($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusive($this->container->getEntity($this->entityName));
     $sql = "
   INSERT INTO " . $this->container->getEntity($this->entityName)->sn_() . " (";    
     $sql .= implode(", ", $fns);    
@@ -190,7 +191,7 @@ VALUES ( ";
     $sql = "
 UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
 ";   
-    $fns = StructTools::getFieldNamesExclusive($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusive($this->container->getEntity($this->entityName));
     foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
     $sql = substr($sql, 0, -2); //eliminar ultima coma
 
