@@ -18,10 +18,12 @@ class Render {
   public $page = 1;
   public $size = 100;
 
-  protected $aggregate = array(); //campos a los que se aplicara funciones de agregacion
+  protected $fields = array(); //campos
   /**
-   * Deben estar definidos en el método mapping field, se realizará la traducción correspondiente
-   * Ej ["sum_horas_catedra", "avg_edad"]
+   * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
+   * . indica aplicacion de funcion de agregacion
+   * - indica que pertenece a una relacion
+   * Ej ["nombres", "horas_catedra.sum", "edad.avg", "com_cur-horas_catedra]
    */
 
   protected $group = array(); //campos de agrupacion
@@ -62,7 +64,7 @@ class Render {
     if(!empty($display["order"])) $render->setOrder($display["order"]);
     if(!empty($display["condition"])) $render->setGeneralCondition($display["condition"]);
     if(!empty($display["params"])) $render->setGeneralParams($display["params"]);
-    if(!empty($display["fields"])) $render->setAggregate($display["fields"]);
+    if(!empty($display["fields"])) $render->setFields($display["fields"]);
     if(!empty($display["group"])) $render->setGroup($display["fields"]);
     if(!empty($display["having"])) $render->setHaving($display["having"]);
 
@@ -128,8 +130,8 @@ class Render {
   public function setPage($page) { $this->page = $page; }
   public function getPage(){ return $this->page; }
   
-  public function setAggregate (array $aggregate = null) { $this->aggregate = $aggregate; }
-  public function getAggregate () { return $this->aggregate; }
+  public function setFields (array $fields = null) { $this->fields = $fields; }
+  public function getFields () { return $this->fields; }
 
   public function setGroup (array $group = null) { $this->group = $group; }
   public function getGroup () { return $this->group; }
