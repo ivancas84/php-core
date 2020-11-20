@@ -7,13 +7,15 @@ class MappingLabel extends EntityRecursiveFk {
   public $entityName;
   public $container;
   protected $fields = [];
+  protected $prefix = ""; //se define el atributo para facilitar su reutilizacion en los callbacks
 
   public function main($prefix){    
+    $this->prefix = $prefix;
     $entity = $this->container->getEntity($this->entityName);
     $this->body($entity);
     $this->recursive($entity);
     array_walk($this->fields, function(&$field) { 
-      $field =  $this->container->getMapping($this->entityName, $prefix)->_($field); });
+      $field =  $this->container->getMapping($this->entityName, $this->prefix)->_($field); });
 
     return "CONCAT_WS(' ', " . implode(",", $this->fields). ")";
   }
