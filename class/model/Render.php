@@ -142,4 +142,44 @@ class Render {
   public function setEntityName (array $entityName = null) { $this->entityName = $entityName; }
   public function getEntityName () { return $this->entityName; }
 
+  public function addPrefixRecursive(array &$condition, $prefix){
+    if(!key_exists(0, $condition)) return;
+    if(is_array($condition[0])) {
+      foreach($condition as &$value) $this->addPrefixRecursive($value,$prefix);  
+    } else {
+        $condition[0] = $prefix.$condition[0];
+    }
+  }
+
+  public function addPrefix($prefix){
+    $this->addPrefixRecursive($this->condition, $prefix);
+    $this->addPrefixRecursive($this->generalCondition, $prefix);
+    
+    foreach($this->order as $k=>$v){
+      $this->order[$prefix.$k] = $v;
+      unset($this->order[$k]);
+    }
+  }
+
+  public function removePrefixRecursive(array &$condition, $prefix){
+    if(!key_exists(0, $condition)) return;
+    if(is_array($condition[0])) {
+      foreach($condition as &$value) $this->removePrefixRecursive($value,$prefix);  
+    } else {
+      $count = 1;
+      $condition[0] = str_replace($prefix, '', $condition[0], $count);
+    }
+  }
+
+  public function removePrefix($prefix){
+    $this->removePrefixRecursive($this->condition, $prefix);
+    $this->removePrefixRecursive($this->generalCondition, $prefix);
+    
+    foreach($this->order as $k=>$v){
+      $count = 1;
+      $newk = str_replace($prefix, '', $k, $count);
+      $this->order[$newk] = $v;
+      unset($this->order[$k]);
+    }
+  }
 }
