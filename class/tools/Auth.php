@@ -36,7 +36,7 @@ class Auth {
     $payload = [
        "aud" => $this->aud(),
        "iat" => time(),
-       "exp" => time() + (60 * 60),
+       "exp" => time() + (60 * 60 * 24),
        "user" => $user,
        "scope" => user_scope()[$user]["scope"],
        "view" => user_scope()[$user]["view"]
