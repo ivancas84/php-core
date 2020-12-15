@@ -11,6 +11,7 @@ class CountApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     $display = php_input();
     $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
+
     return $this->container->getDb()->count($render->entityName, $render);
   }
 
