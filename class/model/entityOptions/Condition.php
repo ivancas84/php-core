@@ -19,6 +19,14 @@ class ConditionEntityOptions extends EntityOptions {
  
   }
 
+  public function search($option, $value){
+    if($option == "=") $option = "=~";
+    elseif($option == "!=") $option = "!=~";
+    if(($option != "!=~") && ($option != "=~")) throw new Exception("Opción no válida para 'search'");
+    $field = $this->mapping->_("search");
+    return $this->sql->approxCast($field, $option, $value);  
+  }
+
   protected function _defineCondition($param){
     $ret = [];
     if(count($param) == 1) {
