@@ -65,7 +65,7 @@ class Render {
     if(!empty($display["condition"])) $render->setGeneralCondition($display["condition"]);
     if(!empty($display["params"])) $render->setGeneralParams($display["params"]);
     if(!empty($display["fields"])) $render->setFields($display["fields"]);
-    if(!empty($display["group"])) $render->setGroup($display["fields"]);
+    if(!empty($display["group"])) $render->setGroup($display["group"]);
     if(!empty($display["having"])) $render->setHaving($display["having"]);
 
     return $render;

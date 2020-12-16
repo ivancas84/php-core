@@ -44,6 +44,7 @@ class Ma extends Db {
      * consulta avanzada
      */
     $sql = $this->container->getSqlo($entity)->advanced($render);
+    
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
