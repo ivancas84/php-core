@@ -318,7 +318,7 @@ class ValueEntityOptions extends EntityOptions {
   protected function _sqlHm($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "H:i"); }
   protected function _sqlYm($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "Y-m"); }
   protected function _sqlY($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "Y"); }
-  protected function _sqlBoolean($fieldName){ return $this->sql->boolean($this->value[$fieldName], "Y-m"); }
+  protected function _sqlBoolean($fieldName){ return $this->sql->boolean($this->value[$fieldName]); }
   protected function _sqlNumber($fieldName){ return $this->sql->number($this->value[$fieldName], "Y-m"); }
   protected function _sqlString($fieldName){ return $this->sql->string($this->value[$fieldName], "Y-m"); }
 
