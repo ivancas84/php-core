@@ -73,7 +73,6 @@ class ConditionEntityOptions extends EntityOptions {
 
   protected function _boolean($fieldName, $option, $value) { 
     $field = $this->mapping->_($fieldName);
-    if($c = $this->sql->exists($field, $option, $value)) return $c;
     $this->value->_set($fieldName, $value);
     if(!$this->value->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _boolean: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
     return "({$field} {$option} {$this->value->_sql($fieldName)}) ";  
