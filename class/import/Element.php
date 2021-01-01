@@ -1,7 +1,5 @@
 <?php
 
-require_once("class/tools/Logs.php");
-require_once("class/model/Values.php");
 
 abstract class ImportElement {
   /**
@@ -16,13 +14,12 @@ abstract class ImportElement {
   public $entities = [];
   public $db;
   public $container;
+  public $updateMode = true; //actualizar existentes
+  public $updateNull = false; //actualizar valores nulos
 
   public function id(){
     $fields = [];
     foreach($this->entities as $entity) {
-      /*foreach($entity->_toArray() as $field){
-        if(!Validation::is_empty($field)) array_push($fields, $field);
-      }*/
       array_push($fields, $entity->_toString()); 
     }
     return implode(",", $fields);
@@ -45,13 +42,13 @@ abstract class ImportElement {
     /**
      * Comportamiento por defecto para setear una entidad
      */
-    $this->entities[$name] = $this->container->getValues($name);
+    $this->entities[$name] = $this->container->getValue($name, $prefix);
     if(!$data) {
       $this->logs->addLog($name, "error", "Error al definir datos iniciales");                
       $this->process = false;
       return;
     }
-    $this->entities[$name]->_fromArray($data, $prefix);
+    $this->entities[$name]->_fromArray($data, "set");
   }
 
   public function persist(){
@@ -63,31 +60,40 @@ abstract class ImportElement {
   }
 
   public function insert($name){
-    if(Validation::is_empty($this->entities[$name]->id())) $this->entities[$name]->setId(uniqid());
-    $this->entities[$name]->_setDefault();
-    $persist = $this->container->getSqlo($name)->insert($this->entities[$name]->_toArray());
-    $this->entities[$name]->setId($persist["id"]);
-    $this->sql .=  $persist["sql"];
+    if(Validation::is_empty($this->entities[$name]->_get("id"))) $this->entities[$name]->_set("id",uniqid());
+    $this->entities[$name]->_call("setDefault");
+    $sql = $this->container->getSqlo($name)->insert($this->entities[$name]->_toArray("sql"));
+    $this->entities[$name]->_set("id", $this->entities[$name]->_get("id"));
+    $this->sql .= $sql;
   }
 
   public function update($name, $existente){
-    $this->entities[$name]->setId($existente->id());
+    $this->entities[$name]->_set("id",$existente->_get("id"));
     $compare =  $this->compare($this->entities[$name], $existente);
     if($compare !== true) {
-      $this->logs->addLog("persona","warning","El registro sera actualizado ({$compare})");
-      $persist = $this->container->getSqlo($name)->update($this->entities[$name]->_toArray());
-      $this->sql .= $persist["sql"];
+      if($this->updateMode == "update") {
+        $this->logs->addLog("persona","info","Registro existente, se actualizara campos {$compare}");
+        $sql = $this->container->getSqlo($name)->update($this->entities[$name]->_toArray("sql"));
+        $this->sql .= $sql;
+      } else {
+        $this->logs->addLog("persona","error","El registro debe ser actualizado, comparar {$compare}");
+      }
     } else {
       $this->process = false;
-      $this->logs->addLog("persona","info","Registros existente, no será actualizado");
+      $this->logs->addLog($name,"info","Registros existente, no será actualizado");
     }
   }
 
-  public function compare($nueva, $existente){
-    /**
-     * Se define un metodo independiente de comparacion para facilitar su implementacion
-     */
-    return $nueva->_equalTo($existente);
+  public function compare($new, $existent){
+    $a = $new->_toArray("sql");
+    $b = $existent->_toArray("sql");    
+      
+    $compare = [];
+    foreach($a as $ka => $va) {
+      if((!$this->updateNull && is_null($va)) || !key_exists($ka, $b)) break;
+      if($b[$ka] !== $va) array_push($compare, $ka);
+    }
+    return (empty($compare)) ? true : implode(", ", $compare);
   }
 
   public function resetAndCheckEntities(){

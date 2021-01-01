@@ -1,8 +1,6 @@
 <?php
 
-require_once("class/model/Sqlo.php");
-require_once("class/model/Ma.php");
-
+require_once("class/model/Render.php");
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
 
@@ -16,12 +14,10 @@ abstract class Import {
     public $id; //identificacion de los datos a procear
     public $source; //fuente de los datos a procesar
     public $pathSummary; //directorio donde se almacena el resumen del procesamiento
+      //ej. $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
     public $headers; //opcional encabezados
-    public $mode = "csv";  //modo de procesamiento
-        /**
-         * post: post tab
-         * post_comma: post comma
-         */
+    public $mode = "csv";  //modo de procesamiento (csv, db, tab)
+    public $updateNull = false; //flag para indicar si se deben actualizar valores nulos del source
     
     public $ids = []; //array asociativo con identificadores
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
@@ -35,9 +31,9 @@ abstract class Import {
         $this->query();
         $this->process();
 
-        $this->persist();
+        //$this->persist();
 
-        $this->summary();
+        //$this->summary();
     }
 
     public function element($i, $data){
@@ -77,12 +73,12 @@ abstract class Import {
      * 
      *   ***** LUGAR (utiliza "identifier")*****
      *   $this->ids["lugar"] = [];
-     *   $element->entities["lugar"]->_setIdentifier(
+     *   $element->entities["lugar"]->_set("identifier", 
      *     $element->entities["lugar"]->distrito().UNDEFINED.
      *     $element->entities["lugar"]->provincia()
      *   );
      *
-     *   if(!in_array($element->entities["lugar"]->_identifier(), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_identifier());
+     *   if(!in_array($element->entities["lugar"]->_get("identifier"), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_get("identifier"));
      * }
      */
 
@@ -93,7 +89,7 @@ abstract class Import {
      * 
      * Ejemplo: Pueden utilizarse los metodos predefinidos queryEntityField, queryEntityIdentifier
      * {
-     *   $this->queryEntityField_("persona","numero_documento");
+     *   $this->queryEntityField("persona","numero_documento");
      * }
      **/
 
@@ -214,11 +210,28 @@ abstract class Import {
             //if($i==100) break;           
         }
     }
+
+    public function defineDb(){
+      if(empty($this->source)) throw new Exception("No existen datos para procesar");
+
+      if(empty($this->headers)) {
+        $this->headers = [];
+        foreach($this->source[0] as $key => $value) array_push($this->headers, $key);
+      }
+
+      for($i = $this->start; $i < count($this->source); $i++){
+        if(empty($this->source[$i])) break;
+        $this->element($i + $this->start, $this->source[$i]);                  
+      }
+    }
      
     public function define(){
         switch($this->mode){
             case "tab":
                 $this->defineTab();
+            break;
+            case "db":
+              $this->defineDb();
             break;
             default:
                 $this->defineCsv();
@@ -247,19 +260,19 @@ abstract class Import {
        * Utilizando el campo field (supuestamente unico) y el valor almacenado de field desde el atributo ids
        * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
        */
-        if(!$id) $id = $name;
-        $this->dbs[$id] = [];
-        if(empty($this->ids[$id])) return;
+      if(!$id) $id = $name;
+      $this->dbs[$id] = [];
+      if(empty($this->ids[$id])) return;
 
-        $render = new Render();
-        $render->setSize(false);
-        $render->addCondition([$field,"=",$this->ids[$id]]);
-        $rows = $this->container->getDb()->all($name, $render);
-    
-        $this->dbs[$id] = array_combine_key(
-          $rows,
-          $field
-        );
+      $render = new Render();
+      $render->setSize(false);
+      $render->addCondition([$field,"=",$this->ids[$id]]);
+      $rows = $this->container->getDb()->all($name, $render);
+  
+      $this->dbs[$id] = array_combine_key(
+        $rows,
+        $field
+      );
     }
 
     protected function queryEntityIdentifier($name){        
@@ -280,8 +293,8 @@ abstract class Import {
     if(empty($id)) $id = $entityName;
     
     if(key_exists($value, $this->dbs[$id])){
-      $existente = $this->container->getValues($entityName);
-      $existente->_fromArray($this->dbs[$id][$value]);
+      $existente = $this->container->getValue($entityName);
+      $existente->_fromArray($this->dbs[$id][$value], "set");
       $element->update($entityName, $existente);
     } else {        
       $element->insert($entityName);

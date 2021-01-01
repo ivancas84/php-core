@@ -28,13 +28,20 @@ class ValueEntityOptions extends EntityOptions {
   
   public function _getLogs(){ return $this->logs; }
 
-  public function _equalTo(EntityValues $entityValues){
+  public function _equalTo(ValueEntityOptions $value){
     /**
      * Retorna true si es igual u otro valor si es diferente (false o string con el nombre del campo)
      * Comparación no estricta, no tiene en cuenta valores nulos o indefinidos
      */
-    $a = $this->_toArray();
-    $b = $entityValues->_toArray();    
+    $a = $this->_toArray("sql");
+    $b = $value->_toArray("sql");    
+
+    echo "<pre>";
+    echo "A";
+    print_r($a);
+    echo "B";
+    print_r($b);
+
     foreach($a as $ka => $va) {
       if(is_null($va) || !key_exists($ka, $b)) continue;
       if($b[$ka] !== $va) return $ka;
@@ -42,13 +49,13 @@ class ValueEntityOptions extends EntityOptions {
     return true;
   }
 
-  public function _equalToStrict(EntityValues $entityValues){
+  public function _equalToStrict(ValueEntityOptions $value){
     /**
      * Retorna true si es igual u otro valor si es diferente (false o string con el nombre del campo)
      * Comparación estricta, los valores deben coincidir si son nulos 
      */
-    $a = $this->_toArray();
-    $b = $entityValues->_toArray();    
+    $a = $this->_toArray("get");
+    $b = $value->_toArray("get");    
     if($strict) return (empty(array_diff_assoc($a, $b)) && empty(array_diff_assoc($b, $a)))? true : false;
     
   }
@@ -348,15 +355,18 @@ class ValueEntityOptions extends EntityOptions {
     return $ret;
   }
 
-  public function _check($fieldName){
+  public function _check($fieldName, $param = null){
     /**
+     * chequear valor de un campo
+     * el campo debe existir en valor para ser chequeado sino retorna null
+     * los chequeos que no son de un campo directo deben invocarse directamente por ejemplo persona->checkNombresParecidos();
      * @example 
      *   _check("nombre")
      *   _check("nombre.max");
      */
     if(!array_key_exists($fieldName, $this->value)) return null;
     $m = "check".snake_case_to("XxYy", str_replace(".","_",$fieldName));
-    if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$value]);
+    if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$param]);
 
     $m = $this->_defineCheck($fieldName);
     $this->logs->resetLogs($fieldName);
@@ -373,6 +383,12 @@ class ValueEntityOptions extends EntityOptions {
 
     foreach($v->getErrors() as $error){ $this->logs->addLog($fieldName, "error", $error); }
     return $v->isSuccess();
+  }
+
+  public function _toString() {
+    foreach($entity->_toArray("get") as $field){
+        if(!Validation::is_empty($field)) array_push($fields, $field);
+    }
   }
 
 }
