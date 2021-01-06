@@ -61,7 +61,7 @@ class EntityRel {
 
   public function fields(){
     /**
-     * Definir sql de campos     
+     * Definir sql de campos definidos de la entidad principal y sus relaciones
      */
     $fields = [implode(",", $this->container->getFieldAlias($this->entityName)->_toArray())];
     foreach(get_entity_relations($this->entityName) as $prefix => $entityName) 

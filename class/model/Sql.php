@@ -35,19 +35,19 @@ class EntitySql {
   }
 
   public function condition(Render $render) { 
-    return $this->container->getControllerEntity("sql_condition", $this->entityName)->main(array_merge($render->condition, $render->generalCondition));
+    return $this->container->getControllerEntity("sql_condition_rel", $this->entityName)->main(array_merge($render->condition, $render->generalCondition));
   }
 
   public function _condition(Render $render) {
-    return $this->container->getControllerEntity("sql_condition_rel", $this->entityName)->main($render->getCondition());
+    return $this->container->getControllerEntity("sql_condition", $this->entityName)->main($render->getCondition());
   }
   
   public function having($render) {
-    return $this->container->getControllerEntity("sql_condition", $this->entityName)->main($render->getHaving());    
+    return $this->container->getControllerEntity("sql_condition_rel", $this->entityName)->main($render->getHaving());    
   }
 
   public function _having($render) { //busqueda avanzada
-    return $this->container->getControllerEntity("sql_condition_rel", $this->entityName)->main($render->getHaving());    
+    return $this->container->getControllerEntity("sql_condition", $this->entityName)->main($render->getHaving());    
   }
 
   
