@@ -386,9 +386,11 @@ class ValueEntityOptions extends EntityOptions {
   }
 
   public function _toString() {
-    foreach($entity->_toArray("get") as $field){
+    $fields = [];
+    foreach($this->_toArray("json") as $field){
         if(!Validation::is_empty($field)) array_push($fields, $field);
     }
+    return implode(",",$fields);
   }
 
 }
