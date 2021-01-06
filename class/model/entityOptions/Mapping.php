@@ -9,7 +9,7 @@ class MappingEntityOptions extends EntityOptions {
   public function identifier(){ 
     if(empty($this->entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->entity->getName()); 
     $identifier = [];
-    foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->id());
+    foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->container->getRel($this->entityName)->mapping($id));
     return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
 ";
   }
