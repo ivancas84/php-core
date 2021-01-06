@@ -76,10 +76,10 @@ abstract class ImportElement {
         $sql = $this->container->getSqlo($name)->update($this->entities[$name]->_toArray("sql"));
         $this->sql .= $sql;
       } else {
-        $this->logs->addLog("persona","error","El registro debe ser actualizado, comparar {$compare}");
+        $this->process = false;
+        $this->logs->addLog($name,"error","El registro debe ser actualizado, comparar {$compare}");
       }
     } else {
-      $this->process = false;
       $this->logs->addLog($name,"info","Registros existente, no será actualizado");
     }
   }
@@ -90,7 +90,7 @@ abstract class ImportElement {
       
     $compare = [];
     foreach($a as $ka => $va) {
-      if((!$this->updateNull && is_null($va)) || !key_exists($ka, $b)) break;
+      if((!$this->updateNull && (is_null($va) || $va == "null")) || !key_exists($ka, $b)) break;
       if($b[$ka] !== $va) array_push($compare, $ka);
     }
     return (empty($compare)) ? true : implode(", ", $compare);

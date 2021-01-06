@@ -15,6 +15,7 @@ abstract class Import {
     public $source; //fuente de los datos a procesar
     public $pathSummary; //directorio donde se almacena el resumen del procesamiento
       //ej. $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
+      //utilizando el mismo path se definen dos archivos, uno html con el resumen y otro sql con la sentencia ejecutada
     public $headers; //opcional encabezados
     public $mode = "csv";  //modo de procesamiento (csv, db, tab)
     public $updateNull = false; //flag para indicar si se deben actualizar valores nulos del source
@@ -30,9 +31,7 @@ abstract class Import {
         $this->identify();
         $this->query();
         $this->process();
-
         //$this->persist();
-
         //$this->summary();
     }
 
@@ -87,9 +86,10 @@ abstract class Import {
      * Consulta de existencia de datos en la base de datos para evitar volver a ejecutar o actualizar datos existentes
      * Los datos consultados se cargan en el atributo dbs
      * 
-     * Ejemplo: Pueden utilizarse los metodos predefinidos queryEntityField, queryEntityIdentifier
+     * Ejemplo: Puede utilizarse metodos predefinido queryEntityField
      * {
      *   $this->queryEntityField("persona","numero_documento");
+     *   $this->queryEntityField("alumno","identifier");
      * }
      **/
 
@@ -121,6 +121,15 @@ abstract class Import {
      *     if(!$element->process) continue;
      *     $element->entities["inscripcion"]->setAlumno($element->entities["persona"]->id());
      *     $this->processElement("inscripcion", $element->entities, $element->entities["inscripcion"]->_identifier());
+     *   }
+     * 
+     *   ***** EXISTENCIA *****
+     *   foreach($this->elements as &$element) {
+     *     if(!key_exists($value, $this->dbs[$id])){
+     *       $element->process = false
+     *       $element->logs->addLog("comision", "error", "No existe la comisión en la base de datos");
+     *       continue;
+     *     }
      *   }
      * }
      * 
@@ -162,7 +171,7 @@ abstract class Import {
     <br><br>";                          
         }
          
-        file_put_contents($this->pathSummary . ".html", $informe);
+        if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".html", $informe);
     
         echo $informe;
     }
@@ -246,7 +255,7 @@ abstract class Import {
             $sql .= $element->sql;
           }
         }
-        file_put_contents($this->pathSummary . ".sql", $sql);
+        if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
     }
 
     protected function identifyValue($id, $value){
@@ -265,9 +274,11 @@ abstract class Import {
       if(empty($this->ids[$id])) return;
 
       $render = new Render();
+      $render->setFields(["id", $field]);
       $render->setSize(false);
       $render->addCondition([$field,"=",$this->ids[$id]]);
-      $rows = $this->container->getDb()->all($name, $render);
+
+      $rows = $this->container->getDb()->advanced($name, $render);
   
       $this->dbs[$id] = array_combine_key(
         $rows,
@@ -275,15 +286,24 @@ abstract class Import {
       );
     }
 
-    protected function queryEntityIdentifier($name){        
-        if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
-             $this->container->getDb()->identifier($name, $this->ids[$name]),
-            $this->container->getEntity($name)->identifier
-        );
+
+  public function existElement(&$element, $entityName, $value, $id = null){
+    if(empty($id)) $id = $entityName;
+
+    if(!key_exists($value, $this->dbs[$id])){
+      $element->process = false;
+      $element->logs->addLog($entityName, "error", "No existe " . $entityName . " en la base de datos");
+      return;
+    } else {
+      $existente = $this->container->getValue($entityName);
+      $existente->_fromArray($this->dbs[$id][$value], "set");
+      $element->entities[$entityName]->_set("id",$existente->_get("id"));
+      $element->logs->addLog($entityName, "info", "Registro existente");
     }
-
-
     
+  }
+
+
   public function processElement(&$element, $entityName, $value, $id = null){
     /**
      * @param $entityName Nombre de la entidad
