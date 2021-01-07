@@ -108,11 +108,13 @@ class Ma extends Db {
     else return null;
   }
 
-  public function all(string $entity, $render = null){
+  public function all(string $entityName, $render = null){
     /**
      * todos los valores
      */
-    $sql = $this->container->getSqlo($entity)->all($render);
+    if(!$render) $render = new Render();
+    $render->addFields($this->container->getRel($entityName)->fieldNames());
+    $sql = $this->container->getSqlo($entityName)->select($render);
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
@@ -135,11 +137,10 @@ class Ma extends Db {
   public function getAll($entity, $ids, $render = null){ //busqueda por ids
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
-    $sql = $this->container->getSqlo($entity)->getAll($ids, $render);
-    $result = $this->query($sql);
-    $rows = $result->fetch_all(MYSQLI_ASSOC);
-    $result->free();
-    return $rows;
+    if(!$render) $render = new Render();
+    $render->addCondition("id","=",$ids);
+    $render->setFields($this->getRel($entityName)->fieldNames());
+    return $this->all($entity, $render);
   }
 
   public function one($entity, $render = null) { //un solo valor
@@ -149,6 +150,11 @@ class Ma extends Db {
     else throw new Exception("La consulta no arrojó resultados");
   }
 
+  public function first($entity, $render = null) { //un solo valor
+    $rows = $this->all($entity, $render);
+    return empty($rows) ? null : $rows[0];
+  }
+
   public function oneOrNull($entity, $render = null) { //un solo valor o null
     $rows = $this->all($entity, $render);
     if(count($rows) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
@@ -156,16 +162,6 @@ class Ma extends Db {
     else return null;
   }
 
-  public function identifier($entity, $identifier){
-    $render = new Render();
-    $render->setGeneralCondition(["_identifier","=",$identifier]);
-    $sql = $this->container->getSqlo($entity)->all($render); 
-    $sqlo = $this->container->getSqlo($entity)->getAll($ids, $render);
-    $result = $this->query($sql);
-    $rows = $result->fetch_all(MYSQLI_ASSOC);
-    $result->free();
-    return $rows;
-  }
 
   public function persist($entity, array $row){
     /**
