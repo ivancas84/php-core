@@ -4,6 +4,17 @@ require_once("class/model/Render.php");
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
 
+/**
+ * Ejemplo ejecucion
+ * require_once("../config/config.php");
+ * require_once("class/Container.php");
+ * set_time_limit ( 0 );
+ * $container = new Container();
+ * $import = $container->getImport("alumno");
+ * $import->defineSource();
+ * $import->pathSummary = $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
+ * $import->main();
+ */
 abstract class Import {
     /**
      * Importacion de elementos
@@ -31,8 +42,8 @@ abstract class Import {
         $this->identify();
         $this->query();
         $this->process();
-        //$this->persist();
-        //$this->summary();
+        $this->persist();
+        $this->summary();
     }
 
     public function element($i, $data){
@@ -274,12 +285,13 @@ abstract class Import {
       if(empty($this->ids[$id])) return;
 
       $render = new Render();
-      $render->setFields(["id", $field]);
+      $render->setFields([$field]);
       $render->setSize(false);
       $render->addCondition([$field,"=",$this->ids[$id]]);
 
-      $rows = $this->container->getDb()->advanced($name, $render);
+      $rows = $this->container->getDb()->all($name, $render);
   
+      //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
       $this->dbs[$id] = array_combine_key(
         $rows,
         $field
@@ -298,7 +310,7 @@ abstract class Import {
       $existente = $this->container->getValue($entityName);
       $existente->_fromArray($this->dbs[$id][$value], "set");
       $element->entities[$entityName]->_set("id",$existente->_get("id"));
-      $element->logs->addLog($entityName, "info", "Registro existente");
+      $element->logs->addLog($entityName, "info", "Registro existente, no será actualizado");
     }
     
   }

@@ -52,6 +52,10 @@ abstract class ImportElement {
   }
 
   public function persist(){
+    if(empty($this->sql)) {
+      $this->logs->addLog("persist","info","No se realizara ningun cambio en la base de datos");
+      return;
+    }
     try {
       $this->container->getDb()->multi_query_transaction($this->sql);
     } catch(Exception $exception){
@@ -60,6 +64,7 @@ abstract class ImportElement {
   }
 
   public function insert($name){
+    $this->logs->addLog($name,"info","Se realizara una insercion");
     if(Validation::is_empty($this->entities[$name]->_get("id"))) $this->entities[$name]->_set("id",uniqid());
     $this->entities[$name]->_call("setDefault");
     $sql = $this->container->getSqlo($name)->insert($this->entities[$name]->_toArray("sql"));
@@ -72,7 +77,7 @@ abstract class ImportElement {
     $compare =  $this->compare($this->entities[$name], $existente);
     if($compare !== true) {
       if($this->updateMode == "update") {
-        $this->logs->addLog("persona","info","Registro existente, se actualizara campos {$compare}");
+        $this->logs->addLog($name,"info","Registro existente, se actualizara campos {$compare}");
         $sql = $this->container->getSqlo($name)->update($this->entities[$name]->_toArray("sql"));
         $this->sql .= $sql;
       } else {
