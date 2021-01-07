@@ -5,6 +5,7 @@ require_once("class/model/Sql.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
 require_once("function/get_entity_relations.php");
+require_once("function/array_add_prefix.php");
 
 
 class EntityRel {
@@ -59,8 +60,29 @@ class EntityRel {
   }
 
 
+  public function fieldNames(){
+    /**
+     * Array de nombres de campos definidos entidad principal y sus relaciones, de la forma prefix-field
+     */
+    $fieldNames = $this->container->getEntity($this->entityName)->getFieldNames();
+    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
+      $fieldNames = array_unique(
+        array_merge(
+          $fieldNames, 
+          array_add_prefix(
+            $this->container->getEntity($entityName)->getFieldNames(),
+            $prefix."-"
+          )
+        )
+      );
+    }
+    return $fieldNames;
+  }
+
   public function fields(){
     /**
+     * @deprecated
+     * Se utilizaba para definir los campos definidos, fue reemplazada por el uso de fieldNames y fieldAlias
      * Definir sql de campos definidos de la entidad principal y sus relaciones
      */
     $fields = [implode(",", $this->container->getFieldAlias($this->entityName)->_toArray())];
@@ -76,7 +98,7 @@ class EntityRel {
     if(count($f) == 2) {      
       $prefix = $f[0];
       $entityName = get_entity_relations($this->entityName)[$f[0]];
-      return $this->container->getFieldAlias($this->entityName, $prefix)->_($f[1]);
+      return $this->container->getFieldAlias($entityName, $prefix)->_($f[1]);
     } 
     return $this->container->getFieldAlias($this->entityName)->_($field);
   }
