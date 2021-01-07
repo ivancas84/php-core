@@ -14,7 +14,13 @@ class EntitySqlo {
   public $container;
   public $entityName;
 
-  public function all($render = NULL) {
+  /**
+   * @deprecated
+   * Fue reemplazada por advanced(select)
+   */
+  /**public function all($render = NULL) {
+    
+
     $r = Render::getInstance($render);    
     
     $sql = "SELECT DISTINCT
@@ -27,8 +33,13 @@ class EntitySqlo {
 ";
 
     return $sql;
-  }
+  }*/
 
+  /**
+   * @deprecated
+   * Fue reemplazada por advanced(select)
+   */
+  /*
   public function getAll(array $ids, $render = NULL) {
     $r = Render::getInstance($render);
     $r->setSize(false); //se asigna size 0, la cantidad esta definida por los ids recibidos
@@ -44,7 +55,13 @@ class EntitySqlo {
 
     return $this->all($r);
   }
+  */
 
+  /**
+   * @deprecated
+   * Fue reemplazada por advanced(select)
+   */
+  /*
   public function ids($render = NULL) {
     $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
@@ -57,8 +74,9 @@ class EntitySqlo {
 ";
     return $sql;
   }
+  */
 
-  public function advanced(Render $render) {
+  public function select(Render $render) {
     $fields = array_merge($render->getGroup(), $render->getFields());
 
     $fieldsQuery_ = [];
@@ -173,7 +191,7 @@ WHERE
      * El conjunto de valores debe estar previamente formateado
      */
 
-    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusive($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusiveAdmin($this->container->getEntity($this->entityName));
     $sql = "
   INSERT INTO " . $this->container->getEntity($this->entityName)->sn_() . " (";    
     $sql .= implode(", ", $fns);    
@@ -191,7 +209,7 @@ VALUES ( ";
     $sql = "
 UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
 ";   
-    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusive($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusiveAdmin($this->container->getEntity($this->entityName));
     foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
     $sql = substr($sql, 0, -2); //eliminar ultima coma
 
