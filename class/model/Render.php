@@ -131,6 +131,7 @@ class Render {
   public function getPage(){ return $this->page; }
   
   public function setFields (array $fields = null) { $this->fields = $fields; }
+  public function addFields (array $fields = null) { $this->fields = array_unique(array_merge($this->fields, $fields)); }
   public function getFields () { return $this->fields; }
 
   public function setGroup (array $group = null) { $this->group = $group; }
