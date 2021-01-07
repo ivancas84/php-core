@@ -35,6 +35,14 @@ class StructTools {
     return $names;
   }
 
+  public function getFieldNamesExclusiveAdmin($entity){ //pk, nf, fk
+    $names = [];
+    foreach($entity->getFields() as $field) {
+      if($field->isExclusive() && $field->isAdmin()) array_push($names, $field->getName());
+    }
+    return $names;
+  }
+
 
 
   public function getEntityRefBySubtypeSelect($entity){
