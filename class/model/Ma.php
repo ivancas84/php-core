@@ -32,7 +32,7 @@ class Ma extends Db {
 
     if(!in_array("_count", $r->getFields())) $r->setFields(["_count"]);
     
-    $sql = $this->container->getSqlo($entity)->advanced($r);
+    $sql = $this->container->getSqlo($entity)->select($r);
     $result = $this->query($sql);
     $row = $result->fetch_assoc();
     $result->free();
@@ -43,7 +43,7 @@ class Ma extends Db {
     /**
      * consulta avanzada
      */
-    $sql = $this->container->getSqlo($entity)->advanced($render);
+    $sql = $this->container->getSqlo($entity)->select($render);
     
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
@@ -68,8 +68,9 @@ class Ma extends Db {
     return null;
   }
 
-  public function ids($entity, $render = null){    
-    $sql = $this->container->getSqlo($entity)->ids($render);
+  public function ids($entityName, $render = null){   
+    $render->setFields(["id"]);
+    $sql = $this->container->getSqlo($entityName)->select($render);
     $result = $this->query($sql);
     $ids = $this->fetch_all_columns($result, 0);
     $result->free();
@@ -134,13 +135,14 @@ class Ma extends Db {
     return (!count($rows)) ? null : $rows[0];
   }
 
-  public function getAll($entity, $ids, $render = null){ //busqueda por ids
+  public function getAll($entityName, $ids, $render = null){ //busqueda por ids
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
     if(!$render) $render = new Render();
-    $render->addCondition("id","=",$ids);
-    $render->setFields($this->getRel($entityName)->fieldNames());
-    return $this->all($entity, $render);
+    $render->addCondition(["id","=",$ids]);
+    $render->setFields($this->container->getRel($entityName)->fieldNames());
+
+    return $this->all($entityName, $render);
   }
 
   public function one($entity, $render = null) { //un solo valor
