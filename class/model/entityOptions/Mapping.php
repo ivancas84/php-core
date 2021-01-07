@@ -40,14 +40,14 @@ class MappingEntityOptions extends EntityOptions {
   }
 
   public function _default($field){ return $this->_pt() . "." . $field; }
-  public function _date($field) { return "CAST({$this->_pt()}.{$field} AS DATE)"; }
-  public function _ym($field) { return "DATE_FORMAT({$this->_pt()}.{$field}, '%Y-%m')"; }
-  public function _y($field) { return "DATE_FORMAT({$this->_pt()}.{$field}, '%Y')"; }
-  public function _avg($field) { return "AVG({$this->_pt()}.{$field})"; }
-  public function _min($field) { return "MIN({$this->_pt()}.{$field})"; }
-  public function _max($field) { return "MAX({$this->_pt()}.{$field})"; }
-  public function _sum($field) { return "SUM({$this->_pt()}.{$field})"; }
-  public function _count($field) { return "COUNT({$this->_pt()}.{$field})"; }
+  public function _date($field) { return "CAST(" . $this->_($field) . " AS DATE)"; }
+  public function _ym($field) { return "DATE_FORMAT(" . $this->_($field) . ", '%Y-%m')"; }
+  public function _y($field) { return "DATE_FORMAT(" . $this->_($field) . ", '%Y')"; }
+  public function _avg($field) { return "AVG(" . $this->_($field) . ")"; }
+  public function _min($field) { return "MIN(" . $this->_($field) . ")"; }
+  public function _max($field) { return "MAX(" . $this->_($field) . ")"; }
+  public function _sum($field) { return "SUM(" . $this->_($field) . ")"; }
+  public function _count($field) { return "COUNT(" . $this->_($field) . ")"; }
   public function _exists($field) { return $this->_default($field); }
   public function _isSet($field) { return $this->_default($field); }
 
