@@ -10,7 +10,7 @@ class TestApi {
   public $permission = "r";
 
   public function main(){ 
-    $this->container->getAuth()->authorize($entityName, $permission);
+    //$this->container->getAuth()->authorize($this->entityName, $this->permission);
 
     return ["entity_name"=>$this->entityName]; 
   }
