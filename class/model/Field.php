@@ -60,19 +60,20 @@ abstract class Field {
     //"_u": Clave foranea uno a uno
 
   public $subtype = null; //tipo de datos avanzado
-    //text texto simple
-    //textarea texto grande
-    //checkbox Booleanos
-    //date
-    //timestamp
-    //select_int Conjunto de enteros definido, los valores se definen en el atributo "selectValues"
-    //select_text Conjunto de strings definido, los valores se definen en el atributo "selectValues"
-    //cuil Texto para cuil
-    //dni Texto para dni
-    //select (fk) Conjunto de opciones definidas mediante los valores de las claves foraneas
-    //typeahead (fk)
-    //file (fk)
-
+  /**
+   * text texto simple
+   * textarea texto grande
+   * checkbox Booleanos
+   * date
+   * timestamp
+   * cuil Texto para cuil
+   * dni Texto para dni
+   * select Conjunto de opciones definidas
+   * Para fk las opciones se definen mediante los valores de las claves foraneas
+   * typeahead (fk)
+   * file (fk)
+   */
+  
   public $selectValues = array();
     //si subtype = "select_text", deben asignarse valores "text"
     //si subtype = "select_int", deben asignarse valores "int"
