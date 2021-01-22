@@ -31,7 +31,7 @@ class UploadApi {
     $this->file = filter_file("file");
     if ( $this->file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
 
-    $this->createDir(); //1 crear directorio en base a dir
+    $this->createDir(); //1 crear directorio en base a atributo dir
     $this->createFileValue(); //2 definir "fileValue", poseera entre otras cosas el content (nombre del archivo)
     $this->moveUploadedFile(); //3 mover archivo segun lo definido en 1 y 2
     $this->insertFile(); //4 insertar datos en la base de datos utilizando 2

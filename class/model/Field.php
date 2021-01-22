@@ -2,7 +2,6 @@
 
 require_once("function/snake_case_to.php");
 
-
 abstract class Field {
 
   protected static $instances = [];
@@ -78,15 +77,6 @@ abstract class Field {
     //si subtype = "select_text", deben asignarse valores "text"
     //si subtype = "select_int", deben asignarse valores "int"
 
-  public $exclusive = true;
-  /**
-   * Campo exclusivo
-   * Un campo exclusivo puede definirse internamente con los campos de la entidad.
-   * Un campo no exlusivo debe definirse con alguna relación independiente.
-   * Esta pensado para separar los fields de una entidad de las que no son para el caso que haya que definirse subconsulta 
-   * Los campos no exclusivos habitualmente se definen como admin = false
-   */
-
   public $condition = null;
   /**
    * Tipo de condicion a evaluar
@@ -152,7 +142,5 @@ abstract class Field {
       default: return $this->name;
     }
   }
-
-
 
 }
