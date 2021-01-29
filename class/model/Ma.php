@@ -139,6 +139,7 @@ class Ma extends Db {
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
     if(!$render) $render = new Render();
+    $render->setSize(false);
     $render->addCondition(["id","=",$ids]);
     $render->setFields($this->container->getRel($entityName)->fieldNames());
 

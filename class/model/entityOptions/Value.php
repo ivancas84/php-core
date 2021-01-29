@@ -154,7 +154,7 @@ class ValueEntityOptions extends EntityOptions {
   protected function _fastSetString($fieldName, string $p = null) { return $this->value[$fieldName] = $p; }  
   protected function _fastSetInteger($fieldName, int $p = null) { return $this->value[$fieldName] = $p; }  
   protected function _fastSetFloat($fieldName, float $p = null) { return $this->value[$fieldName] = $p; }  
-  protected function _fastSetBoolean($fieldName, boolean $p = null) { return $this->value[$fieldName] = $p; }  
+  protected function _fastSetBoolean($fieldName, bool $p = null) { return $this->value[$fieldName] = $p; }  
 
   protected function _defineSetDefault($fieldName){
     $param = explode(".",$fieldName);
@@ -326,8 +326,8 @@ class ValueEntityOptions extends EntityOptions {
   protected function _sqlYm($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "Y-m"); }
   protected function _sqlY($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "Y"); }
   protected function _sqlBoolean($fieldName){ return $this->sql->boolean($this->value[$fieldName]); }
-  protected function _sqlNumber($fieldName){ return $this->sql->number($this->value[$fieldName], "Y-m"); }
-  protected function _sqlString($fieldName){ return $this->sql->string($this->value[$fieldName], "Y-m"); }
+  protected function _sqlNumber($fieldName){ return $this->sql->number($this->value[$fieldName]); }
+  protected function _sqlString($fieldName){ return $this->sql->string($this->value[$fieldName]); }
 
   protected function _defineCheck($fieldName){
     $param = explode(".",$fieldName);

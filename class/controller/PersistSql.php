@@ -29,7 +29,7 @@ class PersistSql {
   public function unique($entityName, $row) {
     $value = $this->container->getValue($entityName)->_fromArray($row, "set");
 
-    $row = $this->container->getDb()->unique($entityName, $value->_toArray());
+    $row = $this->container->getDb()->unique($entityName, $value->_toArray("json"));
     if (!empty($row)){ 
       $value->_set("id",$row["id"]);
       $value->_call("reset")->_call("check");
