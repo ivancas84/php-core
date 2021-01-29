@@ -277,11 +277,18 @@
       }
 
       public static function is_empty($value) {
-          return ($value === UNDEFINED || empty($value)) ? true : false;
+        /**
+         * Cuidado si se utiliza con numeros
+         */
+        return ($value === UNDEFINED || empty($value)) ? true : false;
       }
 
       public static function is_set($value) {
         return ($value !== UNDEFINED || isset($value)) ? true : false;
+      }
+
+      public static function is_null($value) {
+        return ($value !== UNDEFINED || is_null($value)) ? true : false;
       }
 
       public static function is_undefined($value) {
