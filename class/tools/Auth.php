@@ -116,10 +116,10 @@ class Auth {
     if($authorized) return true;
   }
 
-  public function authorize($entityName, $permissions, $options = ["aud"]){
+  public function authorize($entityName, $permissions){
     require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_CONFIG . "/public_scope.php");
     if($this->authorizePermissions($entityName, $permissions, public_scope())) return true;
-    $token = $this->authenticate($options);
+    $token = $this->authenticate();
     require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_CONFIG . "/private_scope.php");
     if($this->authorizePermissions($entityName, $permissions, private_scope())) return true;
     if($this->authorizePermissions($entityName, $permissions, $token->scope)) return true;
