@@ -49,7 +49,7 @@ class SqlTools {
 
   public function number($value){
     if(Validation::is_undefined($value)) return UNDEFINED;
-    if(is_null($value) || $value == "") return "null";
+    if(is_null($value) || $value === "") return "null";
     return $value;
   }
 }

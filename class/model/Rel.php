@@ -131,7 +131,7 @@ class EntityRel {
 
 
   public function jsonAll($rows){
-    foreach($rows as &$row) $row = $rel->json($row);
+    foreach($rows as &$row) $row = $this->json($row);
     return $rows;
   }
 

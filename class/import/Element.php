@@ -35,6 +35,7 @@ abstract class ImportElement {
    *   $this->setEntity($row, "persona", "per");
    *   $this->setEntity($row, "curso", "cur");
    *   $this->setAsignatura($row, "asi"); //ejemplo definido en la subclase
+   *   $this->entities["alumno"]->_set("ingreso", preg_replace("/[^0-9]/", "", $this->entities["alumno"]->_get("ingreso"))); // ejemplo de cambio de valor particular
    * }
    */
   

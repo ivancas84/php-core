@@ -2,8 +2,8 @@
 
 class BackupApi {
   /**
-   * Controlador base
-   * Elementos en comun a todos los controladores
+   * Controlador de backup de base de datos
+   * El directorio debe existir sino tira error
    **/
   
   public $entityName; 

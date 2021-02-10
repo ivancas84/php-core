@@ -26,6 +26,14 @@ class Render {
    * Ej ["nombres", "horas_catedra.sum", "edad.avg", "com_cur-horas_catedra]
    */
 
+  protected $groupConcat = array(); //campos a los cuales se aplica group_concat
+  /**
+   * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
+   * . indica aplicacion de funcion de agregacion
+   * - indica que pertenece a una relacion
+   * Ej ["telefono", "nombres"], se traduce en  GROUP_CONCAT(DISTINCT telefono SEPARATOR ', ' ) AS telefono
+   */
+
   protected $group = array(); //campos de agrupacion
   /**
    * Deben ser campos de consulta

@@ -3,6 +3,18 @@
 require_once("class/model/entityOptions/EntityOptions.php");
 
 class MappingEntityOptions extends EntityOptions {
+  /**
+   * Ejemplo redefinicion: Ruta class/mapping/Comision.php
+   * 
+   * require_once("class/model/entityOptions/Mapping.php");
+   * 
+   * class ComisionMapping extends MappingEntityOptions{
+   *   public function numero() {
+   *     return "CONCAT({$this->_pf()}sed.numero, {$this->_pt()}.division)
+   * ";
+   *   }
+   * }
+   */
 
   public function count(){ return "COUNT(*)"; }
   
