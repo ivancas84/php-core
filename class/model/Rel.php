@@ -79,30 +79,8 @@ class EntityRel {
     return $fieldNames;
   }
 
-  public function fields(){
-    /**
-     * @deprecated
-     * Se utilizaba para definir los campos definidos, fue reemplazada por el uso de fieldNames y fieldAlias
-     * Definir sql de campos definidos de la entidad principal y sus relaciones
-     */
-    $fields = [implode(",", $this->container->getFieldAlias($this->entityName)->_toArray())];
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName) 
-      array_push($fields, implode(", ", $this->container->getFieldAlias($entityName, $prefix)->_toArray()));
-    
-    return implode(',
-', $fields);
-  }
   
-  public function fieldAlias($field){
-    $f = explode("-",$field);
-    if(count($f) == 2) {      
-      $prefix = $f[0];
-      $entityName = get_entity_relations($this->entityName)[$f[0]];
-      return $this->container->getFieldAlias($entityName, $prefix)->_($f[1]);
-    } 
-    return $this->container->getFieldAlias($this->entityName)->_($field);
-  }
-
+  
   public function join(Render $render){
     return $this->container->getControllerEntity("rel_join", $this->entityName)->main($render);
   }

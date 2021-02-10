@@ -51,13 +51,17 @@ class Ma extends Db {
     return $rows;    
   }
 
-  public function unique($entity, array $params){
+  public function unique($entityName, array $params){
     /**
      * Busqueda por campos unicos
      * $params
      *   array("nombre_field" => "valor_field", ...)
      */
-    $sql = $this->container->getSqlo($entity)->unique($params);
+    if(empty($params)) return null;
+    $render = $this->container->getRender($entityName);
+    $render->setConditionUniqueFields($params);
+    $render->addFields($this->container->getRel($entityName)->fieldNames());
+    $sql = $this->container->getSqlo($entityName)->select($render);
     if(empty($sql)) return null;
 
     $result = $this->query($sql);

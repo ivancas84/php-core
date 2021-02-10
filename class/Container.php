@@ -187,7 +187,14 @@ class Container {
     return self::$sqlo[$entity] = $c;
   }
 
-  
+  public function getRender($entityName = null){
+    require_once("class/model/Render.php");
+    $render = new Render;
+    $render->container = $this;  
+    $render->entityName = $entityName;    
+    return $render;    
+  }
+
   public function getSql($entity, $prefix = null){
     $dir = "class/model/sql/";
     $name = snake_case_to("XxYy", $entity) . ".php";

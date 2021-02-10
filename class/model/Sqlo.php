@@ -3,6 +3,7 @@
 require_once("function/snake_case_to.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
+require_once("function/get_entity_relations.php");
 
 
 class EntitySqlo {
@@ -14,78 +15,36 @@ class EntitySqlo {
   public $container;
   public $entityName;
 
-  /**
-   * @deprecated
-   * Fue reemplazada por advanced(select)
-   */
-  /**public function all($render = NULL) {
-    
 
-    $r = Render::getInstance($render);    
-    
-    $sql = "SELECT DISTINCT
-{$this->container->getRel($this->entityName)->fields()}
-{$this->container->getSql($this->entityName)->fromSubSql($r)}
-{$this->container->getRel($this->entityName)->join($r)}
-" . concat($this->container->getSql($this->entityName)->condition($r), 'WHERE ') . "
-{$this->container->getSql($this->entityName)->orderBy($r->getOrder())}
-{$this->container->getSql($this->entityName)->limit($r->getPage(), $r->getSize())}
-";
-
-    return $sql;
-  }*/
-
-  /**
-   * @deprecated
-   * Fue reemplazada por advanced(select)
-   */
-  /*
-  public function getAll(array $ids, $render = NULL) {
-    $r = Render::getInstance($render);
-    $r->setSize(false); //se asigna size 0, la cantidad esta definida por los ids recibidos
-    //Para dar soporte a distintos tipos de id, se define la condicion de ids a traves del metodo conditionAdvanced en vez de utilizar IN como se hacia habitualmente
-    $advanced = [];
-    for($i = 0; $i < count($ids); $i++) {
-      $connect = ($i == 0) ? "AND" : "OR";
-      array_push($advanced, ["id", "=", $ids[$i], $connect]);
-    }
-    if(!count($advanced)) return null;
-
-    $r->addCondition($advanced);
-
-    return $this->all($r);
-  }
-  */
-
-  /**
-   * @deprecated
-   * Fue reemplazada por advanced(select)
-   */
-  /*
-  public function ids($render = NULL) {
-    $r = Render::getInstance($render);
-    $sql = "SELECT DISTINCT
-{$this->container->getMapping($this->entityName)->_('id')}
-{$this->container->getSql($this->entityName)->fromSubSql($r)}
-{$this->container->getRel($this->entityName)->join($r)}
-" . concat($this->container->getSql($this->entityName)->condition($r), 'WHERE ') . "
-{$this->container->getSql($this->entityName)->orderBy($r->getOrder())}
-{$this->container->getSql($this->entityName)->limit($r->getPage(), $r->getSize())}
-";
-    return $sql;
-  }
-  */
-
-  public function select(Render $render) {
+  protected function fieldsQuery(Render $render){
     $fields = array_merge($render->getGroup(), $render->getFields());
 
     $fieldsQuery_ = [];
-    foreach($fields as $field){
-      $f = $this->container->getRel($this->entityName)->fieldAlias($field);
+    foreach($fields as $key => $fieldName){
+      /**
+     * Interpretar prefijo y obtener mapping
+     */
+      $f = explode("-",$fieldName);
+      if(count($f) == 2) {
+        $prefix = $f[0];
+        $entityName = get_entity_relations($this->entityName)[$f[0]];
+        $mapping = $this->container->getMapping($entityName, $prefix);
+        $fieldName = $f[1];
+      } else { 
+        $mapping = $this->container->getMapping($this->entityName);
+      }
+      
+      $alias = (is_integer($key)) ? $mapping->_pf() . str_replace(".","_",$fieldName) : $key;
+      $f = $mapping->_($fieldName) . " AS " . $alias;
+
       array_push($fieldsQuery_, $f);
     }
 
-    $fieldsQuery = implode(', ', $fieldsQuery_);
+    return implode(', ', $fieldsQuery_);
+  }
+
+  public function select(Render $render) {
+    $fieldsQuery = $this->fieldsQuery($render);
 
     $group_ = [];
     if(!empty($render->getGroup())){
@@ -163,28 +122,6 @@ WHERE id IN ({$ids_});
 ";
   }
 
-  public function unique(array $params, $render = NULL){
-    /**
-     * filtrar campos unicos
-     * $params:
-     *   array("nombre_field" => "valor_field", ...)
-     * los campos unicos simples se definen a traves del atributo Field::$unique
-     * los campos unicos multiples se definen a traves del meotodo Entity::getFieldsUniqueMultiple();
-     */
-    $r = Render::getInstance($render);
-
-    $conditionUniqueFields = $this->container->getSql($this->entityName)->conditionUniqueFields($params);
-    if(empty($conditionUniqueFields)) return null;
-
-    return "SELECT DISTINCT
-{$this->container->getRel($this->entityName)->fields()}
-{$this->container->getSql($this->entityName)->fromSubSql($r)}
-{$this->container->getRel($this->entityName)->join($r)}
-WHERE
-{$conditionUniqueFields}
-" . concat($this->container->getSql($this->entityName)->condition($r), 'AND ') . "
-";
-  }
 
   public function insert(array $row){
     /**
