@@ -1,14 +1,18 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/Render.php");
-require_once("class/tools/Filter.php");
 
-
-class TestApi extends BaseApi {
+class TestApi {
   /**
    * Controlador de prueba
    **/
 
-  public function main(){ return $this->entityName; }
+  public $entityName;
+  public $container;
+  public $permission = "r";
+
+  public function main(){ 
+    //$this->container->getAuth()->authorize($this->entityName, $this->permission);
+
+    return ["entity_name"=>$this->entityName]; 
+  }
 
 }

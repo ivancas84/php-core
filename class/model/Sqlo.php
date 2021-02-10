@@ -1,9 +1,9 @@
 <?php
 
 require_once("function/snake_case_to.php");
-require_once("class/model/Sql.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
+
 
 class EntitySqlo {
   /**
@@ -14,9 +14,15 @@ class EntitySqlo {
   public $container;
   public $entityName;
 
-  public function all($render = NULL) {
+  /**
+   * @deprecated
+   * Fue reemplazada por advanced(select)
+   */
+  /**public function all($render = NULL) {
     
-    $r = Render::getInstance($render);
+
+    $r = Render::getInstance($render);    
+    
     $sql = "SELECT DISTINCT
 {$this->container->getRel($this->entityName)->fields()}
 {$this->container->getSql($this->entityName)->fromSubSql($r)}
@@ -25,11 +31,18 @@ class EntitySqlo {
 {$this->container->getSql($this->entityName)->orderBy($r->getOrder())}
 {$this->container->getSql($this->entityName)->limit($r->getPage(), $r->getSize())}
 ";
-    return $sql;
-  }
 
+    return $sql;
+  }*/
+
+  /**
+   * @deprecated
+   * Fue reemplazada por advanced(select)
+   */
+  /*
   public function getAll(array $ids, $render = NULL) {
     $r = Render::getInstance($render);
+    $r->setSize(false); //se asigna size 0, la cantidad esta definida por los ids recibidos
     //Para dar soporte a distintos tipos de id, se define la condicion de ids a traves del metodo conditionAdvanced en vez de utilizar IN como se hacia habitualmente
     $advanced = [];
     for($i = 0; $i < count($ids); $i++) {
@@ -42,33 +55,46 @@ class EntitySqlo {
 
     return $this->all($r);
   }
+  */
 
+  /**
+   * @deprecated
+   * Fue reemplazada por advanced(select)
+   */
+  /*
   public function ids($render = NULL) {
     $r = Render::getInstance($render);
     $sql = "SELECT DISTINCT
-{$this->container->getMapping($this->entityName)->id()}
+{$this->container->getMapping($this->entityName)->_('id')}
 {$this->container->getSql($this->entityName)->fromSubSql($r)}
 {$this->container->getRel($this->entityName)->join($r)}
 " . concat($this->container->getSql($this->entityName)->condition($r), 'WHERE ') . "
 {$this->container->getSql($this->entityName)->orderBy($r->getOrder())}
 {$this->container->getSql($this->entityName)->limit($r->getPage(), $r->getSize())}
 ";
-
     return $sql;
   }
+  */
 
-  public function advanced(Render $render) { //consulta avanzada
-    $fields = array_merge($render->getGroup(), $render->getAggregate());
+  public function select(Render $render) {
+    $fields = array_merge($render->getGroup(), $render->getFields());
 
     $fieldsQuery_ = [];
     foreach($fields as $field){
-      $f = $this->container->getMapping($this->entityName)->_evals($field);
-      array_push($fieldsQuery_, "{$f} AS {$field}");
+      $f = $this->container->getRel($this->entityName)->fieldAlias($field);
+      array_push($fieldsQuery_, $f);
     }
 
     $fieldsQuery = implode(', ', $fieldsQuery_);
 
-    $group_ = $render->getGroup();
+    $group_ = [];
+    if(!empty($render->getGroup())){
+      foreach($render->getGroup() as $field){
+        $f = $this->container->getRel($this->entityName)->mapping($field);
+        array_push($group_, $f);
+      }
+    }
+
     $group = empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
 ";
 
@@ -165,7 +191,7 @@ WHERE
      * El conjunto de valores debe estar previamente formateado
      */
 
-    $fns = StructTools::getFieldNamesExclusive($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusiveAdmin($this->container->getEntity($this->entityName));
     $sql = "
   INSERT INTO " . $this->container->getEntity($this->entityName)->sn_() . " (";    
     $sql .= implode(", ", $fns);    
@@ -183,10 +209,11 @@ VALUES ( ";
     $sql = "
 UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
 ";   
-    $fns = StructTools::getFieldNamesExclusive($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusiveAdmin($this->container->getEntity($this->entityName));
     foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
     $sql = substr($sql, 0, -2); //eliminar ultima coma
 
     return $sql;
   }
+
 }

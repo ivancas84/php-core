@@ -6,7 +6,7 @@
 
 require_once("class/model/Db.php");
 require_once("class/model/Render.php");
-require_once("function/toString.php");
+
 
 class Ma extends Db {
   /**
@@ -30,10 +30,9 @@ class Ma extends Db {
     $r->setPage(1);
     $r->setOrder([]);
 
-    if(!in_array("_count", $r->getAggregate())) $r->setAggregate(["_count"]);
+    if(!in_array("_count", $r->getFields())) $r->setFields(["_count"]);
     
-    $sql = $this->container->getSqlo($entity)->advanced($r);
-    
+    $sql = $this->container->getSqlo($entity)->select($r);
     $result = $this->query($sql);
     $row = $result->fetch_assoc();
     $result->free();
@@ -44,7 +43,8 @@ class Ma extends Db {
     /**
      * consulta avanzada
      */
-    $sql = $this->container->getSqlo($entity)->advanced($render);
+    $sql = $this->container->getSqlo($entity)->select($render);
+    
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
@@ -68,12 +68,15 @@ class Ma extends Db {
     return null;
   }
 
-  public function ids($entity, $render = null){
-    $sql = $this->container->getSqlo($entity)->ids($render);
+  public function ids($entityName, $render = null){   
+    $render->setFields(["id"]);
+    $sql = $this->container->getSqlo($entityName)->select($render);
     $result = $this->query($sql);
     $ids = $this->fetch_all_columns($result, 0);
     $result->free();
-    array_walk($ids, "toString"); 
+    
+    require_once("function/to_string.php");
+    array_walk($ids, "to_string"); 
     /**
      * los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)
      */
@@ -106,11 +109,13 @@ class Ma extends Db {
     else return null;
   }
 
-  public function all(string $entity, $render = null){
+  public function all(string $entityName, $render = null){
     /**
      * todos los valores
      */
-    $sql = $this->container->getSqlo($entity)->all($render);
+    if(!$render) $render = new Render();
+    $render->addFields($this->container->getRel($entityName)->fieldNames());
+    $sql = $this->container->getSqlo($entityName)->select($render);
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
@@ -130,14 +135,15 @@ class Ma extends Db {
     return (!count($rows)) ? null : $rows[0];
   }
 
-  public function getAll($entity, $ids, $render = null){ //busqueda por ids
+  public function getAll($entityName, $ids, $render = null){ //busqueda por ids
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
-    $sql = $this->container->getSqlo($entity)->getAll($ids, $render);
-    $result = $this->query($sql);
-    $rows = $result->fetch_all(MYSQLI_ASSOC);
-    $result->free();
-    return $rows;
+    if(!$render) $render = new Render();
+    $render->setSize(false);
+    $render->addCondition(["id","=",$ids]);
+    $render->setFields($this->container->getRel($entityName)->fieldNames());
+
+    return $this->all($entityName, $render);
   }
 
   public function one($entity, $render = null) { //un solo valor
@@ -147,6 +153,11 @@ class Ma extends Db {
     else throw new Exception("La consulta no arrojó resultados");
   }
 
+  public function first($entity, $render = null) { //un solo valor
+    $rows = $this->all($entity, $render);
+    return empty($rows) ? null : $rows[0];
+  }
+
   public function oneOrNull($entity, $render = null) { //un solo valor o null
     $rows = $this->all($entity, $render);
     if(count($rows) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
@@ -154,16 +165,6 @@ class Ma extends Db {
     else return null;
   }
 
-  public function identifier($entity, $identifier){
-    $render = new Render();
-    $render->setGeneralCondition(["_identifier","=",$identifier]);
-    $sql = $this->container->getSqlo($entity)->all($render); 
-    $sqlo = $this->container->getSqlo($entity)->getAll($ids, $render);
-    $result = $this->query($sql);
-    $rows = $result->fetch_all(MYSQLI_ASSOC);
-    $result->free();
-    return $rows;
-  }
 
   public function persist($entity, array $row){
     /**
@@ -176,7 +177,15 @@ class Ma extends Db {
       return $this->update($entity, $row);
     }
 
-    else { return $this->insert($entity, $row); }
+    return $this->insert($entity, $row);
+  }
+
+  public function persistId($entity, array $row){
+    /**
+     * Persistencia directa (no realiza chequeo de valores ni log)
+     */
+    if (!empty($row["id"])) return $this->update($entity, $row);
+    return $this->insert($entity, $row);
   }
 
   public function insert($entity, array $row){ 
@@ -184,7 +193,7 @@ class Ma extends Db {
      * Insercion directa (no realiza chequeo de valores)
      */
     $insert = $this->container->getSqlo($entity)->insert($row);
-    $result = $this->query_log($insert["sql"]);
+    $result = $this->query($insert["sql"]);
     return array("id" => $insert["id"], "detail"=>$insert["detail"]);
   }
 
@@ -193,7 +202,7 @@ class Ma extends Db {
      * Actualizacion directa (no realiza chequeo de valores)
      */ 
     $update = $this->container->getSql($entity)->update($row);
-    $result = $this->query_log($update["sql"]);
+    $result = $this->query($update["sql"]);
     return array("id" => $update["id"], "detail"=>$update["detail"]);
   }
 
@@ -202,51 +211,8 @@ class Ma extends Db {
      * Eliminacion directa (no realiza chequeo de valores)
      */
     $delete = $this->container->getSqlo($entity)->delete($id);
-    $result = $this->query_log($delete["sql"]);
+    $result = $this->query($delete["sql"]);
     return array("id" => $delete["id"], "detail"=>$delete["detail"]);
   }
 
-
-  public function log($query){
-    return;
-    $escapedQuery = $this->escape_string($query);
-
-    $sql = "
-INSERT INTO log (id, description) 
-VALUES ('" . uniqid() . "', '{$escapedQuery}')
-    ";
-    $db = new Db(TXN_HOST,TXN_USER,TXN_PASS, TXN_DBNAME);
-    $db->query($sql);
-  }
- 
-  public function query_log($query, $resultmode = MYSQLI_STORE_RESULT){
-    $result = $this->query($query, $resultmode);
-    $this->log($query);
-    return $result;    
-  }
-
-  public function multi_query_log($query){
-    /**
-     * cuidado, siempre espera que se recorran los resultados.
-     * Se recomienda utilizar multi_query_last si se quiere evitar procesamiento adicional
-     */
-    if(!$result = parent::multi_query($query)) throw new Exception($this->error);
-    $this->log($query);
-    return $result;
-  }
-
-  public function multi_query_last_log($query){
-    /**
-     * si corresponde,  devuelve el ultimo resultado si existe, sino devuelve false
-     */
-    $result = $this->multi_query_last($query);
-    $this->log($query);
-    return $result;
-  }
-
-  public function multi_query_transaction_log($query){
-    $result = $this->multi_query_transaction($query);
-    $this->log($query);
-    return $result;
-  }
 }

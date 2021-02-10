@@ -5,7 +5,6 @@ require_once("class/model/entityOptions/Condition.php");
 class ConditionAuxEntityOptions extends EntityOptions {
  
   public $mapping;
-  public $value;
 
   /**
    * Las condiciones auxiliares no siguen una estructura habitual de definicion,
@@ -21,10 +20,14 @@ class ConditionAuxEntityOptions extends EntityOptions {
    */
 
   public function compare($option, $value) {
-    $f1 = $this->mapping->eval($value[0]);
-    $f2 = $this->mapping->eval($value[1]);
+    $f1 = $this->mapping->_($value[0]);
+    $f2 = $this->mapping->_($value[1]);
     return "({$f1} {$option} {$f2})";
   }
   
+  public function _($fieldName, $option, $value){
+    $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
+    if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$option, $value]);
+  }
 
 }

@@ -1,15 +1,18 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/Render.php");
-require_once("class/tools/Filter.php");
+
+require_once("function/php_input.php");
 
 class CountApi {
   public $entityName;
   public $container;
+  public $permission = "r";
 
   public function main() {
-    $display = Filter::jsonPost();
-    $render = Render::getInstanceDisplay($display);
-    return $this->container->getDb()->count($this->entityName, $render);
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $display = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
+
+    return $this->container->getDb()->count($render->entityName, $render);
   }
+
 }

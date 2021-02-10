@@ -8,7 +8,7 @@ class SqlTools {
 
   public function exists($field, $option, $value) {
     if(empty($value) || $value == "true" || $value == "false" || is_bool($value) ) {
-      if (($option != "=") && ($option != "!=")) throw new Exception("La combinacion field-option-value no está permitida");
+      if (($option != "=") && ($option != "!=")) throw new Exception("La combinacion field-option-value no está permitida para definir existencia: " . $field. " " . $option . " " . $value, 404);
 
       switch(settypebool($value)){
         case true:
@@ -49,7 +49,7 @@ class SqlTools {
 
   public function number($value){
     if(Validation::is_undefined($value)) return UNDEFINED;
-    if(Validation::is_empty($value)) return 'null';
+    if(is_null($value) || $value === "") return "null";
     return $value;
   }
 }

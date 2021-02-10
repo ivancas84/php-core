@@ -3,17 +3,66 @@
 require_once("class/model/entityOptions/EntityOptions.php");
 
 class MappingEntityOptions extends EntityOptions {
-
-  public function id() { return $this->prt() . ".id"; }
+  /**
+   * Ejemplo redefinicion: Ruta class/mapping/Comision.php
+   * 
+   * require_once("class/model/entityOptions/Mapping.php");
+   * 
+   * class ComisionMapping extends MappingEntityOptions{
+   *   public function numero() {
+   *     return "CONCAT({$this->_pf()}sed.numero, {$this->_pt()}.division)
+   * ";
+   *   }
+   * }
+   */
 
   public function count(){ return "COUNT(*)"; }
   
   public function identifier(){ 
     if(empty($this->entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->entity->getName()); 
     $identifier = [];
-    foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->id());
+    foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->container->getRel($this->entityName)->mapping($id));
     return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
 ";
   }
 
+  public function label(){
+    return $this->container->getControllerEntity("mapping_label", $this->entityName)->main($this->prefix);
+  }
+
+  public function search(){
+    $fields = $this->container->getEntity($this->entityName)->nf;
+    array_walk($fields, function(&$field) { $field = $this->container->getMapping($this->entityName, $this->prefix)->_($field); });
+    return "CONCAT_WS(' ', " . implode(",", $fields). ")";
+  }
+
+  public function _($fieldName, array $params = []){
+    /**
+     * @example 
+     *   _("nombre")
+     *   _("fecha_alta.max");
+     *   _("edad.avg")
+     */    
+    $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
+    if(method_exists($this, $m)) return call_user_func_array(array($this, $m), $params);
+
+    $p = explode(".",$fieldName);
+    $m = (count($p) == 1) ? "_default" : "_".snake_case_to("xxYy", $p[1]);
+    return call_user_func_array(array($this, $m), [$p[0]]); 
+  }
+
+  public function _default($field){ return $this->_pt() . "." . $field; }
+  public function _date($field) { return "CAST(" . $this->_($field) . " AS DATE)"; }
+  public function _ym($field) { return "DATE_FORMAT(" . $this->_($field) . ", '%Y-%m')"; }
+  public function _y($field) { return "DATE_FORMAT(" . $this->_($field) . ", '%Y')"; }
+  public function _avg($field) { return "AVG(" . $this->_($field) . ")"; }
+  public function _min($field) { return "MIN(" . $this->_($field) . ")"; }
+  public function _max($field) { return "MAX(" . $this->_($field) . ")"; }
+  public function _sum($field) { return "SUM(" . $this->_($field) . ")"; }
+  public function _count($field) { return "COUNT(" . $this->_($field) . ")"; }
+  public function _exists($field) { return $this->_default($field); }
+  public function _isSet($field) { return $this->_default($field); }
+
 }
+
+

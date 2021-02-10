@@ -1,6 +1,5 @@
 <?php
 
-require_once("class/model/StructTools.php");
 
 class EntityOptions {
 
@@ -8,29 +7,24 @@ class EntityOptions {
    * Todos los metodos en general se ejecutan comparando el valor UNDEFINED
    */
   public $prefix = "";
-  public $entity;
   
   public function _pf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; } 
   /**
    * prefijo fields
    */
   
-  public function _pt(){ return (empty($this->prefix)) ?  $this->entity->getAlias() : $this->prefix; }
+  public function _pt(){ return (empty($this->prefix)) ?  $this->container->getEntity($this->entityName)->getAlias() : $this->prefix; }
   /**
    * prefijo tabla
    */
 
   function _callFields($fieldNames, $method = ""){
-		foreach($fieldNames as $fieldName){
-      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if(!method_exists($this, $call)) continue;
-			$this->$call();
-    }
+		foreach($fieldNames as $fieldName) call_user_func_array([$this, "_".$method],[$fieldName]);
     return $this;
   }
 
   function _call($method = ""){
-    return $this->_callFields($this->entity->getFieldNames(), $method);
+    return $this->_callFields($this->container->getEntity($this->entityName)->getFieldNames(), $method);
   }
 
   function _toArrayFields($fieldNames, $method = ""){
@@ -39,9 +33,7 @@ class EntityOptions {
      */
     $row = [];
     foreach($fieldNames as $fieldName){
-      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if(!method_exists($this, $call)) continue;
-      $r = $this->$call();
+      $r = call_user_func_array([$this, "_".$method],[$fieldName]);
       if($r !== UNDEFINED) $row[$fieldName] = $r ;
     }
 
@@ -49,49 +41,21 @@ class EntityOptions {
   }
 
   function _toArray($method = ""){
-    return $this->_toArrayFields($this->entity->getFieldNames(), $method);
+    return $this->_toArrayFields($this->container->getEntity($this->entityName)->getFieldNames(), $method);
   }
 
   function _fromArrayFields(array $row, $fieldNames, $method = ""){
     if(empty($row)) return $this;
 
-    foreach($fieldNames as $fieldName){
-      $call = snake_case_to("xxYy", $method . "_" . $fieldName);
-      if(!method_exists($this, $call)) continue;
-      if(array_key_exists($this->_pf().$fieldName, $row)) $this->$call($row[$this->_pf().$fieldName]);
+    foreach($fieldNames as $fieldName){      
+      if(array_key_exists($this->_pf().$fieldName, $row)) call_user_func_array([$this, "_".$method],[$fieldName, $row[$this->_pf().$fieldName]]);
     }
 
     return $this;
   }
 
   function _fromArray(array $row, $method = ""){
-    return $this->_fromArrayFields($row, $this->entity->getFieldNames(), $method);
+    return $this->_fromArrayFields($row, $this->container->getEntity($this->entityName)->getFieldNames(), $method);
   }
-
-  function _eval($fieldName, array $params = []){    
-    $count = 1;
-    /**
-     * Si no se especifica count como variable independiente, dispara el error 
-     * Notice: Only variables should be passed by reference ...
-     */
-
-    $method = snake_case_to("xxYy", str_replace($this->_pf(), "", $fieldName, $count));
-    if(!method_exists($this, $method)) return;
-    return call_user_func_array(array($this, $method), $params);
-  }
-
-  function _evals($fieldName, array $params = []){
-    /**
-     * _eval estricto
-     */
-    $count = 1;
-    /**
-     * Si no se especifica count como variable independiente, dispara el error 
-     * Notice: Only variables should be passed by reference ...
-     */
-
-    $method = snake_case_to("xxYy", str_replace($this->_pf(), "", $fieldName, $count));
-    return call_user_func_array(array($this, $method), $params);
-  }
-
+  
 }

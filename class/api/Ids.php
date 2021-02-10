@@ -1,7 +1,7 @@
 <?php
-require_once("class/model/Ma.php");
+require_once("function/php_input.php");
 require_once("class/model/Render.php");
-require_once("class/tools/Filter.php");
+
 
 class IdsApi {
   /**
@@ -9,11 +9,15 @@ class IdsApi {
    */
 
   public $entityName;
+  public $container;
+  public $permission = "r";
 
   public function main() {
-    $display = Filter::jsonPost();
-    $render = Render::getInstanceDisplay($display);
-    return $this->container->getDb()->ids($this->entityName, $render);    
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
+    $display = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
+    return $this->container->getDb()->ids($render->entityName, $render);    
   }
 
 }

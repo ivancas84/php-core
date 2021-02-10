@@ -1,27 +1,23 @@
 <?php
-require_once("class/model/Ma.php");
+
 require_once("class/model/Render.php");
-require_once("class/tools/Filter.php");
+require_once("function/php_input.php");
 
 class AllApi {
   /**
-   * Obtener todos los datos de una determinada entidad
-   * Cada elemento de datos generalmente corresponde a una entidad simple, 
-   * cuyos datos derivados se calculan con elementos directos
-   * Si los datos derivados dependen de un conjunto avanzado de relaciones,
-   * debe utilizarse la clase BaseApi
+   * Obtener todos los datos de una determinada entidad   
    */
 
-  public $entityName;
   public $container;
+  public $entityName; //entidad principal (real o ficticia)
+  public $permission = "r";
 
   public function main() {
-    $display = Filter::jsonPostRequired(); //siempre se recibe al menos size y page
-    $render = Render::getInstanceDisplay($display);
-    $rows = $this->container->getDb()->all($this->entityName, $render);
-    $rel = $this->container->getRel($this->entityName);
-    foreach($rows as &$row) $row = $rel->json($row);
-    return $rows;
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $display = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
+    $rows = $this->container->getDb()->all($render->entityName, $render);
+    return $this->container->getRel($render->entityName)->jsonAll($rows);
   }
 
 }

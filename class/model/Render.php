@@ -2,6 +2,7 @@
 
 class Render {
 
+  public $entityName; //entidad principal a la que esta destinada la consulta
   public $condition = array(); //array multiple cuya raiz es [field,option,value], 
   /**
    * ejemplo:  [
@@ -17,10 +18,20 @@ class Render {
   public $page = 1;
   public $size = 100;
 
-  protected $aggregate = array(); //campos a los que se aplicara funciones de agregacion
+  protected $fields = array(); //campos
   /**
-   * Deben estar definidos en el método mapping field, se realizará la traducción correspondiente
-   * Ej ["sum_horas_catedra", "avg_edad"]
+   * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
+   * . indica aplicacion de funcion de agregacion
+   * - indica que pertenece a una relacion
+   * Ej ["nombres", "horas_catedra.sum", "edad.avg", "com_cur-horas_catedra]
+   */
+
+  protected $groupConcat = array(); //campos a los cuales se aplica group_concat
+  /**
+   * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
+   * . indica aplicacion de funcion de agregacion
+   * - indica que pertenece a una relacion
+   * Ej ["telefono", "nombres"], se traduce en  GROUP_CONCAT(DISTINCT telefono SEPARATOR ', ' ) AS telefono
    */
 
   protected $group = array(); //campos de agrupacion
@@ -61,8 +72,8 @@ class Render {
     if(!empty($display["order"])) $render->setOrder($display["order"]);
     if(!empty($display["condition"])) $render->setGeneralCondition($display["condition"]);
     if(!empty($display["params"])) $render->setGeneralParams($display["params"]);
-    if(!empty($display["fields"])) $render->setAggregate($display["fields"]);
-    if(!empty($display["group"])) $render->setGroup($display["fields"]);
+    if(!empty($display["fields"])) $render->setFields($display["fields"]);
+    if(!empty($display["group"])) $render->setGroup($display["group"]);
     if(!empty($display["having"])) $render->setHaving($display["having"]);
 
     return $render;
@@ -127,8 +138,9 @@ class Render {
   public function setPage($page) { $this->page = $page; }
   public function getPage(){ return $this->page; }
   
-  public function setAggregate (array $aggregate = null) { $this->aggregate = $aggregate; }
-  public function getAggregate () { return $this->aggregate; }
+  public function setFields (array $fields = null) { $this->fields = $fields; }
+  public function addFields (array $fields = null) { $this->fields = array_unique(array_merge($this->fields, $fields)); }
+  public function getFields () { return $this->fields; }
 
   public function setGroup (array $group = null) { $this->group = $group; }
   public function getGroup () { return $this->group; }
@@ -136,4 +148,47 @@ class Render {
   public function setHaving (array $having = null) { $this->having = $having; }
   public function getHaving () { return $this->having; }
 
+  public function setEntityName (array $entityName = null) { $this->entityName = $entityName; }
+  public function getEntityName () { return $this->entityName; }
+
+  public function addPrefixRecursive(array &$condition, $prefix){
+    if(!key_exists(0, $condition)) return;
+    if(is_array($condition[0])) {
+      foreach($condition as &$value) $this->addPrefixRecursive($value,$prefix);  
+    } else {
+        $condition[0] = $prefix.$condition[0];
+    }
+  }
+
+  public function addPrefix($prefix){
+    $this->addPrefixRecursive($this->condition, $prefix);
+    $this->addPrefixRecursive($this->generalCondition, $prefix);
+    
+    foreach($this->order as $k=>$v){
+      $this->order[$prefix.$k] = $v;
+      unset($this->order[$k]);
+    }
+  }
+
+  public function removePrefixRecursive(array &$condition, $prefix){
+    if(!key_exists(0, $condition)) return;
+    if(is_array($condition[0])) {
+      foreach($condition as &$value) $this->removePrefixRecursive($value,$prefix);  
+    } else {
+      $count = 1;
+      $condition[0] = str_replace($prefix, '', $condition[0], $count);
+    }
+  }
+
+  public function removePrefix($prefix){
+    $this->removePrefixRecursive($this->condition, $prefix);
+    $this->removePrefixRecursive($this->generalCondition, $prefix);
+    
+    foreach($this->order as $k=>$v){
+      $count = 1;
+      $newk = str_replace($prefix, '', $k, $count);
+      $this->order[$newk] = $v;
+      unset($this->order[$k]);
+    }
+  }
 }

@@ -8,6 +8,7 @@ abstract class BaseApi {
   
   public $entityName; 
   public $container;
+  public $permission;
 
   abstract public function main();
 

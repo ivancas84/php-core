@@ -42,4 +42,3 @@ function date_from_birthday_string($date){
        $this->fechaNacimiento = $fechaNacimiento->format("Y-m-d");
      }
    
-}

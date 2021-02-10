@@ -1,12 +1,7 @@
 <?php
 
-require_once("class/tools/Filter.php");
-require_once("class/model/Ma.php");
 
-require_once("class/model/Sqlo.php");
-require_once("class/tools/Validation.php");
-
-require_once("function/stdclass_to_array.php");
+require_once("function/php_input.php");
 
 class DeleteApi {
   /**
@@ -16,15 +11,20 @@ class DeleteApi {
 
   public $entityName;
   public $container;
+  public $permission = "w";
 
   public function concat($id) {
     return($this->entityName . $id);
   }  
 
   public function main(){
-    $ids = Filter::jsonPostRequired();
-    $sql = $this->container->getSqlo($this->entityName)->deleteAll($ids);
-    $this->container->getDb()->multi_query_transaction_log($sql);
+    //@todo falta corroborar que los ida a eliminar pertenezcan verdaderamente a la entidad (sobre todo si se esta utilizando una entidad ficticia)
+    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
+    $ids = php_input();
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
+    $sql = $this->container->getSqlo($render->entityName)->deleteAll($ids);
+    $this->container->getDb()->multi_query_transaction($sql);
     $detail = array_map(array($this, 'concat'), $ids);    
 
     return ["ids" => $ids, "detail" => $detail];

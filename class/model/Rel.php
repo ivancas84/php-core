@@ -5,6 +5,7 @@ require_once("class/model/Sql.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
 require_once("function/get_entity_relations.php");
+require_once("function/array_add_prefix.php");
 
 
 class EntityRel {
@@ -19,10 +20,13 @@ class EntityRel {
     /**
      * Traducir campo para ser interpretado correctamente por el SQL
      */
-    if($f = $this->container->getMapping($this->entityName)->_eval($field)) return $f;
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
-      if($f = $this->container->getMapping($entityName, $prefix)->_eval($field)) return $f;
-    }
+    $f = explode("-",$field);
+    if(count($f) == 2) {
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      if($r = $this->container->getMapping($entityName, $prefix)->_($f[1])) return $r;
+    } 
+    if($f = $this->container->getMapping($this->entityName)->_($field)) return $f;
     throw new Exception("Campo no reconocido para {$this->entityName}: {$field}");
   }
   
@@ -32,27 +36,54 @@ class EntityRel {
      * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      */
-    if($c = $this->container->getCondition($this->entityName)->_eval($field, [$option, $value])) return $c;
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
-      if($c = $this->container->getCondition($entityName, $prefix)->_eval($field, [$option, $value])) return $c;
-    }
+    
+    $f = explode("-",$field);
+    if(count($f) == 2) {
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      return $this->container->getCondition($entityName, $prefix)->_($f[1], $option, $value);
+    } 
+    return $this->container->getCondition($this->entityName)->_($field, $option, $value);
   }
   
   public function conditionAux($field, $option, $value) {
     /**
      * Condicion de field auxiliar
      */
-    if($c = $this->container->getConditionAux($this->entityName)->_eval($field, [$option, $value])) return $c;
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
-      if($c = $this->container->getConditionAux($entityName, $prefix)->_eval($field, [$option, $value])) return $c;
-    }
-
+    $f = explode("-",$field);
+    if(count($f) == 2) {
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      if($c = $this->container->getConditionAux($entityName, $prefix)->_($f[1], $option, $value)) return $c;
+    } 
+    if($c = $this->container->getConditionAux($this->entityName)->_($field, $option, $value)) return $c;
   }
 
 
+  public function fieldNames(){
+    /**
+     * Array de nombres de campos definidos entidad principal y sus relaciones, de la forma prefix-field
+     */
+    $fieldNames = $this->container->getEntity($this->entityName)->getFieldNames();
+    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
+      $fieldNames = array_unique(
+        array_merge(
+          $fieldNames, 
+          array_add_prefix(
+            $this->container->getEntity($entityName)->getFieldNames(),
+            $prefix."-"
+          )
+        )
+      );
+    }
+    return $fieldNames;
+  }
+
   public function fields(){
     /**
-     * Definir sql de campos     
+     * @deprecated
+     * Se utilizaba para definir los campos definidos, fue reemplazada por el uso de fieldNames y fieldAlias
+     * Definir sql de campos definidos de la entidad principal y sus relaciones
      */
     $fields = [implode(",", $this->container->getFieldAlias($this->entityName)->_toArray())];
     foreach(get_entity_relations($this->entityName) as $prefix => $entityName) 
@@ -61,31 +92,32 @@ class EntityRel {
     return implode(',
 ', $fields);
   }
-
-
-
-  public function join(Render $render){ return "";  }
-  /** Sobrescribir si existen relaciones */
-
-
-  public function json(array $row) { 
-    /**
-     * Recorre la cadena de relaciones del resultado de una consulta 
-     * y retorna el resultado en un arbol de array asociativo en formato json.
-     * Ver comentarios del metodo values para una descripcion del valor retornado
-     * Este metodo debe sobscribirse en el caso de que existan relaciones     
-     */ 
-    return $this->container->getValue($this->entityName)->_fromArray($row, "set")->_toArray("json");
+  
+  public function fieldAlias($field){
+    $f = explode("-",$field);
+    if(count($f) == 2) {      
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      return $this->container->getFieldAlias($entityName, $prefix)->_($f[1]);
+    } 
+    return $this->container->getFieldAlias($this->entityName)->_($field);
   }
 
-  public function value(array $row){
+  public function join(Render $render){
+    return $this->container->getControllerEntity("rel_join", $this->entityName)->main($render);
+  }
+
+  public function json($row){
+    return $this->container->getControllerEntity("rel_json", $this->entityName)->main($row);
+  }
+
+  public function value($row){
     /**
      * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
      * El resultado es almacenado en un array asociativo.
-     * Las claves del array son nombres representativos de la entidad que contiene
+     * Las claves del array son identificadores unicos representativos del nombre del campo
      * Las claves se forman a partir del nombre de la clave foranea
      * Se asigna un numero incremental a la clave en el caso de que se repita
-     * Este metodo debe sobrescribirse en el caso de que existan relaciones
      * A diferencia de otros métodos que retornan valores, 
      * values utiliza un array asociativo debido a que el valor es un objeto
      * facilita el acceso directo desde la llave por ejemplo $resultado["nombre_fk"]->metodo()
@@ -94,11 +126,13 @@ class EntityRel {
      * por ejemplo $resultado["nombre_fk] = "id_fk"
      * $resultado["_nombre_fk"] = array asociativo con los valores de la entidad para el id "id_fk"
      */
-    $row_ = [];
-    $row_[$this->entityName] = $this->container->getValue($this->entityName)->_fromArray($row, "set");
-    return $row_;
+    return $this->container->getControllerEntity("rel_value", $this->entityName)->main($row);
   }
 
 
+  public function jsonAll($rows){
+    foreach($rows as &$row) $row = $this->json($row);
+    return $rows;
+  }
 
 }

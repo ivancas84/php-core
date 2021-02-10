@@ -4,17 +4,10 @@ require_once("function/settypebool.php");
 
 class Db extends mysqli {
   /**
-   * Extiende la clase mysqli para implementar instancia abierta reutilizable, excepciones y metodos adicionales
+   * Extiende la clase mysqli para implementar excepciones y metodos adicionales
    */
-  public static $dbInstance = [];
 
-  /*
-  public static function open($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
-    if (!key_exists($host.$dbname, self::$dbInstance)) {
-      self::$dbInstance[$host.$dbname] = new self($host, $user, $passwd, $dbname);
-    } 
-    return self::$dbInstance[$host.$dbname];
-  }*/
+  public static $connections = 0; //Uso opcional en contenedor
 
   public function __construct($host = DATA_HOST, $user = DATA_USER, $passwd = DATA_PASS, $dbname = DATA_DBNAME){
     $this->host = $host;
@@ -25,21 +18,19 @@ class Db extends mysqli {
     if($this->error) throw new Exception($this->error);
   }
 
-  public function __destruct(){
-    if (key_exists($this->host.$this->dbname, self::$dbInstance) && ($this->thread_id == self::$dbInstance[$this->host.$this->dbname]->thread_id)) {
-      unset(self::$dbInstance[$this->host.$this->dbname]);
-    }
-    parent::close();
-  }
-
-  public function close(){
-    throw new BadMethodCallException("El cierre del recurso se realiza en el __destruct");
-  }
-
   public function query($query, $resultmode = MYSQLI_STORE_RESULT){
     $result = parent::query($query, $resultmode);
     if(!$result) throw new Exception($this->error);
     return $result;
+  }
+
+  public function close(){
+    self::$connections--;  //si hay multiples conexiones abiertas, no se cierra se reduce la cantidad
+    if(self::$connections <= 0){
+      if(!parent::close()) throw new Exception($this->error);
+      self::$connections = 0;
+    }
+    return true;
   }
 
   public function multi_query($query){

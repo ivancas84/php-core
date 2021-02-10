@@ -1,11 +1,20 @@
 <?php
 
-require_once("class/model/Sqlo.php");
-require_once("class/model/Ma.php");
-
+require_once("class/model/Render.php");
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
 
+/**
+ * Ejemplo ejecucion
+ * require_once("../config/config.php");
+ * require_once("class/Container.php");
+ * set_time_limit ( 0 );
+ * $container = new Container();
+ * $import = $container->getImport("alumno");
+ * $import->defineSource();
+ * $import->pathSummary = $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
+ * $import->main();
+ */
 abstract class Import {
     /**
      * Importacion de elementos
@@ -16,12 +25,11 @@ abstract class Import {
     public $id; //identificacion de los datos a procear
     public $source; //fuente de los datos a procesar
     public $pathSummary; //directorio donde se almacena el resumen del procesamiento
+      //ej. $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
+      //utilizando el mismo path se definen dos archivos, uno html con el resumen y otro sql con la sentencia ejecutada
     public $headers; //opcional encabezados
-    public $mode = "csv";  //modo de procesamiento
-        /**
-         * post: post tab
-         * post_comma: post comma
-         */
+    public $mode = "csv";  //modo de procesamiento (csv, db, tab)
+    public $updateNull = false; //flag para indicar si se deben actualizar valores nulos del source
     
     public $ids = []; //array asociativo con identificadores
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
@@ -34,9 +42,7 @@ abstract class Import {
         $this->identify();
         $this->query();
         $this->process();
-
         $this->persist();
-
         $this->summary();
     }
 
@@ -77,12 +83,12 @@ abstract class Import {
      * 
      *   ***** LUGAR (utiliza "identifier")*****
      *   $this->ids["lugar"] = [];
-     *   $element->entities["lugar"]->_setIdentifier(
+     *   $element->entities["lugar"]->_set("identifier", 
      *     $element->entities["lugar"]->distrito().UNDEFINED.
      *     $element->entities["lugar"]->provincia()
      *   );
      *
-     *   if(!in_array($element->entities["lugar"]->_identifier(), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_identifier());
+     *   if(!in_array($element->entities["lugar"]->_get("identifier"), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_get("identifier"));
      * }
      */
 
@@ -91,9 +97,10 @@ abstract class Import {
      * Consulta de existencia de datos en la base de datos para evitar volver a ejecutar o actualizar datos existentes
      * Los datos consultados se cargan en el atributo dbs
      * 
-     * Ejemplo: Pueden utilizarse los metodos predefinidos queryEntityField, queryEntityIdentifier
+     * Ejemplo: Puede utilizarse metodos predefinido queryEntityField
      * {
-     *   $this->queryEntityField_("persona","numero_documento");
+     *   $this->queryEntityField("persona","numero_documento");
+     *   $this->queryEntityField("alumno","identifier");
      * }
      **/
 
@@ -125,6 +132,15 @@ abstract class Import {
      *     if(!$element->process) continue;
      *     $element->entities["inscripcion"]->setAlumno($element->entities["persona"]->id());
      *     $this->processElement("inscripcion", $element->entities, $element->entities["inscripcion"]->_identifier());
+     *   }
+     * 
+     *   ***** EXISTENCIA *****
+     *   foreach($this->elements as &$element) {
+     *     if(!key_exists($value, $this->dbs[$id])){
+     *       $element->process = false
+     *       $element->logs->addLog("comision", "error", "No existe la comisión en la base de datos");
+     *       continue;
+     *     }
      *   }
      * }
      * 
@@ -166,7 +182,7 @@ abstract class Import {
     <br><br>";                          
         }
          
-        file_put_contents($this->pathSummary . ".html", $informe);
+        if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".html", $informe);
     
         echo $informe;
     }
@@ -214,11 +230,28 @@ abstract class Import {
             //if($i==100) break;           
         }
     }
+
+    public function defineDb(){
+      if(empty($this->source)) throw new Exception("No existen datos para procesar");
+
+      if(empty($this->headers)) {
+        $this->headers = [];
+        foreach($this->source[0] as $key => $value) array_push($this->headers, $key);
+      }
+
+      for($i = $this->start; $i < count($this->source); $i++){
+        if(empty($this->source[$i])) break;
+        $this->element($i + $this->start, $this->source[$i]);                  
+      }
+    }
      
     public function define(){
         switch($this->mode){
             case "tab":
                 $this->defineTab();
+            break;
+            case "db":
+              $this->defineDb();
             break;
             default:
                 $this->defineCsv();
@@ -233,7 +266,7 @@ abstract class Import {
             $sql .= $element->sql;
           }
         }
-        file_put_contents($this->pathSummary . ".sql", $sql);
+        if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
     }
 
     protected function identifyValue($id, $value){
@@ -247,30 +280,42 @@ abstract class Import {
        * Utilizando el campo field (supuestamente unico) y el valor almacenado de field desde el atributo ids
        * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
        */
-        if(!$id) $id = $name;
-        $this->dbs[$id] = [];
-        if(empty($this->ids[$id])) return;
+      if(!$id) $id = $name;
+      $this->dbs[$id] = [];
+      if(empty($this->ids[$id])) return;
 
-        $render = new Render();
-        $render->setSize(false);
-        $render->addCondition([$field,"=",$this->ids[$id]]);
-        $rows = $this->container->getDb()->all($name, $render);
-    
-        $this->dbs[$id] = array_combine_key(
-          $rows,
-          $field
-        );
-    }
+      $render = new Render();
+      $render->setFields([$field]);
+      $render->setSize(false);
+      $render->addCondition([$field,"=",$this->ids[$id]]);
 
-    protected function queryEntityIdentifier($name){        
-        if(!empty($this->ids[$name])) $this->dbs[$name] = array_combine_concat(
-             $this->container->getDb()->identifier($name, $this->ids[$name]),
-            $this->container->getEntity($name)->identifier
-        );
+      $rows = $this->container->getDb()->all($name, $render);
+  
+      //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
+      $this->dbs[$id] = array_combine_key(
+        $rows,
+        $field
+      );
     }
 
 
+  public function existElement(&$element, $entityName, $value, $id = null){
+    if(empty($id)) $id = $entityName;
+
+    if(!key_exists($value, $this->dbs[$id])){
+      $element->process = false;
+      $element->logs->addLog($entityName, "error", "No existe " . $entityName . " en la base de datos");
+      return;
+    } else {
+      $existente = $this->container->getValue($entityName);
+      $existente->_fromArray($this->dbs[$id][$value], "set");
+      $element->entities[$entityName]->_set("id",$existente->_get("id"));
+      $element->logs->addLog($entityName, "info", "Registro existente, no será actualizado");
+    }
     
+  }
+
+
   public function processElement(&$element, $entityName, $value, $id = null){
     /**
      * @param $entityName Nombre de la entidad
@@ -280,8 +325,8 @@ abstract class Import {
     if(empty($id)) $id = $entityName;
     
     if(key_exists($value, $this->dbs[$id])){
-      $existente = $this->container->getValues($entityName);
-      $existente->_fromArray($this->dbs[$id][$value]);
+      $existente = $this->container->getValue($entityName);
+      $existente->_fromArray($this->dbs[$id][$value], "set");
       $element->update($entityName, $existente);
     } else {        
       $element->insert($entityName);
