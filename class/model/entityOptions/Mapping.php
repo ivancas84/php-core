@@ -62,6 +62,7 @@ class MappingEntityOptions extends EntityOptions {
   public function _count($field) { return "COUNT(" . $this->_($field) . ")"; }
   public function _exists($field) { return $this->_default($field); }
   public function _isSet($field) { return $this->_default($field); }
+  public function _groupConcat($field) { return "GROUP_CONCAT(" . $this->_($field) . ")"; }
 
 }
 
