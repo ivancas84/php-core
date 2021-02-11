@@ -38,12 +38,12 @@ abstract class Import {
     public $container;
     
     public function main(){
-        $this->define();
-        $this->identify();
-        $this->query();
-        $this->process();
-        $this->persist();
-        $this->summary();
+      $this->define();
+      $this->identify();
+      $this->query();
+      $this->process();
+      $this->persist();
+      $this->summary();
     }
 
     public function element($i, $data){
