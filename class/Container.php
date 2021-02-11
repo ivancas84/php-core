@@ -215,7 +215,7 @@ class Container {
     return $sql;    
   }
 
-  public function getRel($entity) {
+  public function getRel($entity, $prefix = "") {
     if (isset(self::$rel[$entity])) return self::$rel[$entity];
 
     $dir = "class/model/rel/";
@@ -231,6 +231,7 @@ class Container {
       
     $c = new $className;
     $c->entityName = $entity;
+    $c->prefix = $prefix;
     $c->container = $this;
     return self::$rel[$entity] = $c;
   }
