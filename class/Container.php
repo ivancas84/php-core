@@ -297,25 +297,6 @@ class Container {
     return $c;
   }
 
-  public function getFieldAlias($entityName, $prefix = ""){
-    $dir = "class/model/fieldAlias/";
-    $name = snake_case_to("XxYy", $entityName) . ".php";
-    if((@include_once $dir.$name) == true){
-      $className = $prf.snake_case_to("XxYy", $entityName) . "FieldAlias";
-    } else {
-      require_once("class/model/entityOptions/FieldAlias.php");
-      $className = "FieldAliasEntityOptions";
-    }
-    
-    $c = new $className;
-    if($prefix) $c->prefix = $prefix;
-    $c->container = $this;
-    $c->entityName = $entityName;
-    $c->entity = $this->getEntity($entityName);
-    $c->mapping = $this->getMapping($entityName, $prefix);
-    return $c;    
-  }
-
   public function getValue($entityName, $prefix = ""){
     $dir = "class/model/value/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
