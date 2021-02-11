@@ -37,7 +37,6 @@ class EntityRel {
      * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      */
-    
     $f = explode("-",$field);
     if(count($f) == 2) {
       $prefix = $f[0];

@@ -20,8 +20,9 @@ class ConditionAuxEntityOptions extends EntityOptions {
    */
 
   public function compare($option, $value) {
-    $f1 = $this->mapping->_($value[0]);
-    $f2 = $this->mapping->_($value[1]);
+    $mapping = $this->container->getMapping($this->entityName, $this->prefix); 
+    $f1 = $mapping->_($value[0]);
+    $f2 = $mapping->_($value[1]);
     return "({$f1} {$option} {$f2})";
   }
   

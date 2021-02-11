@@ -40,6 +40,10 @@ class Ma extends Db {
   }
 
   public function advanced($entity, Render $render){
+    return $this->select($entity, $render);
+  }
+
+  public function select($entity, Render $render){
     /**
      * consulta avanzada
      */
