@@ -15,6 +15,7 @@ class EntityRel {
 
   public $container;
   public $entityName;
+  public $prefix;
 
   public function mapping($field){
     /**
@@ -22,11 +23,11 @@ class EntityRel {
      */
     $f = explode("-",$field);
     if(count($f) == 2) {
-      $prefix = $f[0];
+      $prefix = (empty($this->prefix)) ? $f[0] : $this->prefix . "_" . $f[0];
       $entityName = get_entity_relations($this->entityName)[$f[0]];
       if($r = $this->container->getMapping($entityName, $prefix)->_($f[1])) return $r;
     } 
-    if($f = $this->container->getMapping($this->entityName)->_($field)) return $f;
+    if($f = $this->container->getMapping($this->entityName, $this->prefix)->_($field)) return $f;
     throw new Exception("Campo no reconocido para {$this->entityName}: {$field}");
   }
   
