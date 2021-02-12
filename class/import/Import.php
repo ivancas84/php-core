@@ -43,7 +43,6 @@ abstract class Import {
       $this->query();
       $this->process();
       $this->persist();
-      $this->summary();
     }
 
     public function element($i, $data){
@@ -288,7 +287,7 @@ abstract class Import {
       $render->setFields([$field]);
       $render->setSize(false);
       $render->addCondition([$field,"=",$this->ids[$id]]);
-
+  
       $rows = $this->container->getDb()->all($name, $render);
   
       //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
