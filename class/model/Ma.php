@@ -71,7 +71,7 @@ class Ma extends Db {
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
-    if(count($rows) > 1) throw new Exception("La busqueda por campos unicos de {$entity} retorno mas de un resultado");
+    if(count($rows) > 1) throw new Exception("La busqueda por campos unicos de {$entityName} retorno mas de un resultado");
     if(count($rows) == 1) return $rows[0];
     return null;
   }

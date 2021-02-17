@@ -35,7 +35,7 @@ class ConditionEntityOptions extends EntityOptions {
     } else {
       switch($param[1]) {
         case "count": return "_default";
-        case "is_set": return "_isSet";
+        case "is_set": case "exists": return "_exists";
         default: return $this->_defineCondition([$param[0]]);
       }
     }
@@ -77,7 +77,7 @@ class ConditionEntityOptions extends EntityOptions {
     return "({$field} {$option} {$v->_sql($fieldName)}) ";  
   }
 
-  protected function _isSet($fieldName, $option, $value) { 
+  protected function _exists($fieldName, $option, $value) { 
     $field = $this->container->getMapping($this->entityName, $this->prefix)->_($fieldName);
     return $this->container->getController("sql_tools", true)->exists($field, $option, settypebool($value));
   }
