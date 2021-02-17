@@ -16,27 +16,41 @@ class EntitySqlo {
   public $entityName;
 
 
+  protected function mapping($fieldName){
+     /**
+     * Interpretar prefijo y obtener mapping
+     */
+    $f = explode("-",$fieldName);
+    if(count($f) == 2) {
+      $prefix = $f[0];
+      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      $mapping = $this->container->getMapping($entityName, $prefix);
+      $fieldName = $f[1];
+    } else { 
+      $mapping = $this->container->getMapping($this->entityName);
+    }
+
+    return [$mapping,$fieldName];
+  }
+  
   protected function fieldsQuery(Render $render){
     $fields = array_merge($render->getGroup(), $render->getFields());
 
     $fieldsQuery_ = [];
     foreach($fields as $key => $fieldName){
-      /**
-     * Interpretar prefijo y obtener mapping
-     */
-      $f = explode("-",$fieldName);
-      if(count($f) == 2) {
-        $prefix = $f[0];
-        $entityName = get_entity_relations($this->entityName)[$f[0]];
-        $mapping = $this->container->getMapping($entityName, $prefix);
-        $fieldName = $f[1];
-      } else { 
-        $mapping = $this->container->getMapping($this->entityName);
+      if(is_array($fieldName)){
+        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
+        $map_ = [];
+        foreach($fieldName as $fn){
+          $map = $this->mapping($fn);
+          array_push($map_, $map[0]->_($map[1]));
+        } 
+        $f = "CONCAT_WS(', ', " . implode(",",$map_) . ") AS " . $key;
+      } else {
+        $map = $this->mapping($fieldName);
+        $alias = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
+        $f = $map[0]->_($map[1]) . " AS " . $alias;
       }
-      
-      $alias = (is_integer($key)) ? $mapping->_pf() . str_replace(".","_",$fieldName) : $key;
-      $f = $mapping->_($fieldName) . " AS " . $alias;
-
       array_push($fieldsQuery_, $f);
     }
 
