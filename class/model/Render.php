@@ -205,6 +205,7 @@ class Render {
     $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->getFieldsUniqueMultiple();
 
     $condition = array();
+    $ret = false;
 
     foreach($uniqueFields as $field){
       foreach($params as $key => $value){
@@ -232,9 +233,13 @@ class Render {
         }
       }
 
-      if(!empty($conditionMultiple)) array_push($condition, $conditionMultiple);
+      if(!empty($conditionMultiple)) {
+        array_push($condition, $conditionMultiple);
+        $ret = true;
+      }
     }
 
     $this->addCondition($condition);
+    return $ret;
   }
 }
