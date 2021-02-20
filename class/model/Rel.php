@@ -7,7 +7,6 @@ require_once("function/settypebool.php");
 require_once("function/get_entity_relations.php");
 require_once("function/array_add_prefix.php");
 
-
 class EntityRel {
   /**
    * Metodos adicionales definidos a partir de relaciones entre entidades
