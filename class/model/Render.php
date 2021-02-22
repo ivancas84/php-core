@@ -205,14 +205,11 @@ class Render {
     $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->getFieldsUniqueMultiple();
 
     $condition = array();
-    $ret = false;
+    if(array_key_exists("id",$params) && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
 
     foreach($uniqueFields as $field){
       foreach($params as $key => $value){
-        if($key == "id" && empty($value)) continue; //para el id no se permiten valores nulos
-        if($key == $field->getName()) {
-          array_push($condition, [$key, "=", $value, "or"]);
-        }
+        if($key == $field->getName()) array_push($condition, [$key, "=", $value, "or"]);
       }
     }
 
@@ -235,11 +232,14 @@ class Render {
 
       if(!empty($conditionMultiple)) {
         array_push($condition, $conditionMultiple);
-        $ret = true;
       }
     }
 
-    $this->addCondition($condition);
-    return $ret;
+    if(!empty($condition)){
+      $this->addCondition($condition);
+      return true;
+    }
+
+    return false;
   }
 }
