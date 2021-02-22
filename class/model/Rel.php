@@ -16,6 +16,7 @@ class EntityRel {
   public $entityName;
   public $prefix;
 
+
   public function mapping($field){
     /**
      * Traducir campo para ser interpretado correctamente por el SQL
