@@ -13,7 +13,6 @@ class UniqueIdApi {
     
     $params = php_input();
     $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
-    
     $row = $this->container->getDb()->unique($render->entityName, $params);
     return ($row) ? $row["id"] : null;
   }

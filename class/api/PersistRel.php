@@ -21,8 +21,8 @@ class PersistRelApi {
     /**
      * Comparacion de elementos de un array para calcular la profundidad de la relacion
      */
-    $a_ = (strpos($a, '-') !== false) ? substr_count($a, '_') : 0;
-    $b_ = (strpos($b, '-') !== false) ? substr_count($b, '_') : 0;
+    $a_ = (strpos($a, '-') !== false) ? ($c = substr_count($a, '_') ? $c : 1) : 0;
+    $b_ = (strpos($b, '-') !== false) ? ($c = substr_count($b, '_') ? $c : 1) : 0;
     
     if ($a_ == $b_)  return 0;
     return ($a_ > $b_) ? -1 : 1;

@@ -4,7 +4,7 @@ require_once("function/get_entity_tree.php");
 
 class RelJson {
   /**
-   * controlador para definir el sql join de una entidad
+   * controlador para definir el json de una entidad y sus relaciones
    */
 
   public $row;
