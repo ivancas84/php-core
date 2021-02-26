@@ -14,7 +14,7 @@ class EntityRel {
 
   public $container;
   public $entityName;
-  public $prefix;
+  public $prefix = "";
 
 
   public function mapping($field){
@@ -87,6 +87,10 @@ class EntityRel {
 
   public function json($row){
     return $this->container->getControllerEntity("rel_json", $this->entityName)->main($row);
+  }
+
+  public function json2($row){
+    return $this->container->getControllerEntity("rel_json_2", $this->entityName, $this->prefix)->main($row);
   }
 
   public function value($row){
