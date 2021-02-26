@@ -14,7 +14,6 @@ class Container {
   static $db = null;
 
   static $sqlo = []; //las instancias dependen de la entidad
-  static $rel = []; //las instancias dependen de la entidad
   static $entity = []; //las instancias dependen de la entidad
   static $field = []; //las instancias dependen de la entidad
   static $controller = []; //no todos los controladores son singletones
@@ -131,7 +130,7 @@ class Container {
     return $c;
   }
   
-  public function getControllerEntity($controller, $entityName){
+  public function getControllerEntity($controller, $entityName, $prefix = null){
     /**
      * Controlador asociado a entidad
      */
@@ -147,6 +146,7 @@ class Container {
     $c = new $className;
     $c->container = $this;
     $c->entityName = $entityName;
+    if(!empty($prefix)) $c->prefix = $prefix;
     return $c;
   }
 
@@ -221,7 +221,8 @@ class Container {
   }
 
   public function getRel($entity, $prefix = "") {
-    if (isset(self::$rel[$entity])) return self::$rel[$entity];
+    //if (isset(self::$rel[$entity])) return self::$rel[$entity];
+    //si utiliza prefijo no debe utilizarse static!
 
     $dir = "class/model/rel/";
     $name = snake_case_to("XxYy", $entity) . ".php";
@@ -238,7 +239,7 @@ class Container {
     $c->entityName = $entity;
     $c->prefix = $prefix;
     $c->container = $this;
-    return self::$rel[$entity] = $c;
+    return $c;
   }
 
 
