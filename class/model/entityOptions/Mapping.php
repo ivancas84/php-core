@@ -60,7 +60,7 @@ class MappingEntityOptions extends EntityOptions {
   public function _min($field) { return "MIN(" . $this->_($field) . ")"; }
   public function _max($field) { return "MAX(" . $this->_($field) . ")"; }
   public function _sum($field) { return "SUM(" . $this->_($field) . ")"; }
-  public function _count($field) { return "COUNT(" . $this->_($field) . ")"; }
+  public function _count($field) { return "COUNT(DISTINCT " . $this->_($field) . ")"; }
   public function _exists($field) { return $this->_default($field); }
   public function _isSet($field) { return $this->_default($field); }
   public function _groupConcat($field) { return "GROUP_CONCAT(DISTINCT " . $this->_($field) . " SEPARATOR ', ')"; }
