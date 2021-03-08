@@ -18,7 +18,13 @@ class DeleteApi {
   }  
 
   public function main(){
-    //@todo falta corroborar que los ida a eliminar pertenezcan verdaderamente a la entidad (sobre todo si se esta utilizando una entidad ficticia)
+    /**
+     * @todo falta corroborar que los ids a eliminar pertenezcan verdaderamente a la entidad 
+     * (sobre todo si se esta utilizando una entidad ficticia)
+     * y tambien visualizar correctamente el caso de que no se pueda eliminar
+     * para el caso de que la entidad a eliminar forme parte de una clave foranea dispara el error
+     * Cannot delete or update a parent row: a foreign key constraint fails (`planfi10_20203`.`curso`, CONSTRAINT `fk_curso_asignatura1` FOREIGN KEY (`asignatura`) REFERENCES `asignatura` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION)
+     */
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $ids = php_input();

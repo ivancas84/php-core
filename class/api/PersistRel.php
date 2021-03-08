@@ -80,7 +80,7 @@ class PersistRelApi {
         /**
          * Para chequear existencia (realizar una insercion o actualizacion)
          * utiliza el id, el chequeo de unicidad debe hacerse en el cliente.
-         * o en su defecto utilizar api PersistRelUnique
+         * o en su defecto utilizar api PersistRelUnique (en construccion)
          */
         $result = $this->container->getDb()->multi_query_transaction($persist["sql"]);
         array_push($detail, $this->entityName.$persist["id"]);
