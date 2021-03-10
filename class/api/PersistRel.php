@@ -2,6 +2,7 @@
 
 require_once("class/model/Rel.php");
 require_once("function/php_input.php");
+require_once("function/get_entity_rel.php");
 
 class PersistRelApi {
   /**
@@ -17,12 +18,13 @@ class PersistRelApi {
   public $permission = "w";
 
   
-  public static function compare($a, $b) {
+  public function compare($a, $b) {
     /**
-     * Comparacion de elementos de un array para calcular la profundidad de la relacion
+     * Comparacion de elementos de un array 
+     * para calcular la profundidad de la relacion
      */
-    $a_ = (strpos($a, '-') !== false) ? ($c = substr_count($a, '_') ? $c : 1) : 0;
-    $b_ = (strpos($b, '-') !== false) ? ($c = substr_count($b, '_') ? $c : 1) : 0;
+    $a_ = ($a != $this->entityName) ? ($c = substr_count($a, '_') ? $c : 1) : 0;
+    $b_ = ($b != $this->entityName) ? ($c = substr_count($b, '_') ? $c : 1) : 0;
     
     if ($a_ == $b_)  return 0;
     return ($a_ > $b_) ? -1 : 1;
@@ -30,27 +32,32 @@ class PersistRelApi {
 
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    
     $data = php_input();
-    uksort($data, array("PersistRelApi", "compare"));
     /**
      * Array asociativo
      * Cada llave identifica:
      * 1) La entidad actual: Ejemplo "alumno"
-     * 2) Una relacion fk directa o indirecta (si posee el caracter "-"): Ej "per-alumno", "per_dom-alumno"
-     * para el ejemplo anterior, el sufijo luego del caracter "-" coincide con la entidad principal
-     * 3) @todo Una relacion um (si posee el caracter "."): Ej nota.alumno, per-toma.docente,
-     * para el ejemplo anterior nota seria la entidad y alu_per la relacion
-     * De esta forma se verifica existencia de "-" para saber que es una relacion
-     * y en el caso de que exista, se verifica "_" para saber la "profundidad" de la relacion
+     * 2) Una relacion fk directa "per" o indirecta "per_dom"
+     * 3) @todo Una relacion um (si posee el caracter "/"): 
+     *   Ej 1 nota/alumno: nota (entidad) nota.alumno (fk), 
+     *   Ej 2: per-toma/docente: toma (entidad) toma.docente (fk), 
+     *     luego docente esta asociado con alumno 
+     *     a traves de la relacion indicada en el prefijo "per"
+     */    
+    
+    uksort($data, array($this, "compare"));
+    /**
+     * Para el ordenamiento se verifica el caracter "_" 
+     * para calcular la profundidad.
      * En base a la "profundidad" se define el orden de persistencia
-     **/    
+     */
 
     $response = [];
     $detail  = [];
     foreach($data as $key => $row) {
-      $e = explode("-",$key);
-      if(count($e) == 2) {
-        $entityName = get_entity_relations($this->entityName)[$e[0]];
+      if($key != $this->entityName) {
+        $entityName = get_entity_relations($this->entityName)[$key];
         $render = $this->container->getControllerEntity("render_build", $entityName)->main();
         $p = $this->container->getController("persist_sql");
         $persist = $p->id($render->entityName, $data[$key]);
@@ -63,11 +70,12 @@ class PersistRelApi {
         array_push($detail, $entityName.$persist["id"]);
         
         //***** asignar fk *****/
+
         $pos = strrpos($e[0],"_");
         if($pos !== false){ 
           $s = substr($e[0], 0, $pos);
           foreach($data as $key => &$value){
-            $e_ = explode("-",$key);
+            $e_ = explode("/",$key);
             if($e_ == $s) $value[$e[1]] = $persist["id"];
           }
         } else {
