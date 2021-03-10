@@ -34,11 +34,11 @@ class UniqueRelApi {
    *     "activo" => "..."
    *     "..."
    *   ],
-   *   "per-persona" => [ //per: nombre de la relacion, persona: nombre de la clave foranea (alumno.persona)
+   *   "per" => [ //per: nombre de la relacion, persona: nombre de la clave foranea (alumno.persona)
    *     "id" => "..."
    *     "numero_documento" => "..."
    *   ],
-   *   "per_dom-domicilio" => [ ... ] //per_dom: nombre del a relacion, domicilio: nombre de la clave foranea (persona.domicilio)
+   *   "per_dom" => [ ... ] //per_dom: nombre del a relacion, domicilio: nombre de la clave foranea (persona.domicilio)
    * ]
    */
   public function main() {
@@ -97,7 +97,7 @@ class UniqueRelApi {
          * Si existe $prefix en $data significa que existen datos en la base de datos inicializados
          * se ignoran los parametros y se asignan los valores de $data
         */
-        $this->row[$prefix."-".$tree[$prefix]["field_name"]] = $data[$prefix];
+        $this->row[$prefix] = $data[$prefix];
       } else {
         /**
          * Si no existe $prefix en $data significa que no existen datos en la base de datos inicializados
@@ -108,13 +108,13 @@ class UniqueRelApi {
           $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
           if(!empty($row)) {
             $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
-            $this->row[$prefix."-".$tree[$prefix]["field_name"]] = $data[$prefix];
+            $this->row[$prefix] = $data[$prefix];
           } else {
             $data = [];
-            $this->row[$prefix."-".$tree[$prefix]["field_name"]] = $this->params[$prefix];
+            $this->row[$prefix] = $this->params[$prefix];
           }
         } else {
-          $this->row[$prefix."-".$tree[$prefix]["field_name"]] = [];
+          $this->row[$prefix] = [];
         }
 
       } 
