@@ -90,6 +90,17 @@ class EntityRel {
   }
 
   public function json2($row){
+    /**
+     * @return $example = [ //para la entidad alumno
+     *   "id" => "...",
+     *   "activo" => false,
+     *   "persona_" => [
+     *     "id" => "..."
+     *     "numero_documento" > "..."¨
+     *     "domicilio_" => [ ... ]
+     *   ]
+     * ]
+     */
     return $this->container->getControllerEntity("rel_json_2", $this->entityName, $this->prefix)->main($row);
   }
 
