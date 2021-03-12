@@ -57,7 +57,8 @@ class PersistRelApi {
     $detail  = [];
     foreach($data as $key => $row) {
       if($key != $this->entityName) {
-        $entityName = get_entity_relations($this->entityName)[$key];
+        $entityName = get_entity_rel($this->entityName)[$key]["entity_name"];
+        $fieldName = get_entity_rel($this->entityName)[$key]["field_name"];
         $render = $this->container->getControllerEntity("render_build", $entityName)->main();
         $p = $this->container->getController("persist_sql");
         $persist = $p->id($render->entityName, $data[$key]);
@@ -71,15 +72,16 @@ class PersistRelApi {
         
         //***** asignar fk *****/
 
-        $pos = strrpos($e[0],"_");
+        $pos = strrpos($key,"_");
         if($pos !== false){ 
-          $s = substr($e[0], 0, $pos);
-          foreach($data as $key => &$value){
-            $e_ = explode("/",$key);
-            if($e_ == $s) $value[$e[1]] = $persist["id"];
-          }
+          $s = substr($key, 0, $pos);
+          foreach($data as $k => &$value)
+            if($k_ == $s) {
+              $value[$fieldName] = $persist["id"];
+              break;
+            }
         } else {
-          $data[$this->entityName][$e[1]] = $persist["id"];
+          $data[$this->entityName][$fieldName] = $persist["id"];
         }
       } else {
         $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();

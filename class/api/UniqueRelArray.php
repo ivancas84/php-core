@@ -10,16 +10,17 @@ class UniqueRelArrayApi extends UniqueRel {
   public $row = []; //Resultado estruturado
   /**
    * @example [
-   *   "id" => "...", //alumno.id
-   *   "activo" => "..." //alumno.activo
+   *   "id" => "...", //alumno.id (si no tiene caracter "-" es entidad principal)
+   *   "activo" => "..." //alumno.activo (si no tiene caracter "-" es entidad principal)
    *   "..."
-   *   "per/persona-id" => "..."
-   *   "per/persona-numero_documento" => "..."
+   *   "per-id" => "..."
+   *   "per-numero_documento" => "..."
    *   ],
-   *   "per_dom/domicilio-id" => [ ... ] //per_dom/domicilio: nombre de la relacion (per_dom) y fk correspondiente (persona.domicilio)
+   *   "per_dom-id" => [ ... ] //per_dom/domicilio: nombre de la relacion (per_dom) y fk correspondiente (persona.domicilio)
    * ]
    * Se incluye el nombre de la clave foranea para reducir el tiempo de procesamiento en el servidor
    */
+
 
   protected function recursive(array $tree, $data){
     foreach ($tree as $prefix => $value) {
@@ -28,8 +29,7 @@ class UniqueRelArrayApi extends UniqueRel {
          * Si existe $prefix en $data significa que existen datos en la base de datos inicializados
          * se ignoran los parametros y se asignan los valores de $data
         */
-        foreach($data as $key => $value)
-          $this->row[$prefix."/".$tree[$prefix]["field_name"] . "-". $key] = $value;
+        foreach($data as $k => $v) $this->row[$prefix."-". $k] = $v;
       } else {
         /**
          * Si no existe $prefix en $data significa que no existen datos en la base de datos inicializados
@@ -40,12 +40,10 @@ class UniqueRelArrayApi extends UniqueRel {
           $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
           if(!empty($row)) {
             $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
-            foreach($data as $key => $value)
-              $this->row[$prefix."/".$tree[$prefix]["field_name"] . "-". $key] = $value;
+            foreach($data as $k => $v) $this->row[$prefix."-". $k] = $v;
           } else {
             $data = [];
-            foreach($this->params[$prefix] as $key => $value)
-              $this->row[$prefix."/".$tree[$prefix]["field_name"] . "-". $key] = $value;
+            foreach($this->params[$prefix] as $k => $v) $this->row[$prefix."-". $k] = $v;
           }
         }
       } 
