@@ -16,7 +16,8 @@ class PersistRelApi {
   public $entityName; //entidad principal
   public $container;
   public $permission = "w";
-
+  public $params;
+  public $persistController = "id";
   
   public function compare($a, $b) {
     /**
@@ -33,7 +34,7 @@ class PersistRelApi {
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
-    $data = php_input();
+    if(empty($this->params)) $this->params = php_input();
     /**
      * Array asociativo
      * Cada llave identifica:
@@ -46,28 +47,26 @@ class PersistRelApi {
      *     a traves de la relacion indicada en el prefijo "per"
      */    
     
-    uksort($data, array($this, "compare"));
+    uksort($this->params, array($this, "compare"));
     /**
      * Para el ordenamiento se verifica el caracter "_" 
      * para calcular la profundidad.
      * En base a la "profundidad" se define el orden de persistencia
      */
 
-    $response = [];
     $detail  = [];
-    foreach($data as $key => $row) {
+    $sql = "";
+    foreach($this->params as $key => $row) {
       if($key != $this->entityName) {
         $entityName = get_entity_rel($this->entityName)[$key]["entity_name"];
         $fieldName = get_entity_rel($this->entityName)[$key]["field_name"];
         $render = $this->container->getControllerEntity("render_build", $entityName)->main();
         $p = $this->container->getController("persist_sql");
-        $persist = $p->id($render->entityName, $data[$key]);
-        /**
-         * Para chequear existencia (realizar una insercion o actualizacion)
-         * utiliza el id, el chequeo de unicidad debe hacerse en el cliente.
-         * o en su defecto utilizar api PersistRelUnique
-         */
-        $result = $this->container->getDb()->multi_query_transaction($persist["sql"]);
+        $persist = ($this->persistController == "id") ?
+          $p->id($render->entityName, $this->params[$key]) : $p->unique($render->entityName, $this->params[$key]);
+
+        $sql .= $persist["sql"];
+        //$result = $this->container->getDb()->multi_query_transaction($persist["sql"]);
         array_push($detail, $entityName.$persist["id"]);
         
         //***** asignar fk *****/
@@ -75,30 +74,30 @@ class PersistRelApi {
         $pos = strrpos($key,"_");
         if($pos !== false){ 
           $s = substr($key, 0, $pos);
-          foreach($data as $k => &$value)
+          foreach($this->params as $k => &$value)
             if($k_ == $s) {
               $value[$fieldName] = $persist["id"];
               break;
             }
         } else {
-          $data[$this->entityName][$fieldName] = $persist["id"];
+          $this->params[$this->entityName][$fieldName] = $persist["id"];
         }
       } else {
         $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
         $p = $this->container->getController("persist_sql");
-        $persist = $p->id($render->entityName, $data[$this->entityName]);
-        /**
-         * Para chequear existencia (realizar una insercion o actualizacion)
-         * utiliza el id, el chequeo de unicidad debe hacerse en el cliente.
-         * o en su defecto utilizar api PersistRelUnique (en construccion)
-         */
-        $result = $this->container->getDb()->multi_query_transaction($persist["sql"]);
+        $persist = ($this->persistController == "id") ?
+          $p->id($render->entityName, $this->params[$key]) : $p->unique($render->entityName, $this->params[$key]);
+
+          //$result = $this->container->getDb()->multi_query_transaction($persist["sql"]);
+        $sql .= $persist["sql"];
+        echo $sql;
+        //$this->container->getDb()->multi_query_transaction($sql);
+
         array_push($detail, $this->entityName.$persist["id"]);
         return ["id" => $persist["id"], "detail" => $detail];
       } 
 
     }
-    return $response;
   }
 }
 
