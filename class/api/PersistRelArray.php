@@ -33,7 +33,7 @@ class PersistRelArrayApi extends PersistRelApi{
       }
     }
     $this->params = $data;
-    parent::main();
+    return parent::main();
   }
 }
 
