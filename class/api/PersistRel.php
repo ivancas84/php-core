@@ -90,8 +90,8 @@ class PersistRelApi {
 
           //$result = $this->container->getDb()->multi_query_transaction($persist["sql"]);
         $sql .= $persist["sql"];
-        echo $sql;
-        //$this->container->getDb()->multi_query_transaction($sql);
+        //echo $sql;
+        $this->container->getDb()->multi_query_transaction($sql);
 
         array_push($detail, $this->entityName.$persist["id"]);
         return ["id" => $persist["id"], "detail" => $detail];
