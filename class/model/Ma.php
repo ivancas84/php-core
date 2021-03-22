@@ -46,6 +46,8 @@ class Ma extends Db {
   public function select($entity, Render $render){
     /**
      * consulta avanzada
+     * Reduce la cantidad de campos a consultar
+     * No se debe utilizar storage
      */
     $sql = $this->container->getSqlo($entity)->select($render);
     
