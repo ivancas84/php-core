@@ -28,13 +28,12 @@ class PersistArrayApi {
     $ids = [];
     $sql = "";
     $detail = [];
-    $p = $this->container->getController("persist_sql");
 
     foreach($data as $row){
       if($row["_delete"]){
         $sql .= $this->container->getSqlo($render->entityName)->delete($row["id"]);
       } else {
-        $persist = $p->id($render->entityName, $row);
+        $persist = $this->container->getControllerEntity("persist_sql", $render->entityName)->id($row);
         $sql .= $persist["sql"];
         array_push($ids, $persist["id"]);
       }

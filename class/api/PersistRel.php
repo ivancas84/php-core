@@ -61,9 +61,8 @@ class PersistRelApi {
         $entityName = get_entity_rel($this->entityName)[$key]["entity_name"];
         $fieldName = get_entity_rel($this->entityName)[$key]["field_name"];
         $render = $this->container->getControllerEntity("render_build", $entityName)->main();
-        $p = $this->container->getController("persist_sql");
         $persist = ($this->persistController == "id") ?
-          $p->id($render->entityName, $this->params[$key]) : $p->unique($render->entityName, $this->params[$key]);
+        $this->container->getControllerEntity("persist_sql", $render->entityName)->id($this->params[$key]) : $p->unique($render->entityName, $this->params[$key]);
 
         $sql .= $persist["sql"];
         //$result = $this->container->getDb()->multi_query_transaction($persist["sql"]);
@@ -84,9 +83,8 @@ class PersistRelApi {
         }
       } else {
         $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
-        $p = $this->container->getController("persist_sql");
         $persist = ($this->persistController == "id") ?
-          $p->id($render->entityName, $this->params[$key]) : $p->unique($render->entityName, $this->params[$key]);
+        $this->container->getControllerEntity("persist_sql", $render->entityName)->id($this->params[$key]) : $p->unique($render->entityName, $this->params[$key]);
 
           //$result = $this->container->getDb()->multi_query_transaction($persist["sql"]);
         $sql .= $persist["sql"];

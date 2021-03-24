@@ -34,7 +34,7 @@ abstract class Entity {
    * pueden pertenecer a otra entidad, en este caso utilizar los prefijos correspondientes
    * no utilizar ids para su definicion
    * por ejemplo:
-   *   public $identifier = ["fecha_anio", "fecha_semestre","alu_per_numero_documento"];
+   *   public $identifier = ["fecha_anio", "fecha_semestre","alu_per-numero_documento"];
    */
 
   public $orderDefault = [];
