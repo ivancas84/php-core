@@ -6,6 +6,7 @@ require_once("function/get_entity_rel.php");
 require_once("class/api/PersistRel.php");
 
 class PersistRelArrayApi extends PersistRelApi{
+  
   /**
    * Comportamiento general de persistencia de elementos relacionados
    * 
@@ -19,7 +20,12 @@ class PersistRelArrayApi extends PersistRelApi{
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     if(empty($this->params)) $this->params = php_input();
-    
+    $this->assignParams();
+    return parent::main();
+  }
+  
+
+  public function assignParams(){
     $data = [];
     foreach($this->params as $key => $value){
       $pos = strpos($key, "-");
@@ -33,7 +39,6 @@ class PersistRelArrayApi extends PersistRelApi{
       }
     }
     $this->params = $data;
-    return parent::main();
   }
 }
 
