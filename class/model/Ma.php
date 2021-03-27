@@ -40,8 +40,14 @@ class Ma extends Db {
   }
 
   public function advanced($entity, Render $render){
+    return $this->select($entity, $render);
+  }
+
+  public function select($entity, Render $render){
     /**
      * consulta avanzada
+     * Reduce la cantidad de campos a consultar
+     * No se debe utilizar storage
      */
     $sql = $this->container->getSqlo($entity)->select($render);
     
@@ -51,19 +57,24 @@ class Ma extends Db {
     return $rows;    
   }
 
-  public function unique($entity, array $params){
+  public function unique($entityName, array $params){
     /**
      * Busqueda por campos unicos
      * $params
      *   array("nombre_field" => "valor_field", ...)
      */
-    $sql = $this->container->getSqlo($entity)->unique($params);
+    if(empty($params)) return null;
+    $render = $this->container->getRender($entityName);
+    $c = $render->setConditionUniqueFields($params);
+    if(!$c) return null;
+    $render->addFields($this->container->getRel($entityName)->fieldNames());
+    $sql = $this->container->getSqlo($entityName)->select($render);
     if(empty($sql)) return null;
 
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
-    if(count($rows) > 1) throw new Exception("La busqueda por campos unicos de {$entity} retorno mas de un resultado");
+    if(count($rows) > 1) throw new Exception("La busqueda por campos unicos de {$entityName} retorno mas de un resultado");
     if(count($rows) == 1) return $rows[0];
     return null;
   }

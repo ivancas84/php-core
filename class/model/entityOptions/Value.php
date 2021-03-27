@@ -19,11 +19,6 @@ class ValueEntityOptions extends EntityOptions {
    * Logs de verificaciones
    */
 
-  public $sql;
-  /**
-   * SqlTools
-   */
-
   public $value = [];
   
   public function _getLogs(){ return $this->logs; }
@@ -35,12 +30,6 @@ class ValueEntityOptions extends EntityOptions {
      */
     $a = $this->_toArray("sql");
     $b = $value->_toArray("sql");    
-
-    echo "<pre>";
-    echo "A";
-    print_r($a);
-    echo "B";
-    print_r($b);
 
     foreach($a as $ka => $va) {
       if(is_null($va) || !key_exists($ka, $b)) continue;
@@ -319,15 +308,15 @@ class ValueEntityOptions extends EntityOptions {
     return call_user_func_array(array($this, $m), [$fieldName]);    
   }
 
-  protected function _sqlDate($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "Y-m-d"); }
-  protected function _sqlTime($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "H:i:s"); }
-  protected function _sqlTimestamp($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "Y-m-d H:i:s"); }
-  protected function _sqlHm($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "H:i"); }
-  protected function _sqlYm($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "Y-m"); }
-  protected function _sqlY($fieldName){ return $this->sql->dateTime($this->value[$fieldName], "Y"); }
-  protected function _sqlBoolean($fieldName){ return $this->sql->boolean($this->value[$fieldName]); }
-  protected function _sqlNumber($fieldName){ return $this->sql->number($this->value[$fieldName]); }
-  protected function _sqlString($fieldName){ return $this->sql->string($this->value[$fieldName]); }
+  protected function _sqlDate($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "Y-m-d"); }
+  protected function _sqlTime($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "H:i:s"); }
+  protected function _sqlTimestamp($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "Y-m-d H:i:s"); }
+  protected function _sqlHm($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "H:i"); }
+  protected function _sqlYm($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "Y-m"); }
+  protected function _sqlY($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "Y"); }
+  protected function _sqlBoolean($fieldName){ return $this->container->getController("sql_tools", true)->boolean($this->value[$fieldName]); }
+  protected function _sqlNumber($fieldName){ return $this->container->getController("sql_tools", true)->number($this->value[$fieldName]); }
+  protected function _sqlString($fieldName){ return $this->container->getController("sql_tools", true)->string($this->value[$fieldName]); }
 
   protected function _defineCheck($fieldName){
     $param = explode(".",$fieldName);
@@ -359,15 +348,30 @@ class ValueEntityOptions extends EntityOptions {
     /**
      * chequear valor de un campo
      * el campo debe existir en valor para ser chequeado sino retorna null
-     * los chequeos que no son de un campo directo deben invocarse directamente por ejemplo persona->checkNombresParecidos();
+     * Los metodos de chequeo definidos por el usuario, deben utilizar un solo parametro
+     * En el caso de que se requieran varios parametros, utilizar uno solo definido como array
      * @example 
-     *   _check("nombre")
-     *   _check("nombre.max");
+     *   _check("nombre");
+     *   _check("nombre.max"); //funcion de agregacion
+     *   _check("nombre_parecidos", $existente); //definido por el usuario
+     * 
+     * Los metodos definidos por el usuario, pueden llamarse directamente
+     * En vez de _check("nombre_parecidos", $existente) se invoca checkNombresParecidos($existente);
      */
-    if(!array_key_exists($fieldName, $this->value)) return null;
+    
     $m = "check".snake_case_to("XxYy", str_replace(".","_",$fieldName));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$param]);
+    /**
+     * En primer lugar se verifica la existencia del metodo
+     * Un metodo definido puede acceder a diferentes valores no indicados en fieldName
+     * Por ejemplo Persona->checkNombresParecidos accede a los valores "nombres" y "apellidos"
+     */
 
+    if(!array_key_exists($fieldName, $this->value)) return null;
+    /**
+     * Si no existe metodo definido por el usuario 
+     * se verifica la existencia de valor para el fieldname
+     */
     $m = $this->_defineCheck($fieldName);
     $this->logs->resetLogs($fieldName);
     $v = Validation::getInstanceValue($this->value[$fieldName]);

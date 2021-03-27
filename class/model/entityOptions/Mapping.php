@@ -18,10 +18,11 @@ class MappingEntityOptions extends EntityOptions {
 
   public function count(){ return "COUNT(*)"; }
   
-  public function identifier(){ 
-    if(empty($this->entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->entity->getName()); 
+  public function identifier(){
+    $entity = $this->container->getEntity($this->entityName);  
+    if(empty($entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->container->getEntity($this->entityName)->getName()); 
     $identifier = [];
-    foreach($this->entity->getIdentifier() as $id) array_push($identifier, $this->container->getRel($this->entityName)->mapping($id));
+    foreach($entity->getIdentifier() as $id) array_push($identifier, $this->container->getRel($this->entityName, $this->prefix)->mapping($id));
     return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
 ";
   }
@@ -59,9 +60,10 @@ class MappingEntityOptions extends EntityOptions {
   public function _min($field) { return "MIN(" . $this->_($field) . ")"; }
   public function _max($field) { return "MAX(" . $this->_($field) . ")"; }
   public function _sum($field) { return "SUM(" . $this->_($field) . ")"; }
-  public function _count($field) { return "COUNT(" . $this->_($field) . ")"; }
+  public function _count($field) { return "COUNT(DISTINCT " . $this->_($field) . ")"; }
   public function _exists($field) { return $this->_default($field); }
   public function _isSet($field) { return $this->_default($field); }
+  public function _groupConcat($field) { return "GROUP_CONCAT(DISTINCT " . $this->_($field) . " SEPARATOR ', ')"; }
 
 }
 

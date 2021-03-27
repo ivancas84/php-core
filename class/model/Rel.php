@@ -7,7 +7,6 @@ require_once("function/settypebool.php");
 require_once("function/get_entity_relations.php");
 require_once("function/array_add_prefix.php");
 
-
 class EntityRel {
   /**
    * Metodos adicionales definidos a partir de relaciones entre entidades
@@ -15,6 +14,8 @@ class EntityRel {
 
   public $container;
   public $entityName;
+  public $prefix = "";
+
 
   public function mapping($field){
     /**
@@ -22,11 +23,11 @@ class EntityRel {
      */
     $f = explode("-",$field);
     if(count($f) == 2) {
-      $prefix = $f[0];
+      $prefix = (empty($this->prefix)) ? $f[0] : $this->prefix . "_" . $f[0];
       $entityName = get_entity_relations($this->entityName)[$f[0]];
       if($r = $this->container->getMapping($entityName, $prefix)->_($f[1])) return $r;
     } 
-    if($f = $this->container->getMapping($this->entityName)->_($field)) return $f;
+    if($f = $this->container->getMapping($this->entityName, $this->prefix)->_($field)) return $f;
     throw new Exception("Campo no reconocido para {$this->entityName}: {$field}");
   }
   
@@ -36,7 +37,6 @@ class EntityRel {
      * Define una condicion avanzada que recorre todos los metodos independientes de condicion avanzadas de las tablas relacionadas
      * La restriccion de conditionFieldStruct es que $value no puede ser un array, ya que definirá un conjunto de condiciones asociadas
      */
-    
     $f = explode("-",$field);
     if(count($f) == 2) {
       $prefix = $f[0];
@@ -79,36 +79,29 @@ class EntityRel {
     return $fieldNames;
   }
 
-  public function fields(){
-    /**
-     * @deprecated
-     * Se utilizaba para definir los campos definidos, fue reemplazada por el uso de fieldNames y fieldAlias
-     * Definir sql de campos definidos de la entidad principal y sus relaciones
-     */
-    $fields = [implode(",", $this->container->getFieldAlias($this->entityName)->_toArray())];
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName) 
-      array_push($fields, implode(", ", $this->container->getFieldAlias($entityName, $prefix)->_toArray()));
-    
-    return implode(',
-', $fields);
-  }
   
-  public function fieldAlias($field){
-    $f = explode("-",$field);
-    if(count($f) == 2) {      
-      $prefix = $f[0];
-      $entityName = get_entity_relations($this->entityName)[$f[0]];
-      return $this->container->getFieldAlias($entityName, $prefix)->_($f[1]);
-    } 
-    return $this->container->getFieldAlias($this->entityName)->_($field);
-  }
-
+  
   public function join(Render $render){
     return $this->container->getControllerEntity("rel_join", $this->entityName)->main($render);
   }
 
   public function json($row){
     return $this->container->getControllerEntity("rel_json", $this->entityName)->main($row);
+  }
+
+  public function json2($row){
+    /**
+     * @return $example = [ //para la entidad alumno
+     *   "id" => "...",
+     *   "activo" => false,
+     *   "persona_" => [
+     *     "id" => "..."
+     *     "numero_documento" > "..."¨
+     *     "domicilio_" => [ ... ]
+     *   ]
+     * ]
+     */
+    return $this->container->getControllerEntity("rel_json_2", $this->entityName, $this->prefix)->main($row);
   }
 
   public function value($row){

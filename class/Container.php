@@ -14,9 +14,9 @@ class Container {
   static $db = null;
 
   static $sqlo = []; //las instancias dependen de la entidad
-  static $rel = []; //las instancias dependen de la entidad
   static $entity = []; //las instancias dependen de la entidad
   static $field = []; //las instancias dependen de la entidad
+  static $controller = []; //no todos los controladores son singletones
   static $structure = false; //flag para indicar que se generaron todas las entidades
 
   public function getDb() {
@@ -101,7 +101,7 @@ class Container {
   }
 
 
-  public function getController($controller){
+  public function getController($controller, $singleton = false){
     /**
      * Controlador (si utilizan container o algun elemento que pueda instanciarse desde container entonces es un controlador)
      */
@@ -109,9 +109,13 @@ class Container {
     $name = snake_case_to("XxYy", $controller) . ".php";
     $className = snake_case_to("XxYy", $controller);    
     require_once($dir.$name);
-    $c = new $className;
-    $c->container = $this;
-    return $c;
+    
+    if($singleton) {
+      if(!empty(self::$controller[$controller])) return self::$controller[$controller];
+    }
+    self::$controller[$controller] = new $className;
+    self::$controller[$controller]->container = $this;
+    return self::$controller[$controller];
   }
 
   public function getTool($tool){
@@ -126,7 +130,7 @@ class Container {
     return $c;
   }
   
-  public function getControllerEntity($controller, $entityName){
+  public function getControllerEntity($controller, $entityName, $prefix = null){
     /**
      * Controlador asociado a entidad
      */
@@ -142,6 +146,7 @@ class Container {
     $c = new $className;
     $c->container = $this;
     $c->entityName = $entityName;
+    if(!empty($prefix)) $c->prefix = $prefix;
     return $c;
   }
 
@@ -187,7 +192,14 @@ class Container {
     return self::$sqlo[$entity] = $c;
   }
 
-  
+  public function getRender($entityName = null){
+    require_once("class/model/Render.php");
+    $render = new Render;
+    $render->container = $this;  
+    $render->entityName = $entityName;    
+    return $render;    
+  }
+
   public function getSql($entity, $prefix = null){
     $dir = "class/model/sql/";
     $name = snake_case_to("XxYy", $entity) . ".php";
@@ -208,8 +220,9 @@ class Container {
     return $sql;    
   }
 
-  public function getRel($entity) {
-    if (isset(self::$rel[$entity])) return self::$rel[$entity];
+  public function getRel($entity, $prefix = "") {
+    //if (isset(self::$rel[$entity])) return self::$rel[$entity];
+    //si utiliza prefijo no debe utilizarse static!
 
     $dir = "class/model/rel/";
     $name = snake_case_to("XxYy", $entity) . ".php";
@@ -224,8 +237,9 @@ class Container {
       
     $c = new $className;
     $c->entityName = $entity;
+    $c->prefix = $prefix;
     $c->container = $this;
-    return self::$rel[$entity] = $c;
+    return $c;
   }
 
 
@@ -243,7 +257,6 @@ class Container {
     if($prefix) $c->prefix = $prefix;
     $c->entityName = $entityName;
     $c->container = $this;
-    $c->entity = $this->getEntity($entityName);
     return $c;    
   }
   
@@ -260,10 +273,6 @@ class Container {
     $c = new $className;
     if($prefix) $c->prefix = $prefix;
     $c->container = $this;
-    $c->mapping = $this->getMapping($entityName, $prefix);
-    $c->value = $this->getValue($entityName, $prefix);
-    $c->sql = $this->getController("sql_tools");;
-    $c->entity = $this->getEntity($entityName);
     $c->entityName = $entityName;
     return $c;    
   }
@@ -282,30 +291,8 @@ class Container {
     $c = new $className;
     $c->container = $this;
     if($prefix) $c->prefix = $prefix;
-    $c->entity = $this->getEntity($entityName);
     $c->entityName = $entityName;
-    $c->mapping = $this->getMapping($entityName, $prefix);
-    $c->sql = $this->getController("sql_tools");
     return $c;
-  }
-
-  public function getFieldAlias($entityName, $prefix = ""){
-    $dir = "class/model/fieldAlias/";
-    $name = snake_case_to("XxYy", $entityName) . ".php";
-    if((@include_once $dir.$name) == true){
-      $className = $prf.snake_case_to("XxYy", $entityName) . "FieldAlias";
-    } else {
-      require_once("class/model/entityOptions/FieldAlias.php");
-      $className = "FieldAliasEntityOptions";
-    }
-    
-    $c = new $className;
-    if($prefix) $c->prefix = $prefix;
-    $c->container = $this;
-    $c->entityName = $entityName;
-    $c->entity = $this->getEntity($entityName);
-    $c->mapping = $this->getMapping($entityName, $prefix);
-    return $c;    
   }
 
   public function getValue($entityName, $prefix = ""){
@@ -322,7 +309,6 @@ class Container {
     if($prefix) $c->prefix = $prefix;
     $c->container = $this;
     $c->entityName = $entityName;
-    $c->sql = $this->getController("sql_tools");
     $c->logs = $this->getTool("logs");
     return $c;    
   }

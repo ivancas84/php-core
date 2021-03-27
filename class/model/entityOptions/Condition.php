@@ -5,10 +5,6 @@ require_once("class/model/entityOptions/EntityOptions.php");
 
 class ConditionEntityOptions extends EntityOptions {
 
-  public $mapping;
-  public $value;
-  public $sql;
-
   protected function labelSearch($option, $value){
      /**
        * combinacion entre label y search
@@ -23,8 +19,8 @@ class ConditionEntityOptions extends EntityOptions {
     if($option == "=") $option = "=~";
     elseif($option == "!=") $option = "!=~";
     if(($option != "!=~") && ($option != "=~")) throw new Exception("Opción no válida para 'search'");
-    $field = $this->mapping->_("search");
-    return $this->sql->approxCast($field, $option, $value);  
+    $field = $this->container->getMapping($this->entityName, $this->prefix)->_("search");
+    return $this->container->getController("sql_tools", true)->approxCast($field, $option, $value);  
   }
 
   protected function _defineCondition($param){
@@ -39,7 +35,7 @@ class ConditionEntityOptions extends EntityOptions {
     } else {
       switch($param[1]) {
         case "count": return "_default";
-        case "is_set": return "_isSet";
+        case "is_set": case "exists": return "_exists";
         default: return $this->_defineCondition([$param[0]]);
       }
     }
@@ -54,32 +50,35 @@ class ConditionEntityOptions extends EntityOptions {
   }
 
   protected function _default($fieldName, $option, $value) { 
-    $field = $this->mapping->_($fieldName);
-    if($c = $this->sql->exists($field, $option, $value)) return $c;
-    if($c = $this->sql->approxCast($field, $option, $value)) return $c;
-    $this->value->_set($fieldName, $value);  
-    if(!$this->value->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _default: " . $this->entityName . " " .$fieldName . " " . $option . " " . $value);
-    return "({$field} {$option} {$this->value->_sql($fieldName)}) ";  
+    $field = $this->container->getMapping($this->entityName, $this->prefix)->_($fieldName);
+    if($c = $this->container->getController("sql_tools", true)->exists($field, $option, $value)) return $c;
+    if($c = $this->container->getController("sql_tools", true)->approxCast($field, $option, $value)) return $c;
+    $v = $this->container->getValue($this->entityName, $this->prefix);
+    $v->_set($fieldName, $value);  
+    if(!$v->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _default: " . $this->entityName . " " .$fieldName . " " . $option . " " . $value);
+    return "({$field} {$option} {$v->_sql($fieldName)}) ";  
   }
 
   protected function _string($fieldName, $option, $value) { 
-    $field = $this->mapping->_($fieldName);
-    if($c = $this->sql->exists($field, $option, $value)) return $c;
-    if($c = $this->sql->approx($field, $option, $value)) return $c;
-    $this->value->_set($fieldName, $value);  
-    if(!$this->value->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _string: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
-    return "({$field} {$option} {$this->value->_sql($fieldName)}) ";  
+    $field = $this->container->getMapping($this->entityName, $this->prefix)->_($fieldName);
+    if($c = $this->container->getController("sql_tools", true)->exists($field, $option, $value)) return $c;
+    if($c = $this->container->getController("sql_tools", true)->approx($field, $option, $value)) return $c;
+    $v = $this->container->getValue($this->entityName, $this->prefix);
+    $v->_set($fieldName, $value);  
+    if(!$v->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _string: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
+    return "({$field} {$option} {$v->_sql($fieldName)}) ";  
   }
 
   protected function _boolean($fieldName, $option, $value) { 
-    $field = $this->mapping->_($fieldName);
-    $this->value->_set($fieldName, $value);
-    if(!$this->value->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _boolean: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
-    return "({$field} {$option} {$this->value->_sql($fieldName)}) ";  
+    $field = $this->container->getMapping($this->entityName, $this->prefix)->_($fieldName);
+    $v = $this->container->getValue($this->entityName, $this->prefix);
+    $v->_set($fieldName, $value);
+    if(!$v->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _boolean: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
+    return "({$field} {$option} {$v->_sql($fieldName)}) ";  
   }
 
-  protected function _isSet($fieldName, $option, $value) { 
-    $field = $this->mapping->_($fieldName);
-    return $this->sql->exists($field, $option, settypebool($value));
+  protected function _exists($fieldName, $option, $value) { 
+    $field = $this->container->getMapping($this->entityName, $this->prefix)->_($fieldName);
+    return $this->container->getController("sql_tools", true)->exists($field, $option, settypebool($value));
   }
 }

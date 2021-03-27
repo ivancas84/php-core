@@ -18,6 +18,8 @@ require_once("function/error_handler.php");
 abstract class Import {
     /**
      * Importacion de elementos
+     * Si se agregan mas atributos que se van a utilizar para inicializar el elemento,
+     * debe sobrescribirse adecuadamente el metodo element() para transferir los atributos a los elementos
      */
     
     public $entityName;
@@ -38,12 +40,11 @@ abstract class Import {
     public $container;
     
     public function main(){
-        $this->define();
-        $this->identify();
-        $this->query();
-        $this->process();
-        $this->persist();
-        $this->summary();
+      $this->define();
+      $this->identify();
+      $this->query();
+      $this->process();
+      $this->persist();
     }
 
     public function element($i, $data){
@@ -274,13 +275,13 @@ abstract class Import {
         if(!in_array($value, $this->ids[$id])) array_push($this->ids[$id], $value); 
     }
 
-    protected function queryEntityField($name, $field, $id = null){
+    protected function queryEntityField($entityName, $field, $id = null){
       /**
-       * Consulta a la base de datos de la entidad $name
+       * Consulta a la base de datos de la entidad $entityName
        * Utilizando el campo field (supuestamente unico) y el valor almacenado de field desde el atributo ids
        * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
        */
-      if(!$id) $id = $name;
+      if(!$id) $id = $entityName;
       $this->dbs[$id] = [];
       if(empty($this->ids[$id])) return;
 
@@ -288,8 +289,8 @@ abstract class Import {
       $render->setFields([$field]);
       $render->setSize(false);
       $render->addCondition([$field,"=",$this->ids[$id]]);
-
-      $rows = $this->container->getDb()->all($name, $render);
+  
+      $rows = $this->container->getDb()->all($entityName, $render);
   
       //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
       $this->dbs[$id] = array_combine_key(
@@ -327,9 +328,9 @@ abstract class Import {
     if(key_exists($value, $this->dbs[$id])){
       $existente = $this->container->getValue($entityName);
       $existente->_fromArray($this->dbs[$id][$value], "set");
-      $element->update($entityName, $existente);
+      $element->update($entityName, $existente, $id);
     } else {        
-      $element->insert($entityName);
+      $element->insert($entityName, $id);
     }
   }
     

@@ -2,6 +2,7 @@
 
 class Render {
 
+  public $container;
   public $entityName; //entidad principal a la que esta destinada la consulta
   public $condition = array(); //array multiple cuya raiz es [field,option,value], 
   /**
@@ -190,5 +191,55 @@ class Render {
       $this->order[$newk] = $v;
       unset($this->order[$k]);
     }
+  }
+
+  public function setConditionUniqueFields(array $params){
+    /**
+     * definir condicion para campos unicos
+     * $params:
+     *   array("nombre_field" => "valor_field", ...)
+     * los campos unicos simples se definen a traves del atributo Entity::$unique
+     * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
+     */
+    $uniqueFields = $this->container->getEntity($this->entityName)->getFieldsUnique();
+    $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->getFieldsUniqueMultiple();
+
+    $condition = array();
+    if(array_key_exists("id",$params) && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
+
+    foreach($uniqueFields as $field){
+      foreach($params as $key => $value){
+        if($key == $field->getName()) array_push($condition, [$key, "=", $value, "or"]);
+      }
+    }
+
+    if($uniqueFieldsMultiple) {
+      $conditionMultiple = [];
+      $first = true;
+      foreach($uniqueFieldsMultiple as $field){
+        foreach($params as $key => $value){
+          if($key == $field->getName()) {
+            if($first) {
+              $con = "or";
+              $first = false;
+            } else {
+              $con = "and";
+            }
+            array_push($conditionMultiple, [$key, "=", $value, $con]);
+          }
+        }
+      }
+
+      if(!empty($conditionMultiple)) {
+        array_push($condition, $conditionMultiple);
+      }
+    }
+
+    if(!empty($condition)){
+      $this->addCondition($condition);
+      return true;
+    }
+
+    return false;
   }
 }
