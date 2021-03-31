@@ -13,6 +13,15 @@ class RelValue {
   public $value = [];
 
   public function main($row){
+    /**
+     * Array asociativo, formato de resultado de consulta sql, ejemplo
+     * [ 
+     *   id => "v1"
+     *   nombre => "v2"
+     *   dom_id => "v3"
+     *   dom_calle => "v4"
+     * ]
+     */
     $this->row = $row;
     $tree = get_entity_tree($this->entityName);
     $this->value[$this->entityName] = $this->container->getValue($this->entityName)->_fromArray($this->row, "set");
