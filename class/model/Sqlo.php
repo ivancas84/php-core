@@ -6,7 +6,7 @@ require_once("function/settypebool.php");
 require_once("function/get_entity_relations.php");
 
 
-class EntitySqlo {
+class EntitySqlo { //2
   /**
    * SQL Object
    * Definir SQL para ser ejecutado directamente por el motor de base de datos
@@ -99,12 +99,11 @@ WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} = {$r
 
   public function updateAll($row, array $ids) { //sql de actualizacion para un conjunto de ids
     /**
-
      * La actualizacion solo tiene en cuenta los campos definidos, los que no estan definidos, no seran considerados manteniendo su valor previo.
      * este metodo define codigo que modifica la base de datos, debe utilizarse cuidadosamente
      * debe verificarse la existencia de ids correctos
      * No permite actualizar ids (no se me ocurre una razon valida por la que permitirlo)
-     * @return array("id" => "identificador principal actualizado", "sql" => "sql de actualizacion", "detail" => "detalle de campos modificados")
+     * @return string sql de actualizacion
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->container->getSql($this->entityName)->formatIds($ids);
@@ -115,14 +114,7 @@ WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} IN ({
 ";
   }
 
-  public function delete($id){
-    /**
-     * Eliminar un elemento
-     */
-    return $this->deleteAll([$id]);
-  }
-
-  public function deleteAll(array $ids) { 
+  public function delete(array $ids) { 
     /**
      * Eliminar varios elementos
      * Este metodo define codigo que modifica la base de datos, debe utilizarse cuidadosamente
