@@ -109,12 +109,12 @@ class EntityRel {
      * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
      * El resultado es almacenado en un array asociativo.
      * Las claves del array son identificadores unicos representativos del nombre del campo
-     * Las claves se forman a partir del nombre de la clave foranea
+     * Las claves se forman a partir del nombre de la clave foranea (se extrae de las funciones de identificacion)
      * Se asigna un numero incremental a la clave en el caso de que se repita
-     * A diferencia de otros métodos que retornan valores, 
+     * A diferencia de otros métodos que retornan valores,  
      * values utiliza un array asociativo debido a que el valor es un objeto
      * facilita el acceso directo desde la llave por ejemplo $resultado["nombre_fk"]->metodo()
-     * En el caso por ejemplo del metodo json, debido a que el valor es tambien un un array asociativo, 
+     * En el caso por ejemplo del metodo json, debido a que el valor es tambien un array asociativo, 
      * tiene sentido acomodarlo como un arbol de valores, identificandolos con el prefijo "_",
      * por ejemplo $resultado["nombre_fk] = "id_fk"
      * $resultado["_nombre_fk"] = array asociativo con los valores de la entidad para el id "id_fk"
