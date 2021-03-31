@@ -31,7 +31,7 @@ class PersistArrayApi {
 
     foreach($data as $row){
       if($row["_delete"]){
-        $sql .= $this->container->getSqlo($render->entityName)->delete($row["id"]);
+        $sql .= $this->container->getSqlo($render->entityName)->delete([$row["id"]]);
       } else {
         $persist = $this->container->getControllerEntity("persist_sql", $render->entityName)->id($row);
         $sql .= $persist["sql"];
