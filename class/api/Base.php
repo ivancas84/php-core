@@ -1,6 +1,6 @@
 <?php
 
-abstract class BaseApi {
+abstract class BaseApi { //1.1
   /**
    * Controlador base
    * Elementos en comun a todos los controladores
@@ -8,7 +8,7 @@ abstract class BaseApi {
   
   public $entityName; 
   public $container;
-  public $permission;
+  public $permission = "r";
 
   abstract public function main();
 
