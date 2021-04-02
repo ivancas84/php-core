@@ -4,7 +4,7 @@ require_once("function/snake_case_to.php");
 require_once("class/model/Sql.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
-require_once("function/get_entity_relations.php");
+require_once("function/get_entity_rel.php");
 require_once("function/array_add_prefix.php");
 
 class EntityRel {
@@ -24,7 +24,7 @@ class EntityRel {
     $f = explode("-",$field);
     if(count($f) == 2) {
       $prefix = (empty($this->prefix)) ? $f[0] : $this->prefix . "_" . $f[0];
-      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      $entityName = get_entity_rel($this->entityName)[$f[0]]["entity_name"];
       if($r = $this->container->getMapping($entityName, $prefix)->_($f[1])) return $r;
     } 
     if($f = $this->container->getMapping($this->entityName, $this->prefix)->_($field)) return $f;
@@ -40,7 +40,7 @@ class EntityRel {
     $f = explode("-",$field);
     if(count($f) == 2) {
       $prefix = $f[0];
-      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      $entityName = get_entity_rel($this->entityName)[$f[0]]["entity_name"];
       return $this->container->getCondition($entityName, $prefix)->_($f[1], $option, $value);
     } 
     return $this->container->getCondition($this->entityName)->_($field, $option, $value);
@@ -53,7 +53,7 @@ class EntityRel {
     $f = explode("-",$field);
     if(count($f) == 2) {
       $prefix = $f[0];
-      $entityName = get_entity_relations($this->entityName)[$f[0]];
+      $entityName = get_entity_rel($this->entityName)[$f[0]]["entity_name"];
       if($c = $this->container->getConditionAux($entityName, $prefix)->_($f[1], $option, $value)) return $c;
     } 
     if($c = $this->container->getConditionAux($this->entityName)->_($field, $option, $value)) return $c;
@@ -65,12 +65,12 @@ class EntityRel {
      * Array de nombres de campos definidos entidad principal y sus relaciones, de la forma prefix-field
      */
     $fieldNames = $this->container->getEntity($this->entityName)->getFieldNames();
-    foreach(get_entity_relations($this->entityName) as $prefix => $entityName){
+    foreach(get_entity_rel($this->entityName) as $prefix => $value){
       $fieldNames = array_unique(
         array_merge(
           $fieldNames, 
           array_add_prefix(
-            $this->container->getEntity($entityName)->getFieldNames(),
+            $this->container->getEntity($value["entity_name"])->getFieldNames(),
             $prefix."-"
           )
         )
