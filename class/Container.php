@@ -75,6 +75,13 @@ class Container {
     } elseif((@include_once $dir."_".$name) == true) {
         $className = "_Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);  
     } else {
+      /**
+       * Campos de uso general
+       * Por el moment solo se encuentran definidos en el core
+       * 
+       * En el caso de que se encuentre alguna utilidad, 
+       * se modificara el codigo para permitir campos de uso general en la estructura de una app particular
+       */
       require_once("class/model/field/".$name);
       $className = "_Field".snake_case_to("XxYy", $field);  
     }
