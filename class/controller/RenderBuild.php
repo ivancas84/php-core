@@ -4,18 +4,13 @@ require_once("class/model/Render.php");
 
 class RenderBuild {
   /**
-   * @todo puede resultar medio confuso!
-   * Se asignan la entidad correcta y las relaciones, pero despues que valor se debe utilizar?
-   * La entidad ficticia o la entidad real?
-   * Puede ser confuso para ciertos metodos en los cuales solo se puede utilizar la entidad real
-   * Por ejemplo getRel->json2()
-   */
-
-  /**
    * Definir objeto de presentacion a partir de una entidad (real o ficticia)
    * Es util cuando se necesita definir condiciones para entidades ficticias
    * Por ejemplo si se indica la entidad ficticia "alumno_activo", 
    * RenderBuild generara un nuevo Render para la entidad "alumno" agregando la condicion "activo = true"
+   * En otras palabras RenderBuild tiene dos propositos principales:
+   * 1) Traducir una entidad ficticia a una entidad real mas una condicion
+   * 2) Aplicar una condicion a una entidad real para restringir permisos segun el rol del usuario
    */
 
   public $container; //contenedor
