@@ -4,13 +4,11 @@ require_once("class/model/Render.php");
 require_once("function/get_entity_tree.php");
 require_once("function/php_input.php");
 
-class UniqueRelApi {
+class UniqueRelApi { //1.1
   /**
    * Consulta de campos unicos de una entidad o sus relaciones
-   * Se realiza un analisis de los parametros,
-   * y en funcion de sus prefijos, 
-   * se realizan las correspondientes consultas
-   * a la base de datos de una entidad o sus relaciones
+   * Se realiza un analisis de los parametros, y en funcion de sus prefijos, 
+   * se realizan las correspondientes consultas a la base de datos de una entidad o sus relaciones
    */
 
   public $entityName;
@@ -26,7 +24,7 @@ class UniqueRelApi {
    * ]
    */
 
-  public $row = []; //Resultado estruturado
+  public $row = []; //Resultado estructurado
   /**
    * @example Para la entidad alumno [
    *   "alumno" => [
@@ -87,40 +85,65 @@ class UniqueRelApi {
       $data = [];
       $this->row[$this->entityName] = [];
     } 
-    $this->recursive($tree, $data);
+    $this->recursive($tree, $data, $this->entityName);
   }
 
-  protected function recursive(array $tree, $data){
+  protected function recursive(array $tree, $data, $previousKey){
     foreach ($tree as $prefix => $value) {
-      if(array_key_exists($prefix, $data) && isset($data[$prefix]["id"])){
+     if(array_key_exists($prefix, $data) && isset($data[$prefix]["id"])){
         /**
          * Si existe $prefix en $data significa que existen datos en la base de datos inicializados
          * se ignoran los parametros y se asignan los valores de $data
         */
         $this->row[$prefix] = $data[$prefix];
-      } else {
+      } elseif(array_key_exists($value["field_name"], $this->row[$previousKey]) && !empty($this->row[$previousKey][$value["field_name"]])){
         /**
          * Si no existe $prefix en $data significa que no existen datos en la base de datos inicializados
-         * se verifica la existencia de parametros para inicializar
+         * se verifica la existencia de parametros para inicializar.
+         * 
+         * En primer lugar se verifica la existencia de parametros en la entidad padre identificada con previousKey, que correspondan a la entidad actual
+         * En el caso de que exista un valor valido en la entidad padre se ignoran los parametros de la entidad actual
          */
-        if(array_key_exists($prefix,$this->params)){
-          $render = $this->container->getControllerEntity("render_build", $tree[$prefix]["entity_name"])->main();
-          $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
-          if(!empty($row)) {
-            $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
-            $this->row[$prefix] = $data[$prefix];
-          } else {
-            $data = [];
-            $this->row[$prefix] = $this->params[$prefix];
-          }
-        } else {
-          $this->row[$prefix] = [];
-        }
-
+        $data = $this->previousParam($value, $prefix, $previousKey);
+      } elseif(array_key_exists($prefix,$this->params)){
+        /**
+         * En segundo lugar se verifican los parametros de la entidad actual
+         */
+        $data = $this->prefixParam($value, $prefix);
+      } else {
+        /**
+         * En tercer lugar, al no existir parametros, se inicializa vacio
+         */
+        $this->row[$prefix] = [];
       } 
 
-      if(!empty($value["children"])) $this->recursive($value["children"], $data);
+      if(!empty($value["children"])) $this->recursive($value["children"], $data, $prefix);
     }
   }
-  
+
+  public function previousParam($leaf, $prefix, $previousKey){
+    $render = $this->container->getControllerEntity("render_build", $leaf["entity_name"])->main();
+    $row = $this->container->getDb()->get($render->entityName, $this->row[$previousKey][$leaf["field_name"]]);
+    if(!empty($row)) {
+      $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
+      $this->row[$prefix] = $data[$prefix];
+    } else {
+      $data = [];
+      $this->row[$prefix] = [ "id" => $this->row[$previousKey][$leaf["field_name"]]];
+    }
+    return $data;
+  }
+
+  public function prefixParam($leaf, $prefix){
+    $render = $this->container->getControllerEntity("render_build", $leaf["entity_name"])->main();
+    $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
+    if(!empty($row)) {
+      $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
+      $this->row[$prefix] = $data[$prefix];
+    } else {
+      $data = [];
+      $this->row[$prefix] = $this->params[$prefix];
+    } 
+    return $data;   
+  }
 }
