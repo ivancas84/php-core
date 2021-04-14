@@ -4,7 +4,7 @@ require_once("class/model/Rel.php");
 require_once("function/php_input.php");
 require_once("function/get_entity_rel.php");
 
-class PersistRelApi { //2
+class PersistRelApi { //3
   /**
    * Comportamiento general de persistencia de elementos relacionados
    * 
@@ -27,7 +27,6 @@ class PersistRelApi { //2
     $persist = $this->container->getControllerEntity($this->persistRelController, $this->entityName);
     $persist->persistController = $this->persistController;
     $p = $persist->main($params);
-    print_r($p);
     $this->container->getDb()->multi_query_transaction($p["sql"]);
     return ["id" => $p["id"], "detail" => $p["detail"]];
   }
