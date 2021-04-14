@@ -1,13 +1,13 @@
 # php-core
 
-Version 2
+Version 3
 
 BaseApi 1.1
 EntitySqlo 2
 PersistRelApi 2
 PersistRelArrayApi 2
 PersistRelArrayUniqueApi 2
-PersistRelSql 2
+PersistRelSql 3
 PersistRelSqlArray 2
 PersistRelUniqueApi 2
 PersistSql 2

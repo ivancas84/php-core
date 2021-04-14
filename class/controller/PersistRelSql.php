@@ -4,7 +4,7 @@ require_once("class/model/Rel.php");
 require_once("function/php_input.php");
 require_once("function/get_entity_rel.php");
 
-class PersistRelSql {
+class PersistRelSql { //3
   /**
    * Controlador para procesar una entidad y sus relaciones 
    */
@@ -62,7 +62,6 @@ class PersistRelSql {
     $this->sortParams($params);
     $this->procesarParams();
     $this->procesarParamsUm();
-    //$this->container->getDb()->multi_query_transaction($this->sql);
 
     return ["id" => $this->params[$this->entityName]["id"], "detail" => $this->detail, "sql"=>$this->sql];
 
@@ -97,45 +96,82 @@ class PersistRelSql {
     }
   }
 
+
+  public function procesarParamsRel($key, $row){
+    //1) Definir $entityName, $fieldName en base a $key y $this->entityName
+    $entityName = get_entity_rel($this->entityName)[$key]["entity_name"];
+    $fieldName = get_entity_rel($this->entityName)[$key]["field_name"];
+    
+    //2) Definir $render en base a $entityName
+    $render = $this->container->getControllerEntity("render_build", $entityName)->main();
+    
+    //3) Verificar si se debe eliminar (asignar $fkValue en null)
+    if(array_key_exists("_delete",$row) && $row["_delete"]){
+      $sql = $this->container->getSqlo($entityName)->delete([$row["id"]]);
+      $persist = ["id" => $row["id"],"sql"=>$sql];
+      $fkValue = null;
+    } 
+    
+    //4) Verificar si se debe insertar o actualizar (asignar $fkValue con el id persistido)
+    else {
+      $p = $this->container->getControllerEntity("persist_sql", $render->entityName);
+      $persist = ($this->persistController == "id") ?
+        $p->id($this->params[$key]) : $p->unique($this->params[$key]);
+      $idValue = $persist["id"];
+    }
+    
+    //5) Actualizar $this->sql y $this->detail
+    $this->sql .= $persist["sql"];
+    array_push($this->detail, $entityName.$persist["id"]);
+    
+    //6) Asignar fk
+    $pos = strrpos($key,"_");
+    if($pos !== false){ 
+      $s = substr($key, 0, $pos);
+      foreach($this->params as $k => &$value)
+        if($k_ == $s) {
+          $value[$fieldName] = $idValue;
+          break;
+        }
+    } else $this->params[$this->entityName][$fieldName] = $idValue;
+
+    return $idValue;
+  }
+
+  public function procesarParamsEntity($row){
+    //1) Definir $render en base a $this->entityName 
+    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
+    
+    //2) Verificar si se debe eliminar (asignar $idValue en null)
+    if(array_key_exists("_delete",$row) && $row["_delete"]){
+      $sql = $this->container->getSqlo($this->entityName)->delete([$row["id"]]);
+      $persist = ["id" => $row["id"],"sql"=>$sql];
+      $idValue = null;
+    }
+
+    //3) Verificar si se debe insertar o actualizar (asignar $idValue con el id persistido)
+    else {
+      $p = $this->container->getControllerEntity("persist_sql", $render->entityName);
+      $persist = ($this->persistController == "id") ?
+        $p->id($this->params[$this->entityName]) : $p->unique($render->entityName, $this->params[$key]);
+      $idValue = $persist["id"];
+    }
+
+    //4) Actualizar $this->sql y $this->detail
+
+    $this->sql .= $persist["sql"];
+    array_push($this->detail, $this->entityName.$persist["id"]);
+
+    return $idValue;
+  }
+
+
   public function procesarParams(){
     foreach($this->params as $key => $row) {
-      if($key != $this->entityName) {
-        $entityName = get_entity_rel($this->entityName)[$key]["entity_name"];
-        $fieldName = get_entity_rel($this->entityName)[$key]["field_name"];
-        $render = $this->container->getControllerEntity("render_build", $entityName)->main();
-        $p = $this->container->getControllerEntity("persist_sql", $render->entityName);
-        $persist = ($this->persistController == "id") ?
-          $p->id($this->params[$key]) : $p->unique($this->params[$key]);
-
-        $this->sql .= $persist["sql"];
-        array_push($this->detail, $entityName.$persist["id"]);
-        
-        //***** asignar fk *****/
-
-        $pos = strrpos($key,"_");
-        if($pos !== false){ 
-          $s = substr($key, 0, $pos);
-          foreach($this->params as $k => &$value)
-            if($k_ == $s) {
-              $value[$fieldName] = $persist["id"];
-              break;
-            }
-        } else {
-          $this->params[$this->entityName][$fieldName] = $persist["id"];
-        }
-      } else {
-        $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
-        $p = $this->container->getControllerEntity("persist_sql", $render->entityName);
-        $persist = ($this->persistController == "id") ?
-          $p->id($this->params[$key]) : $p->unique($render->entityName, $this->params[$key]);
-
-        $this->sql .= $persist["sql"];
-        //echo $sql;
-
-        array_push($this->detail, $this->entityName.$persist["id"]);
-      } 
-      $this->params[$key]["id"] = $persist["id"];
-
+      $idValue = ($key != $this->entityName) ?
+        $this->procesarParamsRel($key, $row) :
+        $this->procesarParamsEntity($row);
+      $this->params[$key]["id"] = $idValue; //en el caso de eliminacion se carga en null
     }
   }
 }
