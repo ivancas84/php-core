@@ -35,6 +35,7 @@ abstract class Entity {
    * no utilizar ids para su definicion
    * por ejemplo:
    *   public $identifier = ["fecha_anio", "fecha_semestre","alu_per-numero_documento"];
+   * Habitualmente $identifier se define en tiempo de ejecucion, para cada bloque de codigo se puede necesitar un identifier diferente
    */
 
   public $orderDefault = [];
@@ -71,8 +72,7 @@ abstract class Entity {
   /**
    * Valores unicos multiples
    * Array, ejemplo: ["field1","field2",...];
-   * Se habia pensado poner un atributo uniqueMultiple en el field, pero es mas sencillo indicarlo en la entidad.
-   * se modifica un solo archivo
+   * Se habia pensado poner un atributo uniqueMultiple en el field, pero es mas sencillo indicarlo en la entidad, se modifica un solo archivo
    */
 
   public $container;
