@@ -18,18 +18,20 @@ require_once("function/error_handler.php");
 abstract class Import {
     /**
      * Importacion de elementos
-     * Si se agregan mas atributos que se van a utilizar para inicializar el elemento,
-     * debe sobrescribirse adecuadamente el metodo element() para transferir los atributos a los elementos
      */
-    
-    public $entityName;
+
+    public $id; //identificacion de la importacion
     public $start = 0; //comienzo
-    public $id; //identificacion de los datos a procear
     public $source; //fuente de los datos a procesar
     public $pathSummary; //directorio donde se almacena el resumen del procesamiento
       //ej. $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
       //utilizando el mismo path se definen dos archivos, uno html con el resumen y otro sql con la sentencia ejecutada
-    public $headers; //opcional encabezados
+    
+    public $headers; //encabezados
+    /**
+     *  si no se incluyen se procesara la primer fila como encabezados
+     */ 
+
     public $mode = "csv";  //modo de procesamiento (csv, db, tab)
     public $updateNull = false; //flag para indicar si se deben actualizar valores nulos del source
     
@@ -49,11 +51,13 @@ abstract class Import {
 
     public function element($i, $data){
     /**
-     * Definir elemento y asignarle los datos e indice
-     * Un elemento posee todos los datos que posteriormente seran insertados y los posibles errores que puede haber
-     * Existe una clase abstracta Element que posee un conjunto de metodos de uso habitual
+     * Metodo principal para definir elementos
+     * Un elemento es una estructura que posee un conjunto de datos para importar entidades
+     * Habitualmente un elemento define un unico juego de entidades relacionadas
+     * Si los parametros poseen mas de un juego de entidades, se recomienda sobrescribir element para definir varios elementos (uno por cada juego)
+     * Existe una clase abstracta Element que posee un conjunto de metodos de uso habitual para los elementos
      */
-      $element = $this->container->getImportElement($this->entityName);
+      $element = $this->container->getImportElement($this->id);
       $element->index = $i;
       $element->setEntities($data);
       array_push($this->elements, $element);
@@ -188,117 +192,119 @@ abstract class Import {
         echo $informe;
     }
 
-    public function defineCsv(){
-        if (($gestor = fopen("../../tmp/" . $this->source . ".csv", "r")) !== FALSE) {
-            $encabezados = fgetcsv($gestor, 1000, ",");
+  public function defineCsv(){
+    if (($gestor = fopen("../../tmp/" . $this->source . ".csv", "r")) !== FALSE) {
+      $encabezados = fgetcsv($gestor, 1000, ",");
 
-            $i = 0 + $this->start;
-            while (($datos = fgetcsv($gestor, 1000, ",")) !== FALSE) {
-                $i++;
-                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
-                $e = array_combine($encabezados, $datos);
-                $this->element($i, $e);                  
-                //if($i==100) break;           
-            }
-            fclose($gestor);
-        }
+      $i = 0 + $this->start;
+      while (($datos = fgetcsv($gestor, 1000, ",")) !== FALSE) {
+    
+          $i++;
+          if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
+          $e = array_combine($encabezados, $datos);
+          $this->element($i, $e);                  
+          //if($i==100) break;           
+      }
+      fclose($gestor);
     }
+  }
 
-    public function defineTab(){
+  public function defineTab(){
 
-        $source = explode("\n", $this->source);
+    $source = explode("\n", $this->source);
 
-        if(empty($this->headers)) {
-            $this->headers = [];
-            foreach( preg_split('/\t+/', $source[0]) as $h) array_push($this->headers, trim($h));
-            $start = 1;
-        } else {
-            $start = 0;
-        }
-            
-        for($i = $start; $i < count($source); $i++){
-            if(empty($source[$i])) break;
-            $datos = [];
-                        
-            foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
-            //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
-            //echo "<pre>";
-            //print_r($this->headers);
-            //print_r($datos);
-          
-            $e = @array_combine($this->headers, $datos);
-            $this->element($i + $this->start, $e);                  
-            //if($i==100) break;           
-        }
-    }
-
-    public function defineDb(){
-      if(empty($this->source)) throw new Exception("No existen datos para procesar");
-
-      if(empty($this->headers)) {
+    if(empty($this->headers)) {
         $this->headers = [];
-        foreach($this->source[0] as $key => $value) array_push($this->headers, $key);
+        foreach( preg_split('/\t+/', $source[0]) as $h) array_push($this->headers, trim($h));
+        $start = 1;
+    } else {
+        $start = 0;
+    }
+
+    echo "<pre>";   
+
+
+    for($i = $start; $i < count($source); $i++){
+        if(empty($source[$i])) break;
+        $datos = [];
+                    
+        foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
+        //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
+        $e = @array_combine($this->headers, $datos);
+
+        $this->element($i + $this->start, $e);                  
+        //if($i==100) break;           
+    }
+  }
+
+  public function defineDb(){
+    if(empty($this->source)) throw new Exception("No existen datos para procesar");
+
+    if(empty($this->headers)) {
+      $this->headers = [];
+      foreach($this->source[0] as $key => $value) array_push($this->headers, $key);
+    }
+
+    for($i = $this->start; $i < count($this->source); $i++){
+      if(empty($this->source[$i])) break;
+      $this->element($i + $this->start, $this->source[$i]);                  
+    }
+  }
+    
+  public function define(){
+      switch($this->mode){
+          case "tab":
+              $this->defineTab();
+          break;
+          case "db":
+            $this->defineDb();
+          break;
+          default:
+              $this->defineCsv();
       }
+  }
 
-      for($i = $this->start; $i < count($this->source); $i++){
-        if(empty($this->source[$i])) break;
-        $this->element($i + $this->start, $this->source[$i]);                  
+  public function persist(){
+      $sql = "";
+      foreach($this->elements as $element) {
+        if($element->process) {
+          $element->persist();
+          $sql .= $element->sql;
+        }
       }
-    }
-     
-    public function define(){
-        switch($this->mode){
-            case "tab":
-                $this->defineTab();
-            break;
-            case "db":
-              $this->defineDb();
-            break;
-            default:
-                $this->defineCsv();
-        }
-    }
+      if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
+  }
 
-    public function persist(){
-        $sql = "";
-        foreach($this->elements as $element) {
-          if($element->process) {
-            $element->persist();
-            $sql .= $element->sql;
-          }
-        }
-        if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
-    }
+  protected function identifyValue($id, $value){
+      if(!isset($this->ids[$id])) $this->ids[$id] = [];
+      if(!in_array($value, $this->ids[$id])) array_push($this->ids[$id], $value); 
+  }
 
-    protected function identifyValue($id, $value){
-        if(!isset($this->ids[$id])) $this->ids[$id] = [];
-        if(!in_array($value, $this->ids[$id])) array_push($this->ids[$id], $value); 
-    }
+  protected function queryEntityField($entityName, $field, $id = null){
+    /**
+     * Consulta a la base de datos de la entidad $entityName
+     * Utilizando el campo field (supuestamente unico) y el valor almacenado de field desde el atributo ids
+     * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
+     */
+    if(!$id) $id = $entityName;
+    $this->dbs[$id] = [];
+    if(empty($this->ids[$id])) return;
 
-    protected function queryEntityField($entityName, $field, $id = null){
-      /**
-       * Consulta a la base de datos de la entidad $entityName
-       * Utilizando el campo field (supuestamente unico) y el valor almacenado de field desde el atributo ids
-       * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
-       */
-      if(!$id) $id = $entityName;
-      $this->dbs[$id] = [];
-      if(empty($this->ids[$id])) return;
+    $render = new Render();
+    $render->setFields([$field]);
+    $render->setSize(false);
+    $render->addCondition([$field,"=",$this->ids[$id]]);
 
-      $render = new Render();
-      $render->setFields([$field]);
-      $render->setSize(false);
-      $render->addCondition([$field,"=",$this->ids[$id]]);
-  
-      $rows = $this->container->getDb()->all($entityName, $render);
-  
-      //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
-      $this->dbs[$id] = array_combine_key(
-        $rows,
-        $field
-      );
-    }
+    $rows = $this->container->getDb()->all($entityName, $render);
 
+    //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
+    $this->dbs[$id] = array_combine_key(
+      $rows,
+      $field
+    );
+
+ 
+  }
 
   public function existElement(&$element, $entityName, $value, $id = null){
     if(empty($id)) $id = $entityName;
@@ -306,14 +312,13 @@ abstract class Import {
     if(!key_exists($value, $this->dbs[$id])){
       $element->process = false;
       $element->logs->addLog($entityName, "error", "No existe " . $entityName . " en la base de datos");
-      return;
-    } else {
-      $existente = $this->container->getValue($entityName);
-      $existente->_fromArray($this->dbs[$id][$value], "set");
-      $element->entities[$entityName]->_set("id",$existente->_get("id"));
-      $element->logs->addLog($entityName, "info", "Registro existente, no será actualizado");
+      return false;
     }
-    
+    $existente = $this->container->getValue($entityName);
+    $existente->_fromArray($this->dbs[$id][$value], "set");
+    $element->entities[$entityName]->_set("id",$existente->_get("id"));
+    $element->logs->addLog($entityName, "info", "Registro existente, no será actualizado");
+    return true;    
   }
 
 
@@ -332,8 +337,27 @@ abstract class Import {
     } else {        
       $element->insert($entityName, $id);
     }
-  }
-    
 
+    $this->dbs[$id][$value] = $element->entities[$id]->_toArray("get");
+    return true;
+  }
+
+  public function insertElement(&$element, $entityName, $value, $id = null){
+    /**
+     * Si no existe lo inserta, nunca actualiza
+     * @param $entityName Nombre de la entidad
+     * @param $value Valor de la entidad que la identifica univocamente
+     * @param @id Identificador auxiliar de la entidad
+     */
+    if(empty($id)) $id = $entityName;
+    
+    if(!key_exists($value, $this->dbs[$id])){
+      $element->insert($entityName, $id);
+      $this->dbs[$id][$value] = $element->entities[$id]->_toArray("get");
+    }
+    return true;
+      
+
+  }
 
 }

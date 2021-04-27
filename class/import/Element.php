@@ -6,8 +6,10 @@ abstract class ImportElement {
    * Elemento a importar
    */
 
-  public $entityName;
-  public $index;
+  public $index; //identificacion del elemento
+  /**
+   * Habitualmente es un numero incremental pero cuando los datos de entrada indentifican mas de un juego de entidades se utiliza un string
+   */
   public $logs;
   public $process = true;
   public $sql = "";
@@ -15,12 +17,13 @@ abstract class ImportElement {
   public $db;
   public $container;
   public $updateMode = true; //actualizar existentes
-  public $updateNull = false; //actualizar valores nulos
+  public $updateNull = true; //actualizar valores nulos
 
   public function id(){
     $fields = [];
     foreach($this->entities as $entity) {
-      array_push($fields, $entity->_toString()); 
+      if(!Validation::is_empty($entity->_get("identifier"))) array_push($fields, $entity->_get("identifier"));
+      else array_push($fields, $entity->_toString()); 
     }
     return implode(",", $fields);
   }
@@ -38,7 +41,7 @@ abstract class ImportElement {
    *   $this->entities["alumno"]->_set("ingreso", preg_replace("/[^0-9]/", "", $this->entities["alumno"]->_get("ingreso"))); // ejemplo de cambio de valor particular
    * }
    */
-  
+
   public function setEntity($data, $name, $prefix = "", $id = ""){
     /**
      * Comportamiento por defecto para setear una entidad
@@ -78,16 +81,18 @@ abstract class ImportElement {
     $this->entities[$id]->_set("id",$existente->_get("id"));
     $compare =  $this->compare($this->entities[$id], $existente);
     if($compare !== true) {
-      if($this->updateMode == "update") {
+      if($this->updateMode) {
         $this->logs->addLog($id,"info","Registro existente, se actualizara campos {$compare}");
         $this->sql .= $this->container->getSqlo($entityName)->update($this->entities[$id]->_toArray("sql"));
       } else {
         $this->process = false;
         $this->logs->addLog($id,"error","El registro debe ser actualizado, comparar {$compare}");
+        return false;
       }
     } else {
       $this->logs->addLog($id,"info","Registros existente, no será actualizado");
     }
+    return true;
   }
 
   public function compare($new, $existent){
