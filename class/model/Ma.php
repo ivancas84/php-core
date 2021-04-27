@@ -217,13 +217,13 @@ class Ma extends Db {
     return array("id" => $update["id"], "detail"=>$update["detail"]);
   }
 
-  public function delete($entityName, $id){ 
+  public function delete($entityName, array $ids){ 
     /**
-     * Eliminacion directa (no realiza chequeo de valores)
      */
-    $sql = $this->container->getSqlo($entityName)->delete([$id]);
+    $sql = $this->container->getSqlo($entityName)->delete($ids);
     $result = $this->query($sql);
-    return array("id" => $id, "detail"=>$entityName.$id);
+    return array("ids" => $ids, "detail"=>preg_filter('/^/', $entityName, $ids));
   }
+
 
 }
