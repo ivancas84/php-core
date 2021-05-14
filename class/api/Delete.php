@@ -13,7 +13,8 @@ class DeleteApi {
   public $container;
   public $permission = "w";
 
-  public function concat($id) {
+  private function concat($id) {
+    //Funcion creada para aplicar array_map
     return($this->entityName . $id);
   }  
 
