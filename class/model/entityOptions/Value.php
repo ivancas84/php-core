@@ -152,7 +152,7 @@ class ValueEntityOptions extends EntityOptions {
     $field = $this->container->getField($this->entityName, $param[0]);
     switch($field->getDataType()){
       case "date": case "timestamp": case "year": case "time": 
-        return (strpos(strtolower($field->getDefault()), "current") !== false) ? date('c') : $field->getDefault();
+        return (strpos(strtolower($field->getDefault()), "cur") !== false) ? date('c') : $field->getDefault();
       default: return $field->getDefault();
     }
   }
