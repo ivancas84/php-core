@@ -1,7 +1,7 @@
 <?php
 
 
-abstract class ImportElement {
+abstract class ImportElement { //2
   /**
    * Elemento a importar
    */
@@ -57,10 +57,7 @@ abstract class ImportElement {
   }
 
   public function persist(){
-    if(empty($this->sql)) {
-      $this->logs->addLog("persist","info","No se realizara ningun cambio en la base de datos");
-      return;
-    }
+    if(empty($this->sql)) return;
     try {
       $this->container->getDb()->multi_query_transaction($this->sql);
     } catch(Exception $exception){
@@ -74,36 +71,47 @@ abstract class ImportElement {
     if(Validation::is_empty($this->entities[$id]->_get("id"))) $this->entities[$id]->_set("id",uniqid());
     $this->entities[$id]->_call("setDefault");
     $this->sql .= $this->container->getSqlo($entityName)->insert($this->entities[$id]->_toArray("sql"));
+    return true;
   }
 
-  public function update($entityName, $existente, $id = ""){
+  public function update($entityName, $existente, $updateMode = true, $id = ""){
     if(empty($id)) $id = $entityName;
-    $this->entities[$id]->_set("id",$existente->_get("id"));
-    $compare =  $this->compare($this->entities[$id], $existente);
-    if($compare !== true) {
-      if($this->updateMode) {
-        $this->logs->addLog($id,"info","Registro existente, se actualizara campos {$compare}");
-        $this->sql .= $this->container->getSqlo($entityName)->update($this->entities[$id]->_toArray("sql"));
-      } else {
-        $this->process = false;
-        $this->logs->addLog($id,"error","El registro debe ser actualizado, comparar {$compare}");
-        return false;
-      }
+    if($updateMode) {
+      $this->logs->addLog($id,"info","Registro existente, se actualizara campos");
+      $this->sql .= $this->container->getSqlo($entityName)->update($this->entities[$id]->_toArray("sql"));
     } else {
-      $this->logs->addLog($id,"info","Registros existente, no será actualizado");
+      $this->process = false;
+      $this->logs->addLog($id,"error","El registro debe ser actualizado, comparar");
+      return false;
     }
     return true;
   }
 
-  public function compare($new, $existent){
-    $a = $new->_toArray("sql");
+  public function compare(string $id, $existent, $updateNull = false){
+    $a = $this->entities[$id]->_toArray("sql");
     $b = $existent->_toArray("sql");
     $compare = [];
     foreach($a as $ka => $va) {
-      if((!$this->updateNull && (is_null($va) || $va == "null")) || !key_exists($ka, $b)) continue;
+      if((!$updateNull && (is_null($va) || $va == "null")) || !key_exists($ka, $b)) continue;
       if($b[$ka] !== $va) array_push($compare, $ka);
     }
-    return (empty($compare)) ? true : implode(", ", $compare);
+    return $this->compareResult($compare, $id, $a, $b);
+    
+  }
+
+  public function compareResult($compare, $id, $a, $b){
+    if(empty($compare)) {
+      $this->logs->addLog($id,"info","Registro existente, no será actualizado");
+    } else{
+
+      $cc = [];
+      foreach($compare as $c){
+        array_push($cc, $c. " (" . $a[$c] . " != " . $b[$c] . ")");
+      }
+
+      $this->logs->addLog($id,"info","Registro existente, valores diferentes " . implode(", ", $cc));
+    }
+    return $compare;
   }
 
   public function resetAndCheckEntities(){
@@ -116,6 +124,20 @@ abstract class ImportElement {
         }
       }
     }
+  }
+
+  public function getIdentifier($entityName, $fieldName = "identifier"){
+    /**
+     * Obtiene identificador
+     * Si el identificador es vacio, asigna un error al elemento y retorna false
+     */
+    $identifier = $this->entities[$entityName]->_get($fieldName);
+    if(Validation::is_empty($identifier)){
+      $this->process = false;                
+      $this->logs->addLog($entityName, "error", "El identificador de $entityName no se encuentra definido");
+      return false;
+    }
+    return $identifier;
   }
 
   /*

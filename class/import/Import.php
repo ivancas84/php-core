@@ -15,7 +15,7 @@ require_once("function/error_handler.php");
  * $import->pathSummary = $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
  * $import->main();
  */
-abstract class Import {
+abstract class Import { //2
     /**
      * Importacion de elementos
      */
@@ -157,7 +157,6 @@ abstract class Import {
         $informe .= "<p>Cantidad de filas procesadas: " . count($this->elements) . "</p>
 ";      
     
-        echo "<pre>";
         foreach($this->elements as $element) {
           if((!$element->process) && (empty($element->logs->getLogs()))) continue;
 
@@ -170,11 +169,12 @@ abstract class Import {
            
           $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">" . $element->id() . "</li>
 ";
-          if($element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">Persistencia realizada</li>
+          if($element->process && $element->sql) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">Procesamiento ok: Persistencia realizada</li>
 ";
-          if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">LA FILA NO FUE PROCESADA</li>
+          if($element->process && !$element->sql) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">Procesamiento ok: No se realizara ningun cambio en la base de datos</li>
 ";
-
+          if(!$element->process) $informe .= "       <li class=\"list-group-item list-group-item-danger font-weight-bold\">Sin procesar</li>
+";
           foreach($element->logs->getLogs() as $key => $logs) {
             foreach($logs as $log){
               $class = ($log["status"] == "error") ? "list-group-item-warning" : "list-group-item-secondary" ;
@@ -220,9 +220,6 @@ abstract class Import {
     } else {
         $start = 0;
     }
-
-    echo "<pre>";   
-
 
     for($i = $start; $i < count($source); $i++){
         if(empty($source[$i])) break;
@@ -302,11 +299,11 @@ abstract class Import {
       $rows,
       $field
     );
-
- 
   }
 
-  public function existElement(&$element, $entityName, $value, $id = null){
+  public function existElement(&$element, string $entityName, string $fieldName = "identifier", string $id = null){
+    $value = $element->entities[$entityName]->_get($fieldName);
+
     if(empty($id)) $id = $entityName;
 
     if(!key_exists($value, $this->dbs[$id])){
@@ -317,30 +314,35 @@ abstract class Import {
     $existente = $this->container->getValue($entityName);
     $existente->_fromArray($this->dbs[$id][$value], "set");
     $element->entities[$entityName]->_set("id",$existente->_get("id"));
-    $element->logs->addLog($entityName, "info", "Registro existente, no será actualizado");
-    return true;    
+    //$element->logs->addLog($entityName, "info", "Registro existente, no será actualizado");
+    return $value;    
   }
 
-
-  public function processElement(&$element, $entityName, $value, $id = null){
+  public function processElement(&$element, $entityName, $fieldName = "identifier", $id = null){
     /**
      * @param $entityName Nombre de la entidad
      * @param $value Valor de la entidad que la identifica univocamente
      * @param @id Identificador auxiliar de la entidad
      */
+
     if(empty($id)) $id = $entityName;
-    
-    if(key_exists($value, $this->dbs[$id])){
+    $value = $element->entities[$entityName]->_get($fieldName);
+    if(key_exists($value, $this->dbs[$id])) {
       $existente = $this->container->getValue($entityName);
       $existente->_fromArray($this->dbs[$id][$value], "set");
-      $element->update($entityName, $existente, $id);
+      $element->entities[$id]->_set("id",$existente->_get("id"));
+      $compare = $element->compare($id, $existente);  
+      if(!empty($compare)) {
+        if(!$element->update($entityName, $existente, $id)) return false;
+      }
     } else {        
-      $element->insert($entityName, $id);
+      if(!$element->insert($entityName, $id)) return false;
     }
 
-    $this->dbs[$id][$value] = $element->entities[$id]->_toArray("get");
-    return true;
+    return $value;
   }
+
+  
 
   public function insertElement(&$element, $entityName, $value, $id = null){
     /**
@@ -351,13 +353,24 @@ abstract class Import {
      */
     if(empty($id)) $id = $entityName;
     
-    if(!key_exists($value, $this->dbs[$id])){
-      $element->insert($entityName, $id);
-      $this->dbs[$id][$value] = $element->entities[$id]->_toArray("get");
+    if(!key_exists($value, $this->dbs[$id])) {
+      if(!$element->insert($entityName, $id)) return false;
     }
-    return true;
-      
+    return $value;
+  }
 
+  public function idEntityFieldCheck($entityName, $identifier, &$element){
+    if(in_array($identifier, $this->ids[$entityName])) {
+      $element->logs->addLog($entityName,"error"," Valor duplicado");
+      $element->process = false;
+      return false;       
+    }
+    array_push($this->ids[$entityName], $identifier);
+    return true;
+  }
+
+  public function idEntityField($entityName, $identifier){
+    if(!in_array($identifier, $this->ids[$entityName])) array_push($this->ids[$entityName], $identifier);
   }
 
 }

@@ -1,9 +1,11 @@
 # php-core
 
-Version 3
+Version 4
 
 BaseApi 1.1
 EntitySqlo 2
+Import 2
+ImportElement 2
 PersistRelApi 2
 PersistRelArrayApi 2
 PersistRelArrayUniqueApi 2
