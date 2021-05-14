@@ -157,12 +157,12 @@ class Container {
     return $c;
   }
 
-  public function getImport($entityName){
-    $path = "class/import/" . snake_case_to("xxYy", $entityName) . "/Import.php";
-    $className = snake_case_to("XxYy", $entityName)."Import";    
+  public function getImport($id){
+    $path = "class/import/" . snake_case_to("xxYy", $id) . "/Import.php";
+    $className = snake_case_to("XxYy", $id)."Import";    
     require_once($path);
     $c = new $className;
-    $c->entityName = $entityName;
+    $c->id = $id;
     $c->container = $this;
     return $c;
   }
