@@ -7,8 +7,8 @@ require_once("function/php_input.php");
 class UniqueRelApi { //1.1
   /**
    * Consulta de campos unicos de una entidad o sus relaciones
-   * Se realiza un analisis de los parametros, y en funcion de sus prefijos, 
-   * se realizan las correspondientes consultas a la base de datos de una entidad o sus relaciones
+   * Se realiza un analisis de los parametros, y en funcion de sus prefijos, se consulta a la base de datos de la entidad o sus relaciones
+   * Trabaja con relaciones fk
    */
 
   public $entityName;
@@ -17,7 +17,7 @@ class UniqueRelApi { //1.1
   public $params = [];
   /**
    * Lista de parametros
-   * @example [
+   * @example para la entidad alumno [
    *   "id" => "value", //hace referencia al campo alumno.id
    *   "per-numero_documento" => "value" //hace referencia al campo persona.numero_documento
    *   "per_dom-calle" => "value" //hace referencia al campo domicilio.calle
@@ -39,6 +39,7 @@ class UniqueRelApi { //1.1
    *   "per_dom" => [ ... ] //per_dom: nombre del a relacion, domicilio: nombre de la clave foranea (persona.domicilio)
    * ]
    */
+
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
