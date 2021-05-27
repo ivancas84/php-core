@@ -57,9 +57,15 @@ abstract class Import { //2
      * Si los parametros poseen mas de un juego de entidades, se recomienda sobrescribir element para definir varios elementos (uno por cada juego)
      * Existe una clase abstracta Element que posee un conjunto de metodos de uso habitual para los elementos
      */
+
       $element = $this->container->getImportElement($this->id);
       $element->index = $i;
-      $element->setEntities($data);
+      if($data === false) {
+        $element->process = false;
+        $element->logs->addLog("data", "error", "Los datos están vacíos o no pudieron combinarse");
+      } else {
+        $element->setEntities($data);
+      }
       array_push($this->elements, $element);
     }
         
@@ -221,6 +227,8 @@ abstract class Import { //2
         $start = 0;
     }
 
+
+    
     for($i = $start; $i < count($source); $i++){
         if(empty($source[$i])) break;
         $datos = [];
@@ -228,7 +236,6 @@ abstract class Import { //2
         foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
         //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
         $e = @array_combine($this->headers, $datos);
-
         $this->element($i + $this->start, $e);                  
         //if($i==100) break;           
     }
