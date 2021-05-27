@@ -96,7 +96,6 @@ abstract class ImportElement { //2
       if($b[$ka] !== $va) array_push($compare, $ka);
     }
     return $this->compareResult($compare, $id, $a, $b);
-    
   }
 
   public function compareResult($compare, $id, $a, $b){
