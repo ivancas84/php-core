@@ -67,4 +67,3 @@ class MappingEntityOptions extends EntityOptions {
 
 }
 
-
