@@ -86,18 +86,25 @@ class Render {
     return $render;
   }
 
-  public function setCondition (array $condition = null) { $this->condition = $condition; }
+  public function setCondition (array $condition = null) { 
+    $this->condition = $condition; 
+    return $this;
+  }
+
   public function addCondition ($condition = null) { 
     if(!empty($condition)) {
       array_push ( $this->condition, $condition );
     }
+    return $this;
   }
+
   public function getCondition(){ return $this->condition; }
   
   public function setParams (array $params = []) {
     foreach($params as $key => $value) {
       $this->addCondition([$key, "=", $value]); 
     }
+    return $this;
   } 
 
   
@@ -105,6 +112,7 @@ class Render {
     foreach($params as $key => $value) {
       $this->addGeneralCondition([$key, "=", $value]); 
     }
+    return $this;
   } 
   
   //public function addParam ($key, $value) { $this->addCondition([$key, "=", $value]); }
@@ -114,11 +122,21 @@ class Render {
    * solo define campo y valor, siempre toma la opcion como "="
    */
 
-  public function setGeneralCondition ($generalCondition = null) { $this->generalCondition = $generalCondition; }
-  public function addGeneralCondition ($gc = null) { if(!empty($gc)) array_push ( $this->generalCondition, $gc ); }
+  public function setGeneralCondition ($generalCondition = null) { 
+    $this->generalCondition = $generalCondition; 
+    return $this;
+  }
+  public function addGeneralCondition ($gc = null) { 
+    if(!empty($gc)) array_push ( $this->generalCondition, $gc ); 
+    return $this;
+  }
+
   public function getGeneralCondition(){ return $this->generalCondition; }
 
-  public function setOrder (array $order) { $this->order = $order; }
+  public function setOrder (array $order) { 
+    $this->order = $order;
+    return $this;
+  }
   /**
    * Ordenamiento
    * @param array $order Ordenamiento
@@ -131,25 +149,47 @@ class Render {
   public function setPagination($size, $page) {
     $this->size = $size;
     $this->page = $page;
+    return $this;
   }
 
-  public function setSize($size) { $this->size = $size; }
+  public function setSize($size) { 
+    $this->size = $size; 
+    return $this;
+  }
   public function getSize(){ return $this->size; }
 
-  public function setPage($page) { $this->page = $page; }
+  public function setPage($page) { 
+    $this->page = $page; 
+    return $this;
+  }
   public function getPage(){ return $this->page; }
   
-  public function setFields (array $fields = null) { $this->fields = $fields; }
-  public function addFields (array $fields = null) { $this->fields = array_unique(array_merge($this->fields, $fields)); }
+  public function setFields (array $fields = null) { 
+    $this->fields = $fields;
+    return $this;
+  }
+  public function addFields (array $fields = null) { 
+    $this->fields = array_unique(array_merge($this->fields, $fields)); 
+    return $this;
+  }
   public function getFields () { return $this->fields; }
 
-  public function setGroup (array $group = null) { $this->group = $group; }
+  public function setGroup (array $group = null) { 
+    $this->group = $group;
+    return $this;
+  }
   public function getGroup () { return $this->group; }
 
-  public function setHaving (array $having = null) { $this->having = $having; }
+  public function setHaving (array $having = null) { 
+    $this->having = $having; 
+    return $this;
+  }
   public function getHaving () { return $this->having; }
 
-  public function setEntityName (array $entityName = null) { $this->entityName = $entityName; }
+  public function setEntityName (array $entityName = null) { 
+    $this->entityName = $entityName; 
+    return $this;
+  }
   public function getEntityName () { return $this->entityName; }
 
   public function addPrefixRecursive(array &$condition, $prefix){
@@ -159,6 +199,7 @@ class Render {
     } else {
         $condition[0] = $prefix.$condition[0];
     }
+    return $this;
   }
 
   public function addPrefix($prefix){
@@ -169,6 +210,7 @@ class Render {
       $this->order[$prefix.$k] = $v;
       unset($this->order[$k]);
     }
+    return $this;
   }
 
   public function removePrefixRecursive(array &$condition, $prefix){
@@ -179,6 +221,7 @@ class Render {
       $count = 1;
       $condition[0] = str_replace($prefix, '', $condition[0], $count);
     }
+    return $this;
   }
 
   public function removePrefix($prefix){
@@ -191,6 +234,7 @@ class Render {
       $this->order[$newk] = $v;
       unset($this->order[$k]);
     }
+    return $this;
   }
 
   public function setConditionUniqueFields(array $params){
@@ -230,16 +274,13 @@ class Render {
         }
       }
 
-      if(!empty($conditionMultiple)) {
-        array_push($condition, $conditionMultiple);
-      }
+      if(!empty($conditionMultiple)) array_push($condition, $conditionMultiple);
+      
     }
 
-    if(!empty($condition)){
-      $this->addCondition($condition);
-      return true;
-    }
+    if(empty($condition)) throw new Exception("Error al definir condicion unica");
 
-    return false;
+    $this->addCondition($condition);
+    return $this;
   }
 }
