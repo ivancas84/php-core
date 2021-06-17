@@ -362,11 +362,17 @@ abstract class Import { //2
     
     if(!key_exists($value, $this->dbs[$id])) {
       if(!$element->insert($entityName, $id)) return false;
+    } else {
+      $existente = $this->container->getValue($entityName);
+      $existente->_fromArray($this->dbs[$id][$value], "set");
+      $element->entities[$id]->_set("id",$existente->_get("id"));
     }
+    
     return $value;
   }
 
   public function idEntityFieldCheck($entityName, $identifier, &$element){
+    if(!key_exists($entityName, $this->ids)) $this->ids[$entityName] = [];
     if(in_array($identifier, $this->ids[$entityName])) {
       $element->logs->addLog($entityName,"error"," Valor duplicado");
       $element->process = false;
@@ -377,6 +383,7 @@ abstract class Import { //2
   }
 
   public function idEntityField($entityName, $identifier){
+    if(!key_exists($entityName, $this->ids)) $this->ids[$entityName] = [];
     if(!in_array($identifier, $this->ids[$entityName])) array_push($this->ids[$entityName], $identifier);
   }
 
