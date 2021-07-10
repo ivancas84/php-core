@@ -15,9 +15,6 @@ class RenderBuild {
 
   public $container; //contenedor
   public $entityName; //entidad principal (real o ficticia)
-  /**
-   * Si la entidad principal es ficticia debe redefinirse la clase para contemplar los cambios
-   */
 
   public function main($display = null) {
     $render = Render::getInstanceDisplay($display);
