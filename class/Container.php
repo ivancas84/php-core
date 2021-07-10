@@ -200,6 +200,10 @@ class Container {
   }
 
   public function getRender($entityName = null){
+    /**
+     * @deprecated
+     * Utilizar $render = $this->container->getControllerEntity("render_build", $entityName)->main();
+     */
     require_once("class/model/Render.php");
     $render = new Render;
     $render->container = $this;  
