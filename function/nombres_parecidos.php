@@ -1,11 +1,11 @@
 <?php
 
-//Compara strings para determinar si existe una coincidencia minima. 
-//La palabra o una de las palabres del argumento $nombre1 debe existir o coincidir con una de las palabras de nombre2.
 require_once("function/str_replace_name.php");
 
 function nombres_parecidos($nombre1, $nombre2, $longitud = null){
   /**
+   * Compara strings para determinar si existe una coincidencia minima.
+   * La palabra o una de las palabres del argumento $nombre1 debe existir o coincidir con una de las palabras de nombre2.
    * Se puede reducir la longitud si se desea comparar con una menor precision
    * por ejemplo si se considera que mirta es la misma persona que mirtha, se puede establecer una longitud de 4
    */

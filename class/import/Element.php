@@ -74,7 +74,7 @@ abstract class ImportElement { //2
     return true;
   }
 
-  public function update($entityName, $existente, $updateMode = true, $id = ""){
+  public function update($entityName, $existente, $id = "", $updateMode = true){
     if(empty($id)) $id = $entityName;
     if($updateMode) {
       $this->logs->addLog($id,"info","Registro existente, se actualizara campos");

@@ -15,7 +15,6 @@ class EntitySqlo { //2
   public $container;
   public $entityName;
 
-
   protected function mapping($fieldName){
      /**
      * Interpretar prefijo y obtener mapping

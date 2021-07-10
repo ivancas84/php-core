@@ -279,11 +279,7 @@ abstract class Import { //2
       if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
   }
 
-  protected function identifyValue($id, $value){
-      if(!isset($this->ids[$id])) $this->ids[$id] = [];
-      if(!in_array($value, $this->ids[$id])) array_push($this->ids[$id], $value); 
-  }
-
+ 
   protected function queryEntityField($entityName, $field, $id = null){
     /**
      * Consulta a la base de datos de la entidad $entityName
@@ -325,7 +321,7 @@ abstract class Import { //2
     return $value;    
   }
 
-  public function processElement(&$element, $entityName, $fieldName = "identifier", $id = null){
+  public function processElement(&$element, $entityName, $fieldName = "identifier", $id = null, $updateMode = true){
     /**
      * @param $entityName Nombre de la entidad
      * @param $value Valor de la entidad que la identifica univocamente
@@ -333,14 +329,14 @@ abstract class Import { //2
      */
 
     if(empty($id)) $id = $entityName;
-    $value = $element->entities[$entityName]->_get($fieldName);
+    $value = $element->entities[$id]->_get($fieldName);
     if(key_exists($value, $this->dbs[$id])) {
       $existente = $this->container->getValue($entityName);
       $existente->_fromArray($this->dbs[$id][$value], "set");
       $element->entities[$id]->_set("id",$existente->_get("id"));
       $compare = $element->compare($id, $existente);  
       if(!empty($compare)) {
-        if(!$element->update($entityName, $existente, $id)) return false;
+        if(!$element->update($entityName, $existente, $id, $updateMode)) return false;
       }
     } else {        
       if(!$element->insert($entityName, $id)) return false;
@@ -351,7 +347,7 @@ abstract class Import { //2
 
   
 
-  public function insertElement(&$element, $entityName, $value, $id = null){
+  public function insertElement(&$element, $entityName, $fieldName = "identifier", $id = null){
     /**
      * Si no existe lo inserta, nunca actualiza
      * @param $entityName Nombre de la entidad
@@ -359,7 +355,8 @@ abstract class Import { //2
      * @param @id Identificador auxiliar de la entidad
      */
     if(empty($id)) $id = $entityName;
-    
+    $value = $element->entities[$id]->_get($fieldName);
+
     if(!key_exists($value, $this->dbs[$id])) {
       if(!$element->insert($entityName, $id)) return false;
     } else {
@@ -371,20 +368,27 @@ abstract class Import { //2
     return $value;
   }
 
-  public function idEntityFieldCheck($entityName, $identifier, &$element){
-    if(!key_exists($entityName, $this->ids)) $this->ids[$entityName] = [];
-    if(in_array($identifier, $this->ids[$entityName])) {
-      $element->logs->addLog($entityName,"error"," Valor duplicado");
+  public function idEntityFieldCheck($id, $identifier, &$element){
+    
+    if(Validation::is_empty($identifier)) {
+      $element->process = false;                
+      $element->logs->addLog($id, "error", "El identificador de " . $id . " esta vacio" );
+    }
+    if(!key_exists($id, $this->ids)) $this->ids[$id] = [];
+    if(in_array($identifier, $this->ids[$id])) {
+      $element->logs->addLog($id,"error"," Valor duplicado");
       $element->process = false;
       return false;       
     }
-    array_push($this->ids[$entityName], $identifier);
+    array_push($this->ids[$id], $identifier);
     return true;
   }
 
   public function idEntityField($entityName, $identifier){
+    if(Validation::is_empty($identifier)) throw new Exception ("Identificador vacio");
     if(!key_exists($entityName, $this->ids)) $this->ids[$entityName] = [];
     if(!in_array($identifier, $this->ids[$entityName])) array_push($this->ids[$entityName], $identifier);
   }
+
 
 }
