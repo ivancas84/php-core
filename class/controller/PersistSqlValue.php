@@ -9,7 +9,7 @@ class PersistSqlValue { //2
   public $container;
   public $entityName;
 
-  public function id($value) {
+  public function id(&$value) {
     if(!Validation::is_empty($value->_get("id"))){
       $value->_call("reset")->_call("check");
       if($value->logs->isError()) throw new Exception($value->logs->toString());
@@ -25,8 +25,8 @@ class PersistSqlValue { //2
     return["id" => $value->_get("id"),"sql"=>$sql];
   }
 
-  public function unique($value) {
-    $row = $this->container->getDb()->unique($this->entityName, $value->_toArray());
+  public function unique(&$value) {
+    $row = $this->container->getDb()->unique($this->entityName, $value->_toArray("json"));
     if (!empty($row)){ 
       $value->_set("id",$row["id"]);
       $value->_call("reset")->_call("check");
