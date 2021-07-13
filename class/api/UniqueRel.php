@@ -57,6 +57,8 @@ class UniqueRelApi { //1.1
   public function identifyParams(){
     /**
      * Recorrer la lista de parametros y clasificarlos en base a sus prefijos
+     * Ej. Si se recibe alu_per-nombres, se define $this->params["alu_per"] = "nombres"
+     *   
      * 
      */
     $params = [];

@@ -1,15 +1,9 @@
 <?php
 
+require_once("class/api/Base.php");
 require_once("function/get_entity_tree.php");
 
-class TreeApi {
-  /**
-   * Comportamiento general de persistencia
-   */
-
-  public $entityName;
-  public $container;
-  public $permission = "w";
+class TreeApi extends BaseApi {
 
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
