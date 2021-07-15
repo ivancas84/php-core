@@ -126,6 +126,7 @@ class Ma extends Db {
     if(!$render) $render = new Render();
     $render->addFields($this->container->getRel($entityName)->fieldNames());
     $sql = $this->container->getSqlo($entityName)->select($render);
+
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
