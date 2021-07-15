@@ -35,6 +35,7 @@ abstract class Import { //2
     public $mode = "csv";  //modo de procesamiento (csv, db, tab)
     public $updateNull = false; //flag para indicar si se deben actualizar valores nulos del source
     
+    public $import = null; //referencia a la clase de importacion para acceder a atributos y datos adicionales
     public $ids = []; //array asociativo con identificadores
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
     public $elements = []; //array de elementos a importar
@@ -49,7 +50,7 @@ abstract class Import { //2
       $this->persist();
     }
 
-    public function element($i, $data){
+    public function element($i, $data, &$import){
     /**
      * Metodo principal para definir elementos
      * Un elemento es una estructura que posee un conjunto de datos para importar entidades
@@ -59,7 +60,7 @@ abstract class Import { //2
      */
 
       $element = $this->container->getImportElement($this->id);
-      $element->index = $i;
+      $element->import = $import; //referencia a la clase de importacion      
       if($data === false) {
         $element->process = false;
         $element->logs->addLog("data", "error", "Los datos están vacíos o no pudieron combinarse");
@@ -208,7 +209,7 @@ abstract class Import { //2
           $i++;
           if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
           $e = array_combine($encabezados, $datos);
-          $this->element($i, $e);                  
+          $this->element($i, $e, $this);                  
           //if($i==100) break;           
       }
       fclose($gestor);
@@ -236,7 +237,7 @@ abstract class Import { //2
         foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
         //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
         $e = @array_combine($this->headers, $datos);
-        $this->element($i + $this->start, $e);                  
+        $this->element($i + $this->start, $e, $this);                  
         //if($i==100) break;           
     }
   }
@@ -251,7 +252,7 @@ abstract class Import { //2
 
     for($i = $this->start; $i < count($this->source); $i++){
       if(empty($this->source[$i])) break;
-      $this->element($i + $this->start, $this->source[$i]);                  
+      $this->element($i + $this->start, $this->source[$i], $this);                  
     }
   }
     
@@ -294,7 +295,6 @@ abstract class Import { //2
     $render->setFields([$field]);
     $render->setSize(false);
     $render->addCondition([$field,"=",$this->ids[$id]]);
-
     $rows = $this->container->getDb()->all($entityName, $render);
 
     //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una

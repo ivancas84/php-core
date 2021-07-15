@@ -131,6 +131,7 @@ abstract class ImportElement { //2
      * Si el identificador es vacio, asigna un error al elemento y retorna false
      */
     $identifier = $this->entities[$entityName]->_get($fieldName);
+
     if(Validation::is_empty($identifier)){
       $this->process = false;                
       $this->logs->addLog($entityName, "error", "El identificador de $entityName no se encuentra definido");
