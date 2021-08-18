@@ -8,9 +8,10 @@ require_once("class/model/Sqlo.php");
 require_once("class/tools/Validation.php");
 require_once("function/php_input.php");
 
-class PersistArrayApi {
+class PersistRowsApi {
   /**
-   * Comportamiento general de persistencia
+   * Persistencia de una entidad y sus relaciones
+   * Recibe un conjunto de tuplas de una entidad, cada tupla tiene datos de la entidad y sus relaciones fk
    */
 
   public $entityName;
@@ -23,21 +24,17 @@ class PersistArrayApi {
     $data = php_input();
     $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
-
     
     $ids = [];
     $sql = "";
     $detail = [];
 
     foreach($data as $row){
-      if($row["_delete"]){
-        $sql .= $this->container->getSqlo($render->entityName)->delete([$row["id"]]);
-      } else {
-        $persist = $this->container->getControllerEntity("persist_sql", $render->entityName)->id($row);
-        $sql .= $persist["sql"];
-        array_push($ids, $persist["id"]);
-      }
-      array_push($detail, $render->entityName.$row["id"]);
+      $persist = $this->container->getControllerEntity("persist_rel_sql_array", $this->entityName);
+      $p = $persist->main($row);
+      $sql .= $p["sql"];
+      array_push($ids, $p["id"]);
+      array_push($detail, $render->entityName.$p["id"]);
     }
 
     $this->container->getDb()->multi_query_transaction($sql);

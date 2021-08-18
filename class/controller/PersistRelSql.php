@@ -7,6 +7,32 @@ require_once("function/get_entity_rel.php");
 class PersistRelSql { //3
   /**
    * Controlador para procesar una entidad y sus relaciones 
+   * recibe un array multiple, ejemplo:
+   * [
+   *   alumno => [
+   *     id => ...
+   *     activo => ...
+   *   ]
+   *   per => [
+   *     id => ...
+   *     nombres => ...
+   *   ]
+   *   per_dom => [
+   *     id => ...
+   *     calle => ...
+   *   ]
+   *   nota/alumno => [ //nota (entidad) alumno.nota (fk)
+   *     [id => ..., calificacion => ...]
+   *     [...]
+   *   ]
+   *   per-toma/docente => [  // toma (entidad) toma.docente (fk), luego docente esta asociado con alumno a traves de la relacion indicada en el prefijo "per"
+   *     [id => ..., fecha_toma => ...]
+   *     [...]
+   *   ]
+   * ]
+   * ordena el array multiple recibido para ser procesado correctamente
+   * 
+   * @todo ANALIZAR: este controlador no completa relaciones, es decir, si recibe fk1_fk2 y no recibe fk1, no completa fk1. Es necesario completarlo?
    */
 
   public $entityName; //entidad principal
@@ -16,6 +42,14 @@ class PersistRelSql { //3
   public $persistController = "id";
   public $detail = [];
   public $sql = "";
+
+  public function main($params){
+    $this->sortParams($params);
+    $this->procesarParams();
+    $this->procesarParamsUm();
+
+    return ["id" => $this->params[$this->entityName]["id"], "detail" => $this->detail, "sql"=>$this->sql];
+  }
 
   public function compare($a, $b) {
     /**
@@ -29,7 +63,6 @@ class PersistRelSql { //3
     return ($a_ > $b_) ? -1 : 1;
   }
 
-  
 
   function sortParams($params){ 
     /**
@@ -58,17 +91,6 @@ class PersistRelSql { //3
      */
   }
 
-  public function main($params){
-    $this->sortParams($params);
-    $this->procesarParams();
-    $this->procesarParamsUm();
-
-    return ["id" => $this->params[$this->entityName]["id"], "detail" => $this->detail, "sql"=>$this->sql];
-
-    
-  }
-
-
   public function procesarParamsUm(){
     foreach($this->paramsUm as $key => $value) {
       $i = strpos($key, '-');
@@ -83,7 +105,6 @@ class PersistRelSql { //3
       }
       $fkName = substr($key,$j+1);
 
-
       foreach($value as $k => $row){
         $row[$fkName] = $this->params[$prefix]["id"];
         $persistRelSqlArray = $this->container->getControllerEntity("persist_rel_sql_array",$entityName);
@@ -91,39 +112,29 @@ class PersistRelSql { //3
         $this->sql .= $p["sql"];
         $this->detail =array_merge($this->detail, $p["detail"]);
       }
-
-    
     }
   }
 
 
-  public function procesarParamsRel($key, $row){
+  public function procesarParamsRel($key){
     //1) Definir $entityName, $fieldName en base a $key y $this->entityName
     $entityName = get_entity_rel($this->entityName)[$key]["entity_name"];
     $fieldName = get_entity_rel($this->entityName)[$key]["field_name"];
     
     //2) Definir $render en base a $entityName
     $render = $this->container->getControllerEntity("render_build", $entityName)->main();
+
+    //3) Ejecutar controlador
+    $p = $this->container->getControllerEntity("persist_sql", $render->entityName);
+    $persist = $p->id($this->params[$key]);
     
-    //3) Verificar si se debe eliminar (asignar $fkValue en null)
-    if(array_key_exists("_delete",$row) && $row["_delete"]){
-      $sql = $this->container->getSqlo($entityName)->delete([$row["id"]]);
-      $persist = ["id" => $row["id"],"sql"=>$sql];
-      $fkValue = null;
-    } 
-    
-    //4) Verificar si se debe insertar o actualizar (asignar $fkValue con el id persistido)
-    else {
-      $p = $this->container->getControllerEntity("persist_sql", $render->entityName);
-      $persist = ($this->persistController == "id") ?
-        $p->id($this->params[$key]) : $p->unique($this->params[$key]);
-      $idValue = $persist["id"];
-    }
-    
-    //5) Actualizar $this->sql y $this->detail
+    //4) Actualizar $this->sql y $this->detail
     $this->sql .= $persist["sql"];
     array_push($this->detail, $entityName.$persist["id"]);
     
+    //5) Definir valor de fk
+    $idValue = ($persist["mode"] == "delete") ? null : $persist["id"];
+
     //6) Asignar fk
     $pos = strrpos($key,"_");
     if($pos !== false){ 
@@ -138,39 +149,26 @@ class PersistRelSql { //3
     return $idValue;
   }
 
-  public function procesarParamsEntity($row){
+  public function procesarParamsEntity(){
     //1) Definir $render en base a $this->entityName 
     $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
-    
-    //2) Verificar si se debe eliminar (asignar $idValue en null)
-    if(array_key_exists("_delete",$row) && $row["_delete"]){
-      $sql = $this->container->getSqlo($this->entityName)->delete([$row["id"]]);
-      $persist = ["id" => $row["id"],"sql"=>$sql];
-      $idValue = null;
-    }
 
-    //3) Verificar si se debe insertar o actualizar (asignar $idValue con el id persistido)
-    else {
-      $p = $this->container->getControllerEntity("persist_sql", $render->entityName);
-      $persist = ($this->persistController == "id") ?
-        $p->id($this->params[$this->entityName]) : $p->unique($render->entityName, $this->params[$key]);
-      $idValue = $persist["id"];
-    }
+    //2) persistir
+    $persist = $this->container->getControllerEntity("persist_sql", $render->entityName);
+    $p = $persist->main($this->params[$this->entityName]);
 
-    //4) Actualizar $this->sql y $this->detail
-
-    $this->sql .= $persist["sql"];
+    //3) Actualizar $this->sql y $this->detail
+    $this->sql .= $p["sql"];
     array_push($this->detail, $this->entityName.$persist["id"]);
-
-    return $idValue;
+    return ($p["mode"] == "delete") ? null : $p["id"];
   }
 
 
   public function procesarParams(){
     foreach($this->params as $key => $row) {
       $idValue = ($key != $this->entityName) ?
-        $this->procesarParamsRel($key, $row) :
-        $this->procesarParamsEntity($row);
+        $this->procesarParamsRel($key) :
+        $this->procesarParamsEntity();
       $this->params[$key]["id"] = $idValue; //en el caso de eliminacion se carga en null
     }
   }

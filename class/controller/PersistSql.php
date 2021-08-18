@@ -9,6 +9,23 @@ class PersistSql { //2
   public $container;
   public $entityName;
 
+  public function main(&$row){
+    $mode = (array_key_exists("_mode",$row) && !empty($row["_mode"])) ? $row["_mode"] : "id"; 
+ 
+    switch($mode){
+      case "delete":
+        $sql = $this->container->getSqlo($entityName)->delete([$row["id"]]);
+        return ["id" => $row["id"],"sql"=>$sql, "mode"=>"delete"];
+      break;
+      case "id":
+        return $this->id($row);
+      break;
+      case "unique":
+        return $p->unique($row);
+      break;
+    } 
+  }
+
   public function id(&$row) {
     $value = $this->container->getValue($this->entityName)->_fromArray($row, "set");
 
@@ -25,7 +42,7 @@ class PersistSql { //2
       $sql = $this->container->getSqlo($this->entityName)->insert($value->_toArray("sql"));
     }
 
-    return["id" => $value->_get("id"),"sql"=>$sql];
+    return["id" => $value->_get("id"),"sql"=>$sql, "mode"=>"id"];
   }
 
   public function unique(&$row) {
@@ -45,6 +62,6 @@ class PersistSql { //2
       if($value->logs->isError()) throw new Exception($value->logs->toString());
       $sql = $this->container->getSqlo($this->entityName)->insert($value->_toArray("sql"));
     }
-    return["id" => $value->_get("id"),"sql"=>$sql];
+    return["id" => $value->_get("id"),"sql"=>$sql, "mode"=>"unique"];
   }
 }

@@ -5,11 +5,18 @@ require_once("class/controller/PersistRelSql.php");
 class PersistRelSqlArray extends PersistRelSql{
   
   /**
-   * Comportamiento general de persistencia de elementos relacionados
+   * Persistencia de un array de datos 
+   * Se recibe un unico array de datos (no multiple), con elemento de la entidad principal y relaciones, ejemplo
+   *   ["nombres"=>"Val1", "per-cantidad"=>"Val2", "asi_per-modo"=>"Val3"]
+   * Se acomodan los elementos del parametro recibido y se transforma en un array multiple
+   *   [
+   *     "entityName"=>["nombres"=>"Val1"],
+   *     "per"=>["cantidad"=>"Val2"],
+   *     "asi-per"=>["modo"=>"Val3"],
+   *   ]
+   * Una vez realizada la transformacion se invoca a persist_rel_sql
    * 
-   * Comportamiento por defecto
-   * 1) Si existe el id para una determinada entidad, se considera actualizacion, sino insercion.
-   * 2) Considera que la existencia de valores unicos debe hacerse en el cliente.
+   * (No se permiten relaciones UM)
    */
 
 
@@ -17,7 +24,6 @@ class PersistRelSqlArray extends PersistRelSql{
     $params = $this->assignParams($params);
     return parent::main($params);
   }
-  
 
   public function assignParams($params){
     $data = [];

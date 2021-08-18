@@ -4,28 +4,22 @@ require_once("class/model/Rel.php");
 require_once("function/php_input.php");
 require_once("function/get_entity_rel.php");
 
-class PersistRelApi { //3
+class PersistRelApi {
   /**
-   * Comportamiento general de persistencia de elementos relacionados
-   * 
-   * Comportamiento por defecto
-   * 1) Si existe el id para una determinada entidad, se considera actualizacion, sino insercion.
-   * 2) Considera que la existencia de valores unicos debe hacerse en el cliente.
+   * Persistencia de una entidad y sus relaciones
+   * Recibe como parametro un array multiple
    */
 
   public $entityName; //entidad principal
   public $container;
   public $permission = "w";
-  public $persistController = "id";
-  public $persistRelController = "persist_rel_sql";
 
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
 
     $params = php_input();
     
-    $persist = $this->container->getControllerEntity($this->persistRelController, $this->entityName);
-    $persist->persistController = $this->persistController;
+    $persist = $this->container->getControllerEntity("persist_rel_sql", $this->entityName);
     $p = $persist->main($params);
     $this->container->getDb()->multi_query_transaction($p["sql"]);
     return ["id" => $p["id"], "detail" => $p["detail"]];
