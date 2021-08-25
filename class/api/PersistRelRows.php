@@ -8,7 +8,7 @@ require_once("class/model/Sqlo.php");
 require_once("class/tools/Validation.php");
 require_once("function/php_input.php");
 
-class PersistRowsApi {
+class PersistRelRowsApi {
   /**
    * Persistencia de una entidad y sus relaciones
    * Recibe un conjunto de tuplas de una entidad, cada tupla tiene datos de la entidad y sus relaciones fk
