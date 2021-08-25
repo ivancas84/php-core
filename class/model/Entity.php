@@ -153,10 +153,7 @@ abstract class Entity {
     return $fields;
   }
 
-  public function getFieldsRef(){ return array_merge($this->getFieldsUm(), $this->getFieldsU_()); }
-  /**
-   * ref (um y u_)
-   */
+  public function getFieldsRef(){ return array_merge($this->getFieldsUm(), $this->getFieldsU_()); } //ref (um y u_)
 
   public function getFieldsUm(){
     $fields = array();
@@ -214,28 +211,6 @@ abstract class Entity {
     return $fields;
   }
 
-  public function getFieldsByType(array $types){
-    /**
-     * filtrar campos por tipo
-     */
-    $fields = array();
-
-    foreach($types as $type){
-      switch($type){
-        case "pk": array_push($fields, $this->getPk()); break;
-        case "nf": $fields = array_merge($fields, $this->getFieldsNf()); break;
-        case "fk": $fields = array_merge($fields, $this->getFieldsFk()); break;
-        case "ref": $fields = array_merge($fields, $this->getFieldsRef()); break;
-        case "u_": $fields = array_merge($fields, $this->getFieldsU_()); break;
-        case "um": $fields = array_merge($fields, $this->getFieldsUm()); break;
-        case "_u": $fields = array_merge($fields, $this->getFieldsU_()); break;
-        case "mu": $fields = array_merge($fields, $this->getFieldsUm()); break;
-      }
-    }
-
-    return $fields;
-  }
-
   /**
    * Tiene relaciones?
    * Utilizado generalmente para verificar si es viable la generacion de cierto codigo que requiere relaciones
@@ -249,60 +224,4 @@ abstract class Entity {
 
   public function getOrderDefault() { return $this->orderDefault; }
 
-  public function getFieldsUnique(){
-    /**
-     * campos unicos simples
-     */
-    $unique = array();
-    foreach($this->unique as $fieldName){
-      array_push($unique, $this->container->getField($this->getName(), $fieldName));
-    }
-    return $unique;
-  }
-
-  public function getFieldsMain(){
-    /**
-     * campos principales
-     */
-    $fields = array();
-    foreach($this->main as $fieldName){
-      array_push($fields, $this->container->getField($this->getName(), $fieldName));
-    }
-    return $fields;
-  }
-
-  public function getFieldsNotNull(){
-    /**
-     * campos principales
-     */
-    $fields = array();
-    foreach($this->notNull as $fieldName){
-      array_push($fields, $this->container->getField($this->getName(), $fieldName));
-    }
-    return $fields;
-  }
-
-  public function getFieldsAdmin(){
-    /**
-     * campos principales
-     */
-    $fields = array();
-    foreach($this->admin as $fieldName){
-      array_push($fields, $this->container->getField($this->getName(), $fieldName));
-    }
-    return $fields;
-  }
-
-  public function getFieldsUniqueMultiple(){ 
-    /**
-     * campos unicos multiples
-     * se habia pensando en poner un atributo "uniqueMultiple" en el field
-     * pero es mas sencillo indicarlo directamente en la entidad
-     */
-    $uniqueMultiple = [];
-    foreach($this->uniqueMultiple as $fieldName){
-      array_push($uniqueMultiple, $this->container->getField($this->getName(), $fieldName));
-    }
-    return $uniqueMultiple;      
-  }
 }
