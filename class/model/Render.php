@@ -245,24 +245,31 @@ class Render {
      * los campos unicos simples se definen a traves del atributo Entity::$unique
      * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
      */
-    $uniqueFields = $this->container->getEntity($this->entityName)->getFieldsUnique();
-    $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->getFieldsUniqueMultiple();
+    $uniqueFields = $this->container->getEntity($this->entityName)->unique;
+    $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->uniqueMultiple;
 
     $condition = array();
     if(array_key_exists("id",$params) && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
 
     foreach($uniqueFields as $field){
       foreach($params as $key => $value){
-        if($key == $field->getName()) array_push($condition, [$key, "=", $value, "or"]);
+        if($key == $field) {
+          array_push($condition, [$key, "=", $value, "or"]);
+        }
       }
     }
 
     if($uniqueFieldsMultiple) {
       $conditionMultiple = [];
       $first = true;
+      $existsConditionMultiple = true; //si algun campo de la condicion multiple no se encuentra definido,  se carga en true.
       foreach($uniqueFieldsMultiple as $field){
+        if(!$existsConditionMultiple) break;
+        $existsConditionMultiple = false;
+        
         foreach($params as $key => $value){
-          if($key == $field->getName()) {
+          if($key == $field) {
+            $existsConditionMultiple = true;
             if($first) {
               $con = "or";
               $first = false;
@@ -274,8 +281,7 @@ class Render {
         }
       }
 
-      if(!empty($conditionMultiple)) array_push($condition, $conditionMultiple);
-      
+      if($existsConditionMultiple && !empty($conditionMultiple)) array_push($condition, $conditionMultiple);
     }
 
     if(empty($condition)) throw new Exception("Error al definir condicion unica");
