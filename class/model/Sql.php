@@ -78,52 +78,54 @@ class EntitySql {
     return "";
   }
 
-  public function conditionUniqueFields(array $params){
-    /**
-     * definir condicion para campos unicos
-     * $params:
-     *   array("nombre_field" => "valor_field", ...)
-     * los campos unicos simples se definen a traves del atributo Field::$unique
-     * los campos unicos multiples se definen a traves del meotodo Entity::getFieldsUniqueMultiple();
-     */
-    $uniqueFields = $this->container->getEntity($this->entityName)->getFieldsUnique();
-    $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->getFieldsUniqueMultiple();
+  // DEPRECATED??? usar Render->setConditionUniqueFields
+  // public function conditionUniqueFields(array $params){
+  //   /**
+  //    * definir condicion para campos unicos
+  //    * $params:
+  //    *   array("nombre_field" => "valor_field", ...)
+  //    * los campos unicos simples se definen a traves del atributo Field::$unique
+  //    * los campos unicos multiples se definen a traves de meotodo Entity::uniqueMultiple;
+  //    */
+  //   $uniqueFields = $this->container->getEntity($this->entityName)->unique;
+  //   $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->uniqueFieldsMultiple;
 
-    $condition = array();
+  //   $condition = array();
 
-    foreach($uniqueFields as $field){
-      foreach($params as $key => $value){
-        if($key == "id" && empty($value)) continue; //para el id no se permiten valores nulos
-        if($key == $field->getName()) {
-          array_push($condition, [$key, "=", $value, "or"]);
-        }
-      }
-    }
+  //   foreach($uniqueFields as $fieldName){
+  //     foreach($params as $key => $value){
+  //       if($key == "id" && empty($value)) continue; //para el id no se permiten valores nulos
+  //       if($key == $fieldName) {
+  //         array_push($condition, [$key, "=", $value, "or"]);
+  //       }
+  //     }
+  //   }
 
-    if($uniqueFieldsMultiple) {
-      $conditionMultiple = [];
-      $first = true;
-      foreach($uniqueFieldsMultiple as $field){
-        foreach($params as $key => $value){
-          if($key == $field->getName()) {
-            if($first) {
-              $con = "or";
-              $first = false;
-            } else {
-              $con = "and";
-            }
-            array_push($conditionMultiple, [$key, "=", $value, $con]);
-          }
-        }
-      }
+  //   if($uniqueFieldsMultiple) {
+  //     $conditionMultiple = [];
+  //     $first = true;
+  //     foreach($uniqueFieldsMultiple as $fieldName){
+  //       foreach($params as $key => $value){
+  //         if($key == $fieldName) {
+  //           if($first) {
+  //             $con = "or";
+  //             $first = false;
+  //           } else {
+  //             $con = "and";
+  //           }
+  //           array_push($conditionMultiple, [$key, "=", $value, $con]);
+  //         }
+  //       }
+  //     }
 
-      if(!empty($conditionMultiple)) array_push($condition, $conditionMultiple);
-    }
+  //     if(!empty($conditionMultiple)) array_push($condition, $conditionMultiple);
+  //   }
 
-    $render = new Render();
-    $render->setCondition($condition);
-    return $this->condition($render);
-  }
+  //   $render = new Render();
+  //   $render->setCondition($condition);
+  //   return $this->condition($render);
+  // }
+  
 
   public function _join($field, $fromTable, Render $render){
     /**
