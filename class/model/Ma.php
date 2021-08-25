@@ -166,6 +166,12 @@ class Ma extends Db {
 
   public function first($entity, $render = null) { //un solo valor
     $rows = $this->all($entity, $render);
+    if (empty($rows)) throw new Exception("La consulta no arrojó resultados");
+    return $rows[0];
+  }
+
+  public function firstOrNull($entity, $render = null) { //un solo valor
+    $rows = $this->all($entity, $render);
     return empty($rows) ? null : $rows[0];
   }
 
