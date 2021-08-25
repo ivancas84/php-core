@@ -2,6 +2,8 @@
 
 class StructTools {
 
+  protected $container; 
+    
   public function getFieldsBySubtype($entity, $subtype){
     $fields = [];
     foreach($entity->getFields() as $field){
@@ -47,7 +49,7 @@ class StructTools {
 
   public function getEntityRefBySubtypeSelect($entity){
     $entities = [];  
-    foreach(self::getFieldsBySubtype($entity, "select") as $field){
+    foreach($this->getFieldsBySubtype($entity, "select") as $field){
         $entityName = $field->getEntityRef()->getName('XxYy');
         if(!key_exists($entityName, $entities)) array_push($entities, $field->getEntityRef());
       }
@@ -56,12 +58,13 @@ class StructTools {
 
   public function getEntityRefBySubtypeSelectUniqueMultiple($entity){
     $entities = [];  
-    $fieldsSubtypeSelect = self::getFieldsBySubtype($entity, "select");
-    $fieldsUniqueMultiple = $entity->getFieldsUniqueMultiple();
+    $fieldsSubtypeSelect = $this->getFieldsBySubtype($entity, "select");
+    $fieldsUniqueMultiple = $entity->uniqueMultiple;
     
-    foreach($fieldsUniqueMultiple as $fieldUM){
+    foreach($fieldsUniqueMultiple as $fieldNameUM){
       foreach($fieldsSubtypeSelect as $fieldSS) {
-        if($fieldUM->getName() != $fieldSS->getName()) continue;
+        if($fieldNameUM != $fieldSS->getName()) continue;
+        $fieldUM = $this->container->getField($entity, $fieldNameUM);
         $entityName = $fieldUM->getEntityRef()->getName('XxYy');
         if(!key_exists($entityName, $entities)) array_push($entities, $fieldUM->getEntityRef());
       }
