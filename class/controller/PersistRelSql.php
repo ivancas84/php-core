@@ -159,7 +159,7 @@ class PersistRelSql { //3
 
     //3) Actualizar $this->sql y $this->detail
     $this->sql .= $p["sql"];
-    array_push($this->detail, $this->entityName.$persist["id"]);
+    array_push($this->detail, $this->entityName.$p["id"]);
     return ($p["mode"] == "delete") ? null : $p["id"];
   }
 
