@@ -4,6 +4,9 @@ require_once("class/model/Render.php");
 
 
 class UniqueIdApi {
+  /**
+   * Consulta por campos unicos y retornar id
+   */
   public $entityName;
   public $container;
   public $permission = "r";
