@@ -14,7 +14,7 @@ class PersistSql { //2
  
     switch($mode){
       case "delete":
-        $sql = $this->container->getSqlo($entityName)->delete([$row["id"]]);
+        $sql = $this->container->getSqlo($this->entityName)->delete([$row["id"]]);
         return ["id" => $row["id"],"sql"=>$sql, "mode"=>"delete"];
       break;
       case "id":
