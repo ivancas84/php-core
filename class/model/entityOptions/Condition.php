@@ -41,7 +41,7 @@ class ConditionEntityOptions extends EntityOptions {
     }
   }
 
-  public function _($fieldName, $option, $value){
+  public function _(string $fieldName, $option, $value){
     $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$option, $value]);
     $param = explode(".",$fieldName);
