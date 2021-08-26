@@ -2,8 +2,8 @@
 
 class StructTools {
 
-  protected $container; 
-    
+  public $container; 
+
   public function getFieldsBySubtype($entity, $subtype){
     $fields = [];
     foreach($entity->getFields() as $field){
