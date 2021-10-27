@@ -204,11 +204,12 @@ class Container {
      * @deprecated
      * Utilizar $render = $this->container->getControllerEntity("render_build", $entityName)->main();
      */
-    require_once("class/model/Render.php");
-    $render = new Render;
-    $render->container = $this;  
-    $render->entityName = $entityName;    
-    return $render;    
+    return $this->getControllerEntity("render_build", $entityName)->main();
+    // require_once("class/model/Render.php");
+    // $render = new Render;
+    // $render->container = $this;  
+    // $render->entityName = $entityName;    
+    // return $render;    
   }
 
   public function getSql($entity, $prefix = null){
