@@ -12,6 +12,7 @@ class PersistRelRowsApi {
   /**
    * Persistencia de una entidad y sus relaciones
    * Recibe un conjunto de tuplas de una entidad, cada tupla tiene datos de la entidad y sus relaciones fk
+   * Cuidado con la eleccion del controlador (mode), por defecto se utiliza _mode = "id", debe existir el id de la relacion fk, sino se considerara insercion
    */
 
   public $entityName;

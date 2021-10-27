@@ -19,6 +19,7 @@ class RenderBuild {
   public function main($display = null) {
     $render = Render::getInstanceDisplay($display);
     $render->entityName = $this->entityName;
+    $render->container = $this->container;
     return $render;
   }
 

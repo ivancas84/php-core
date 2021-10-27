@@ -15,7 +15,7 @@ require_once("function/error_handler.php");
  * $import->pathSummary = $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
  * $import->main();
  */
-abstract class Import { //2
+abstract class Import {
     /**
      * Importacion de elementos
      */
@@ -227,18 +227,16 @@ abstract class Import { //2
     } else {
         $start = 0;
     }
-
-
     
     for($i = $start; $i < count($source); $i++){
-        if(empty($source[$i])) break;
-        $datos = [];
-                    
-        foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
-        //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
-        $e = @array_combine($this->headers, $datos);
-        $this->element($i + $this->start, $e, $this);                  
-        //if($i==100) break;           
+      if(empty($source[$i])) break;
+      $datos = [];
+                  
+      foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
+      //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
+      $e = @array_combine($this->headers, $datos);
+      $this->element($i + $this->start, $e, $this);                  
+      //if($i==100) break;           
     }
   }
 
@@ -270,16 +268,15 @@ abstract class Import { //2
   }
 
   public function persist(){
-      $sql = "";
-      foreach($this->elements as $element) {
-        if($element->process) {
-          $element->persist();
-          $sql .= $element->sql;
-        }
+    $sql = "";
+    foreach($this->elements as $element) {
+      if($element->process) {
+        $element->persist();
+        $sql .= $element->sql;
       }
-      if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
+    }
+    if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
   }
-
  
   protected function queryEntityField($entityName, $field, $id = null){
     /**
@@ -345,8 +342,6 @@ abstract class Import { //2
     return $value;
   }
 
-  
-
   public function insertElement(&$element, $entityName, $fieldName = "identifier", $id = null){
     /**
      * Si no existe lo inserta, nunca actualiza
@@ -369,7 +364,10 @@ abstract class Import { //2
   }
 
   public function idEntityFieldCheck($id, $identifier, &$element){
-    
+    /**
+     * Carga de $this->ids[$id] = $identifier correspondiente a $element
+     * Si ya existe $identifier, dispara error de Valor duplicado
+     */
     if(Validation::is_empty($identifier)) {
       $element->process = false;                
       $element->logs->addLog($id, "error", "El identificador de " . $id . " esta vacio" );
@@ -385,6 +383,9 @@ abstract class Import { //2
   }
 
   public function idEntityField($entityName, $identifier){
+    /**
+     * Carga de $this->ids[$id] = $identifier correspondiente a $element
+     */
     if(Validation::is_empty($identifier)) throw new Exception ("Identificador vacio");
     if(!key_exists($entityName, $this->ids)) $this->ids[$entityName] = [];
     if(!in_array($identifier, $this->ids[$entityName])) array_push($this->ids[$entityName], $identifier);
