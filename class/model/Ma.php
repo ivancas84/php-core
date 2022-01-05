@@ -64,7 +64,7 @@ class Ma extends Db {
      *   array("nombre_field" => "valor_field", ...)
      */
     if(empty($params)) return null;
-    $render = $this->container->getControllerEntity("render_build", $entityName)->main();
+    $render = $this->container->getRender($entityName);
     $c = $render->setConditionUniqueFields($params);
 
     $render->addFields($this->container->getRel($entityName)->fieldNames());
