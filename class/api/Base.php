@@ -1,15 +1,11 @@
 <?php
 
-abstract class BaseApi { //1.1
-  /**
-   * Controlador base
-   * Elementos en comun a todos los controladores
-   **/
-  
-  public $entityName; 
-  public $container;
-  public $permission = "r";
+require_once("class/controller/Base.php");
 
-  abstract public function main();
+abstract class BaseApi extends BaseController {
+  /**
+   * Controlador api base
+   * Elementos en comun a todos los controladores api
+   **/
 
 }
