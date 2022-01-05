@@ -29,7 +29,7 @@ class DeleteApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $ids = php_input();
-    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
+    $render = $this->container->getRender($this->entityName);
     $sql = $this->container->getSqlo($render->entityName)->delete($ids);
     $this->container->getDb()->multi_query_transaction($sql);
     $detail = array_map(array($this, 'concat'), $ids);    

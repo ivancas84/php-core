@@ -15,7 +15,7 @@ class UniqueIdApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $params = php_input();
-    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
+    $render = $this->container->getRender($this->entityName);
     try {
       $row = $this->container->getDb()->unique($render->entityName, $params);
       return ($row) ? $row["id"] : null;

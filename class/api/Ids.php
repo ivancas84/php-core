@@ -16,7 +16,7 @@ class IdsApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $display = php_input();
-    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
+    $render = $this->container->getRender($this->entityName)->setDisplay($display);
     return $this->container->getDb()->ids($render->entityName, $render);    
   }
 

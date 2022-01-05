@@ -7,7 +7,8 @@ class TreeApi extends BaseApi {
 
   public function main(){
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
-    return get_entity_tree($this->entityName);    
+    $render = $this->container->getRender($this->entityName);
+    return get_entity_tree($render->entityName);    
   }
 }
 

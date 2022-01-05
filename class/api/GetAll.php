@@ -16,7 +16,7 @@ class GetAllApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $ids = php_input();
-    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main(null);
+    $render = $this->container->getRender($this->entityName);
     if(empty($ids)) throw new Exception("Identificadores no definidos");
     $rows = $this->container->getDb()->getAll($render->entityName, $ids);
     $rel = $this->container->getRel($render->entityName);

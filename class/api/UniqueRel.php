@@ -75,7 +75,7 @@ class UniqueRelApi { //1.1
     $tree = get_entity_tree($this->entityName);
 
     if(array_key_exists($this->entityName,$this->params)){
-      $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
+      $render = $this->container->getRender($this->entityName);
       $row = $this->container->getDb()->unique($render->entityName, $this->params[$this->entityName]);
       if(!empty($row)) {
         $data = $this->container->getRel($render->entityName)->json2($row);
@@ -125,7 +125,7 @@ class UniqueRelApi { //1.1
   }
 
   public function previousParam($leaf, $prefix, $previousKey){
-    $render = $this->container->getControllerEntity("render_build", $leaf["entity_name"])->main();
+    $render = $this->container->getRender($leaf["entity_name"]);
     $row = $this->container->getDb()->get($render->entityName, $this->row[$previousKey][$leaf["field_name"]]);
     if(!empty($row)) {
       $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
@@ -138,7 +138,7 @@ class UniqueRelApi { //1.1
   }
 
   public function prefixParam($leaf, $prefix){
-    $render = $this->container->getControllerEntity("render_build", $leaf["entity_name"])->main();
+    $render = $this->container->getRender($leaf["entity_name"]);
     $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
     if(!empty($row)) {
       $data = $this->container->getRel($render->entityName, $prefix)->json2($row);

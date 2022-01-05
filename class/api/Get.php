@@ -16,7 +16,7 @@ class GetApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $id = file_get_contents("php://input");
-    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main(null);
+    $render = $this->container->getRender($this->entityName);
     if(empty($id)) throw new Exception("Identificador no definido");
     $row = $this->container->getDb()->get($render->entityName, $id);
     return $this->container->getRel($render->entityName)->json($row);
