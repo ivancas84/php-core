@@ -39,9 +39,17 @@ class MappingEntityOptions extends EntityOptions {
 
   public function _($fieldName, array $params = []){
     /**
+     * Metodo principal de mapping
+     * 
+     * Verifica la existencia de un metodo eclusivo, si no exite, busca metodo
+     * predefinido.
+     * 
+     * Permite la aplicacion de varios mapping utilizando el caracter "." como
+     * separador
+     *  
      * @example 
      *   _("nombre")
-     *   _("fecha_alta.max");
+     *   _("fecha_alta.max.y"); //aplicar max y dar formato y
      *   _("edad.avg")
      */    
     $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
@@ -62,7 +70,7 @@ class MappingEntityOptions extends EntityOptions {
   public function _sum($field) { return "SUM(" . $this->_($field) . ")"; }
   public function _count($field) { return "COUNT(DISTINCT " . $this->_($field) . ")"; }
   public function _exists($field) { return $this->_default($field); }
-  public function _isSet($field) { return $this->_default($field); }
+  public function _isSet($field) { return $this->_exists($field); }
   public function _groupConcat($field) { return "GROUP_CONCAT(DISTINCT " . $this->_($field) . " SEPARATOR ', ')"; }
 
 }

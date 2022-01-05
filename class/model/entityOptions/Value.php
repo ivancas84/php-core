@@ -7,6 +7,8 @@ require_once("class/tools/SpanishDateTime.php");
 class ValueEntityOptions extends EntityOptions {
 
   /**
+   * Manipular valores de una entidad
+   * 
    * Cuidado con los metodos setDefault, solo setean el valor por defecto si el campo es UNDEFINED,
    * si es otro valor o null, son ignorados y no setean el valor por defecto. 
    * Este era un error habitual al asignar el valor por defecto del id, por lo que en versiones actuales
@@ -20,6 +22,11 @@ class ValueEntityOptions extends EntityOptions {
    */
 
   public $value = [];
+  /**
+   * Conjunto de valores
+   * 
+   * Los valores se almacenan en un array asociativo
+   */
   
   public function _getLogs(){ return $this->logs; }
 
@@ -171,7 +178,13 @@ class ValueEntityOptions extends EntityOptions {
   }
 
 
-  protected function _defineReset($fieldName){    
+  protected function _defineReset($fieldName){  
+    /**
+     * Definir metodo de reset a ejecutar.
+     * 
+     * Busca la configuracion del fieldName indicado, y selecciona el metodo 
+     * mas adecuado.
+     **/  
     $param = explode(".",$fieldName);
     if(count($param)==1){
       switch($this->container->getField($this->entityName, $param[0])->getDataType()){
@@ -187,17 +200,24 @@ class ValueEntityOptions extends EntityOptions {
 
   public function _reset($fieldName){
     /**
-     * @example 
-     *   _setDefault("nombre")
+     * Reseteo de campo.
+     * 
+     * El reseteo da formato a un campo para ser almacenado correctamente, por
+     * ejemplo, para una cadena de caracteres, _reset elimina espacios en
+     * blanco duplicados y al principo y final de la cadena.
      */
-    if(array_key_exists($fieldName, $this->value)) {
-      $m = "reset".snake_case_to("XxYy", str_replace(".","_",$fieldName));
-      if(method_exists($this, $m)) return call_user_func(array($this, $m));
-      if($m = $this->_defineReset($fieldName)) return call_user_func_array(array($this, $m), [$fieldName]);
+    if(array_key_exists($fieldName, $this->value)) { //reset se ejecuta solo si el campo existe en el conjunto de valores
+      $m = "reset".snake_case_to("XxYy", str_replace(".","_",$fieldName)); //definir metodo exclusivo
+      if(method_exists($this, $m)) return call_user_func(array($this, $m)); //ejecutar, si existe, metodo exlusivo
+      if($m = $this->_defineReset($fieldName)) //buscar metodo predefinido en funcion de la configuracion del campo
+        return call_user_func_array(array($this, $m), [$fieldName]); //ejecutar metodo predefinido
     }
   }
 
   protected function _resetString($fieldName){
+    /**
+     * Metodo de reseteo de strings
+     */
     $this->value[$fieldName] = preg_replace('/\s\s+/', ' ', trim($this->value[$fieldName]));
   }
 

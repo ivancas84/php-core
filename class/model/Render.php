@@ -65,19 +65,23 @@ class Render {
      * Importante: Define las condiciones y parametros como condiciones generales
      */
     $render = new Render;
-    if(isset($display["size"])) $render->setSize($display["size"]);
+    $render->setDisplay($display);
+    return $render;
+  }
+
+  public function setDisplay(array $display = []){
+    if(isset($display["size"])) $this->setSize($display["size"]);
     /**
      * puede ser 0 o false para indicar todas las filas
      */
-    if(!empty($display["page"])) $render->setPage($display["page"]);
-    if(!empty($display["order"])) $render->setOrder($display["order"]);
-    if(!empty($display["condition"])) $render->setGeneralCondition($display["condition"]);
-    if(!empty($display["params"])) $render->setGeneralParams($display["params"]);
-    if(!empty($display["fields"])) $render->setFields($display["fields"]);
-    if(!empty($display["group"])) $render->setGroup($display["group"]);
-    if(!empty($display["having"])) $render->setHaving($display["having"]);
-
-    return $render;
+    if(!empty($display["page"])) $this->setPage($display["page"]);
+    if(!empty($display["order"])) $this->setOrder($display["order"]);
+    if(!empty($display["condition"])) $this->setGeneralCondition($display["condition"]);
+    if(!empty($display["params"])) $this->setGeneralParams($display["params"]);
+    if(!empty($display["fields"])) $this->setFields($display["fields"]);
+    if(!empty($display["group"])) $this->setGroup($display["group"]);
+    if(!empty($display["having"])) $this->setHaving($display["having"]);
+    return $this;
   }
 
   public static function getInstanceParams(array $params = null){

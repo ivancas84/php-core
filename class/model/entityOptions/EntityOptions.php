@@ -18,18 +18,26 @@ class EntityOptions {
    * prefijo tabla
    */
 
-  function _callFields($fieldNames, $method = ""){
+  function _callFields(array $fieldNames, $method = ""){
+    /**
+     * Ejecutar metodo en los fields indicados
+     */
 		foreach($fieldNames as $fieldName) call_user_func_array([$this, "_".$method],[$fieldName]);
     return $this;
   }
 
   function _call($method = ""){
+    /**
+     * Llamar a _callFields utilizando los fieldNames definidos en la entidad.
+     */
     return $this->_callFields($this->container->getEntity($this->entityName)->getFieldNames(), $method);
   }
 
   function _toArrayFields($fieldNames, $method = ""){
     /**
-     * Por cuestiones operativas, el array resultante no define prefijo
+     * Ejecutar metodo y almacenar resultado en un array de fields
+     * 
+     * Por cuestiones operativas, no se utiliza el prefijo
      */
     $row = [];
     foreach($fieldNames as $fieldName){
@@ -41,10 +49,18 @@ class EntityOptions {
   }
 
   function _toArray($method = ""){
+    /**
+     * Ejecutar _toArrayFields para los campos definidos en la configuracion de la entidad principal
+     */
     return $this->_toArrayFields($this->container->getEntity($this->entityName)->getFieldNames(), $method);
   }
 
   function _fromArrayFields(array $row, $fieldNames, $method = ""){
+    /**
+     * Ejecutar metodo y almacenar resultado en atributos del objeto
+     * 
+     * Utiliza prefijo si esta definido
+     */
     if(empty($row)) return $this;
 
     foreach($fieldNames as $fieldName){      
@@ -55,6 +71,9 @@ class EntityOptions {
   }
 
   function _fromArray(array $row, $method = ""){
+    /**
+     * Ejecutar _fromArrayFields para los atributos definidos en la configuracion de la entidad principal
+     */
     return $this->_fromArrayFields($row, $this->container->getEntity($this->entityName)->getFieldNames(), $method);
   }
   
