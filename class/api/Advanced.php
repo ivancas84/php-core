@@ -17,7 +17,7 @@ class AdvancedApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $display = php_input();
-    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main($display);
+    $render = $this->container->getRender($this->entityName)->setDisplay($display);
     $rows = $this->container->getDb()->advanced($render->entityName, $render);
     return $rows;
   }
