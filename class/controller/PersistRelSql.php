@@ -122,7 +122,7 @@ class PersistRelSql { //3
     $fieldName = get_entity_rel($this->entityName)[$key]["field_name"];
     
     //2) Definir $render en base a $entityName
-    $render = $this->container->getControllerEntity("render_build", $entityName)->main();
+    $render = $this->container->getRender($entityName);
 
     //3) Ejecutar controlador
     $p = $this->container->getControllerEntity("persist_sql", $render->entityName);
@@ -151,7 +151,7 @@ class PersistRelSql { //3
 
   public function procesarParamsEntity(){
     //1) Definir $render en base a $this->entityName 
-    $render = $this->container->getControllerEntity("render_build", $this->entityName)->main();
+    $render = $this->container->getRender($this->entityName);
 
     //2) persistir
     $persist = $this->container->getControllerEntity("persist_sql", $render->entityName);
