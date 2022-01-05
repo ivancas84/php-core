@@ -4,15 +4,14 @@ require_once("function/snake_case_to.php");
 
 class Container {
   /**
-   * Si una clase debe utilizar container, 
-   * entonces es un controlador o alguno de sus derivados (api, import, etc.).
-   * Si una clase debe utilizar container, 
-   * entonces debe instanciarse desde container y no deberia tener elementos static.   
-   * Si un elemento puede almacenarse en un atributo estatico para ser reutilizado,
-   * debe definirse un método de instanciacion exclusivo en el contenedor
+   * Contenedor
+   * 
+   * Si una clase debe utilizar container, entonces es un controlador o alguno de sus derivados (api, import, etc.).
+   * Si una clase debe utilizar container,  entonces debe instanciarse desde container y no deberia tener elementos static.   
+   * Si un elemento puede almacenarse en un atributo estatico para ser reutilizado debe definirse un método de instanciacion exclusivo en el contenedor
    */
   static $db = null;
-
+  static $modelTools = null;
   static $sqlo = []; //las instancias dependen de la entidad
   static $entity = []; //las instancias dependen de la entidad
   static $field = []; //las instancias dependen de la entidad
@@ -92,19 +91,33 @@ class Container {
     return self::$field[$entity.$field] = $c; 
   }
 
-  public function getApi($action, $entityName) {
-    $path = "class/api/" . snake_case_to("xxYy", $action) . "/" . snake_case_to("XxYy", $entityName) . ".php";
+  protected function getInstanceFromDir($dir, $action, $entityName){
+    $d = snake_case_to("xxYy", $dir);
+    $D = snake_case_to("XxYy", $dir);
+    $a = snake_case_to("xxYy", $action);
+    $A = snake_case_to("XxYy", $action);
+    $E = snake_case_to("XxYy", $entityName);
+
+    $path = "class/" . $d . "/" . $a . "/" .$E . ".php";
     if((@include_once $path) == true){
-      $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $action). "Api";
+      $className =  $E . $A . $D;
     } else{
-      require_once("class/api/" . snake_case_to("XxYy", $action) . ".php");
-      $className = snake_case_to("XxYy", $action)   . "Api";
+      require_once("class/". $d . "/" . $A . ".php");
+      $className = $A   . $D;
     }
 
     $c = new $className;
     $c->container = $this;
     $c->entityName = $entityName;
     return $c;
+  }
+
+  public function getApi($action, $entityName) {
+    return $this->getInstanceFromDir("api",$action,$entityName);
+  }
+
+  public function getScript($action, $entityName) {
+    return $this->getInstanceFromDir("script",$action,$entityName);
   }
 
 
@@ -200,16 +213,11 @@ class Container {
   }
 
   public function getRender($entityName = null){
-    /**
-     * @deprecated
-     * Utilizar $render = $this->container->getControllerEntity("render_build", $entityName)->main();
-     */
-    return $this->getControllerEntity("render_build", $entityName)->main();
-    // require_once("class/model/Render.php");
-    // $render = new Render;
-    // $render->container = $this;  
-    // $render->entityName = $entityName;    
-    // return $render;    
+    require_once("class/model/Render.php");
+    $render = new Render;
+    $render->entityName = $entityName;
+    $render->container = $this;
+    return $render;
   }
 
   public function getSql($entity, $prefix = null){
@@ -254,6 +262,25 @@ class Container {
     return $c;
   }
 
+  public function getModelTools(){
+    /**
+     * Instanciar ModelTools
+     * 
+     * Model Tools es una clase especial del sistema para incorporar codigo de uso comun.
+     * Se especifica una clase principalmente para utilizar el Container
+     */
+    if(!self::$modelTools) {
+      require_once("class/controller/ModelTools.php");
+      self::$modelTools = new ModelTools;
+      self::$modelTools->container = $this;
+    }
+    return self::$modelTools;     
+  }
+
+  public function getMt(){ return $this->getModelTools(); }
+  /**
+   * Alias de getModelTools
+   */
 
   public function getMapping($entityName, $prefix = ""){
     $dir = "class/model/mapping/";
@@ -308,11 +335,20 @@ class Container {
   }
 
   public function getValue($entityName, $prefix = ""){
+    /**
+     * Definir instancia de Value para la entidad.
+     * 
+     * Value es una clase utilizada para manipular los valores de una entidad.
+     * 
+     * @param string $entityName Nombre de la entidad
+     * @param prefix Prefijo de identificacion. El prefijo es util cuando los 
+     * valores se obtienen de resultado de relaciones.
+     */
     $dir = "class/model/value/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
-    if((@include_once $dir.$name) == true){
+    if((@include_once $dir.$name) == true){ //si existe se utiliza la clase exclusiva
       $className = snake_case_to("XxYy", $entityName) . "Value";
-    } else {
+    } else { //si no existe clase exclusiva, se utiliza clase general
       require_once("class/model/entityOptions/Value.php");
       $className = "ValueEntityOptions";
     }
