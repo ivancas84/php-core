@@ -376,9 +376,10 @@ abstract class Import {
 
   public function processElement(&$element, $entityName, $fieldName = "identifier", $id = null, $updateMode = true){
     /**
+     * Procesamiento de una entidad del elemento
+     * 
      * @param $entityName Nombre de la entidad
-     * @param $value Valor de la entidad que la identifica univocamente
-     * @param @id Identificador auxiliar de la entidad
+     * @param $id Identificador auxiliar de la entidad
      */
 
     if(empty($id)) $id = $entityName;
