@@ -32,7 +32,13 @@ abstract class Import {
      *  si no se incluyen se procesara la primer fila como encabezados
      */ 
 
-    public $mode = "csv";  //modo de procesamiento (csv, db, tab)
+    public $mode = "csv";  
+    /**
+     * @property $mode: Modo de definicion de datos
+     * 
+     * "csv" (defecto), "db", "tab" 
+     */
+
     public $updateNull = false; //flag para indicar si se deben actualizar valores nulos del source
     
     public $import = null; //referencia a la clase de importacion para acceder a atributos y datos adicionales
@@ -52,15 +58,21 @@ abstract class Import {
 
     public function element($i, $data, &$import){
     /**
-     * Metodo principal para definir elementos
-     * Un elemento es una estructura que posee un conjunto de datos para importar entidades
-     * Habitualmente un elemento define un unico juego de entidades relacionadas
-     * Si los parametros poseen mas de un juego de entidades, se recomienda sobrescribir element para definir varios elementos (uno por cada juego)
-     * Existe una clase abstracta Element que posee un conjunto de metodos de uso habitual para los elementos
+     * Metodo principal para definir elementos.
+     * 
+     * Un elemento es una estructura que posee un conjunto de datos para im-
+     * portar entidades.
+     * Habitualmente un elemento define un unico juego de entidades relaciona-
+     * das.
+     * Si los parametros poseen mas de un juego de entidades, se recomienda 
+     * sobrescribir element para definir varios elementos (uno por cada juego)
+     * Existe una clase abstracta Element que posee un conjunto de metodos de 
+     * uso habitual para los elementos
      */
 
       $element = $this->container->getImportElement($this->id);
       $element->import = $import; //referencia a la clase de importacion      
+      $element->index = $i;
       if($data === false) {
         $element->process = false;
         $element->logs->addLog("data", "error", "Los datos están vacíos o no pudieron combinarse");
@@ -72,12 +84,20 @@ abstract class Import {
         
     abstract public function identify();
     /**
-     * Se completa el atributo ids definiendo por cada entidad un identificador
-     * Cobra particular importancia el uso del atributo identifier de cada entidad
+     * Identificar entidades
      * 
-     * Ejemplo:
-     * {
-     *   ***** PERSONA (utiliza campo unico de identificacion) *****
+     * Recorre los elementos definidos y completa el atributo ids definiendo 
+     * por cada entidad un identificador. Habitualmente se utiliza el atributo
+     * "identifier".
+     * 
+     * Existen un conjunto de metodos para facilitar la identificacion:
+     *   idEntityFieldCheck: Definicion de id y chequeo de que ya no exista. 
+     * valor
+     *   idEntityField: Definicion de id sin chequeo.
+     * 
+     * @example 1: Persona se identifica con el dni y no debe existir en el 
+     * conjunto de datos, dos veces la misma persona
+     *   
      *   $this->ids["persona"] = [];
      *   foreach($this->elements as &$element){
      *     $dni = $element->entities["persona"]->numeroDocumento();
@@ -87,29 +107,29 @@ abstract class Import {
      *       continue;
      *     }
      *   }
-     *   
-     *   //OPCIONAL por si no se quiere definir dos veces la misma persona
-     *   if(in_array($dni, $this->ids["persona"])) $element->logs->addLog("persona","error","El número de documento ya existe");
-     *   
-     *   array_push($this->ids["persona"], $element->entities["persona"]->numeroDocumento());
      * 
-     *   ***** LUGAR (utiliza "identifier")*****
+     *   if(in_array($dni, $this->ids["persona"])) $element->logs->addLog("persona","error","El número de documento ya existe");
+     *   else array_push($this->ids["persona"], $element->entities["persona"]->numeroDocumento());
+     * 
+     * @example 2: Lugar utiliza un "identifier"
      *   $this->ids["lugar"] = [];
-     *   $element->entities["lugar"]->_set("identifier", 
-     *     $element->entities["lugar"]->distrito().UNDEFINED.
-     *     $element->entities["lugar"]->provincia()
-     *   );
+     *   foreach($this->elements as &$element){
+     *     $element->entities["lugar"]->_set("identifier", 
+     *       $element->entities["lugar"]->distrito().UNDEFINED.
+     *       $element->entities["lugar"]->provincia()
+     *     );
      *
-     *   if(!in_array($element->entities["lugar"]->_get("identifier"), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_get("identifier"));
-     * }
+     *     if(!in_array($element->entities["lugar"]->_get("identifier"), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_get("identifier"));
+     *   }
      */
 
     abstract public function query();
     /**
-     * Consulta de existencia de datos en la base de datos para evitar volver a ejecutar o actualizar datos existentes
+     * Consulta de existencia de datos en la base de datos para evitar volver 
+     * a ejecutar o actualizar datos existentes.
      * Los datos consultados se cargan en el atributo dbs
      * 
-     * Ejemplo: Puede utilizarse metodos predefinido queryEntityField
+     * @example Puede utilizarse metodos predefinido queryEntityField
      * {
      *   $this->queryEntityField("persona","numero_documento");
      *   $this->queryEntityField("alumno","identifier");
@@ -118,13 +138,24 @@ abstract class Import {
 
     abstract public function process();
     /**
-     * Procesamiento de datos: Define el SQL de actualizacion o insercion de datos
-     * Es en esta etapa que se realizan las relaciones
+     * Procesamiento de datos: Define el SQL de persistencia de datos.
      * 
-     * Ejemplo: Pueden utilizarse metodos predefinidos processElement, insertElement, updateElement
+     * Es en esta etapa que se realizan las relaciones entre las distintas en-
+     * tidades del elemento, ya que se van definiendo los ids de la base de 
+     * datos.
      * 
-     * {
-     *   ***** PERSONA *****
+     * Pueden utilizarse metodos predefinidos:
+     *   processElement: Insercion o actualizacion.
+     *   insertElement: Insercion.
+     *   updateElement: Actualizacion.
+     *   existElement: Chequeo de existencia
+     * 
+     * Para saber si un elemento puede ser procesado, se utiliza el atributo
+     * booleano $element->process. Si se detecta algun error en el elemento,
+     * en algun momento de la ejecucion de la importacion $element->process
+     * se carga en false.
+     * 
+     * @example: Procesamiento de persona
      *   foreach($this->elements as &$element) {
      *     if(!$element->process) continue;
      *
@@ -139,14 +170,14 @@ abstract class Import {
      *     }
      *    $this->processElement($element, "persona", $dni)
      * 
-     *   ***** INSCRIPCION (ejemplo de relacion) *****
+     * @example 2: Procesamiento de inscripcion
      *   foreach($this->elements as &$element) {
      *     if(!$element->process) continue;
      *     $element->entities["inscripcion"]->setAlumno($element->entities["persona"]->id());
      *     $this->processElement("inscripcion", $element->entities, $element->entities["inscripcion"]->_identifier());
      *   }
      * 
-     *   ***** EXISTENCIA *****
+     * @example 3: Chequeo de existencia
      *   foreach($this->elements as &$element) {
      *     if(!key_exists($value, $this->dbs[$id])){
      *       $element->process = false
@@ -240,7 +271,15 @@ abstract class Import {
     }
   }
 
-  public function defineDb(){
+  protected function defineDb(){
+    /**
+     * Datos definidos desde la base datos
+     * 
+     * Requieren un metodo adicional para definir el atributo source. Habi-
+     * tualmente se define el metodo defineSource que accede a la base de
+     * datos.
+     */
+    
     if(empty($this->source)) throw new Exception("No existen datos para procesar");
 
     if(empty($this->headers)) {
@@ -255,16 +294,30 @@ abstract class Import {
   }
     
   public function define(){
-      switch($this->mode){
-          case "tab":
-              $this->defineTab();
-          break;
-          case "db":
-            $this->defineDb();
-          break;
-          default:
-              $this->defineCsv();
-      }
+    /**
+     * Definicion de elementos que seran utilizados en la importacion
+     * 
+     * Invoca al metodo element() para definir un elemento.
+     * 
+     * Recorre los datos de entrada y los acomoda para definir elementos. Cada
+     * elemento se traducira en un juego de datos para ser importado.
+     */
+    switch($this->mode){
+      case "tab": $this->defineTab(); break;
+      /**
+       * Datos enviados como parametros
+       */
+
+      case "db": $this->defineDb(); break;
+      /**
+       * Datos definidos desde la base datos
+       */
+
+      default: $this->defineCsv();
+      /**
+       * Datos enviados en un archivo csv
+       */
+    }
   }
 
   public function persist(){
@@ -280,9 +333,12 @@ abstract class Import {
  
   protected function queryEntityField($entityName, $field, $id = null){
     /**
-     * Consulta a la base de datos de la entidad $entityName
-     * Utilizando el campo field (supuestamente unico) y el valor almacenado de field desde el atributo ids
-     * Todos los resultados los carga en el atributo dbs que indica los valores que fueron extraidos de la base de datos
+     * Consulta a la base de datos de la entidad $entityName.
+     * 
+     * Utilizando el campo $field (supuestamente unico) y el valor almacenado 
+     * de field desde el atributo "ids".
+     * Todos los resultados los carga en el atributo "dbs" que indica los va-
+     * lores que fueron extraidos de la base de datos.
      */
     if(!$id) $id = $entityName;
     $this->dbs[$id] = [];

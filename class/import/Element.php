@@ -6,9 +6,12 @@ abstract class ImportElement { //2
    * Elemento a importar
    */
 
-  public $index; //identificacion del elemento
+  public $index;
   /**
-   * Habitualmente es un numero incremental pero cuando los datos de entrada indentifican mas de un juego de entidades se utiliza un string
+   * @property $index: Identificacion del elemento.
+   *  
+   * Habitualmente es un numero incremental pero cuando los datos de entrada 
+   * indentifican mas de un juego de entidades se utiliza un string.
    */
   public $logs;
   public $process = true;

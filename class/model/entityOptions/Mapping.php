@@ -19,6 +19,12 @@ class MappingEntityOptions extends EntityOptions {
   public function count(){ return "COUNT(*)"; }
   
   public function identifier(){
+    /**
+     * Concatenacion de campos que permiten identificar univocamente a la en-
+     * tidad.
+     * 
+     * Pueden ser campos de relaciones.
+     */
     $entity = $this->container->getEntity($this->entityName);  
     if(empty($entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->container->getEntity($this->entityName)->getName()); 
     $identifier = [];
