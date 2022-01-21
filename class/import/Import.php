@@ -331,7 +331,7 @@ abstract class Import {
     if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
   }
  
-  protected function queryEntityField($entityName, $field, $id = null){
+  protected function queryEntityField($entityName, $field = "identifier", $id = null){
     /**
      * Consulta a la base de datos de la entidad $entityName.
      * 
@@ -358,6 +358,12 @@ abstract class Import {
   }
 
   public function existElement(&$element, string $entityName, string $fieldName = "identifier", string $id = null){
+    /**
+     * Chequear que la entidad exista si o si en la base de datos
+     * 
+     * En el caso de que exista se carga el id.
+     * En el caso de que no exista se carga un log con el error.
+     */
     $value = $element->entities[$entityName]->_get($fieldName);
 
     if(empty($id)) $id = $entityName;
@@ -374,12 +380,18 @@ abstract class Import {
     return $value;    
   }
 
-  public function processElement(&$element, $entityName, $fieldName = "identifier", $id = null, $updateMode = true){
+  public function processElement(&$element, $entityName, $fieldName = "identifier", $updateMode = true, $id = null){
     /**
      * Procesamiento de una entidad del elemento
      * 
+     * Si la entidad existe se realiza una comparacion para determinada si debe ser actualizada
+     * Si la entidad no existe se inserta
+     * 
      * @param $entityName Nombre de la entidad
      * @param $id Identificador auxiliar de la entidad
+     * @param $updateMode: 
+     *   true En base al resultado de la comparacion, actualiza.
+     *   false En base al resultado de la comparacion, avisa mediante log.
      */
 
     if(empty($id)) $id = $entityName;
@@ -396,7 +408,7 @@ abstract class Import {
       if(!$element->insert($entityName, $id)) return false;
     }
 
-    return $value;
+    return $element->entities[$id]->_get("id");
   }
 
   public function insertElement(&$element, $entityName, $fieldName = "identifier", $id = null){
