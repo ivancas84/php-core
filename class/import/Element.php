@@ -21,6 +21,7 @@ abstract class ImportElement { //2
   public $container;
   public $updateMode = true; //actualizar existentes
   public $updateNull = true; //actualizar valores nulos
+  public $notCompare = []; //fields a ignorar en la comparacion
 
   public function id(){
     $fields = [];
@@ -95,6 +96,7 @@ abstract class ImportElement { //2
     $b = $existent->_toArray("sql");
     $compare = [];
     foreach($a as $ka => $va) {
+      if(key_exists($id, $this->notCompare) && in_array($ka, $this->notCompare[$id])) continue;
       if((!$updateNull && (is_null($va) || $va == "null")) || !key_exists($ka, $b)) continue;
       if($b[$ka] !== $va) array_push($compare, $ka);
     }
