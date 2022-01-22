@@ -91,13 +91,13 @@ class ValueEntityOptions extends EntityOptions {
   }
 
   protected function _setDatetime($fieldName, $p) {
-    if(!is_null($p) && !($p instanceof DateTime)) $p = new SpanishDateTime($p);
+    if(!empty($p) && !($p instanceof DateTime)) $p = new SpanishDateTime($p);
     if($p instanceof DateTime) $p->setTimeZone(new DateTimeZone(date_default_timezone_get()));
     return $this->value[$fieldName] = $p;
   }
 
   protected function _setYear($fieldName, $p){
-      if(!is_null($p) && !($p instanceof DateTime)) {
+      if(!empty($p) && !($p instanceof DateTime)) {
         $p = (strlen($p) == 4) ? SpanishDateTime::createFromFormat('Y', $p) : new SpanishDateTime($p);
       }
       if($p instanceof DateTime) $p->setTimeZone(new DateTimeZone(date_default_timezone_get()));
