@@ -75,35 +75,69 @@ abstract class ImportElement { //2
     if(Validation::is_empty($this->entities[$id]->_get("id"))) $this->entities[$id]->_set("id",uniqid());
     $this->entities[$id]->_call("setDefault");
     $this->sql .= $this->container->getSqlo($entityName)->insert($this->entities[$id]->_toArray("sql"));
-    return true;
   }
 
-  public function update($entityName, $existente, $id = "", $updateMode = true){
-    if(empty($id)) $id = $entityName;
-    if($updateMode) {
-      $this->logs->addLog($id,"info","Registro existente, se actualizara campos");
-      $this->sql .= $this->container->getSqlo($entityName)->update($this->entities[$id]->_toArray("sql"));
-    } else {
-      $this->process = false;
-      $this->logs->addLog($id,"error","El registro debe ser actualizado, comparar");
-      return false;
-    }
+
+  public function compareUpdate($entityName, $id, $updateMode, $name){
+    /**
+     * Realiza la comparacion y actualiza
+     * 
+     * Este metodo se define de forma independiente para facilitar su reimplementacion
+     * @param $id Valor del identificador
+     * @param $updateMode: Modo de actualizacion 
+     *   true actualiza
+     *   false error log indicando que debe actualizarse)
+     * @param $name Nombre alternativo de la entityName que es utilizado para identificar la entidad
+     */
+    $existente = $this->container->getValue($entityName);
+    $existente->_fromArray($this->import->dbs[$name][$id], "set");
+    $this->entities[$name]->_set("id",$existente->_get("id"));
+    $compare = $this->compare($name, $existente);  
+    return $this->update($compare, $entityName, $existente, $name);
+  }
+
+  public function update($compare, $entityName, $existente, $name){
+    /**
+     * Analiza el resultado de la comparacion y decide la accion a realizar
+     * 
+     * Se espera que este metodo sea predefinido en funcion de las necesidades
+     * de cada entidad
+     * 
+     * Este metodo se define de forma independiente para facilitar su reimplementacion
+     * Es comun tomar decisiones dependiendo del resultado de la comparacoin
+     * Como se puede apreciar en el parametro se incluye $existente pero no se utiliza
+     * esto es porque es habitual reimplementar update y realizar comparaciones
+     * adicionales en funcion del valor.
+     **/
+    if(!empty($compare)) throw new Exception("El registro debe ser actualizado, comparar");
+    // $this->logs->addLog($name,"info","Registro existente, se actualizara campos");
+    // $this->sql .= $this->container->getSqlo($entityName)->update($this->entities[$name]->_toArray("sql"));
+   
+
+
     return true;
+    
   }
 
   public function compare(string $id, $existent, $updateNull = false){
+    /**
+     * @return 
+     *   false si algo falla (es mas que nada si se reimplementa)
+     *   array vacio si los campos son iguales
+     *   array de strings con los campos diferentes
+     */
     $a = $this->entities[$id]->_toArray("sql");
     $b = $existent->_toArray("sql");
     $compare = [];
     foreach($a as $ka => $va) {
-      if(key_exists($id, $this->notCompare) && in_array($ka, $this->notCompare[$id])) continue;
       if((!$updateNull && (is_null($va) || $va == "null")) || !key_exists($ka, $b)) continue;
       if($b[$ka] !== $va) array_push($compare, $ka);
     }
-    return $this->compareResult($compare, $id, $a, $b);
+    $this->logCompare($compare, $id, $a, $b);
+    return $compare;
   }
 
-  public function compareResult($compare, $id, $a, $b){
+  public function logCompare($compare, $id, $a, $b){
     if(empty($compare)) {
       $this->logs->addLog($id,"info","Registro existente, no será actualizado");
     } else{
@@ -115,7 +149,6 @@ abstract class ImportElement { //2
 
       $this->logs->addLog($id,"info","Registro existente, valores diferentes " . implode(", ", $cc));
     }
-    return $compare;
   }
 
   public function resetAndCheckEntities(){

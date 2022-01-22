@@ -380,7 +380,7 @@ abstract class Import {
     return $value;    
   }
 
-  public function processElement(&$element, $entityName, $fieldName = "identifier", $updateMode = true, $id = null){
+  public function processElement(&$element, $entityName, $fieldName = "identifier", $updateMode = true, $name = null){
     /**
      * Procesamiento de una entidad del elemento
      * 
@@ -388,27 +388,25 @@ abstract class Import {
      * Si la entidad no existe se inserta
      * 
      * @param $entityName Nombre de la entidad
-     * @param $id Identificador auxiliar de la entidad
+     * @param $name Identificador auxiliar de la entidad
      * @param $updateMode: 
      *   true En base al resultado de la comparacion, actualiza.
      *   false En base al resultado de la comparacion, avisa mediante log.
      */
-
-    if(empty($id)) $id = $entityName;
-    $value = $element->entities[$id]->_get($fieldName);
-    if(key_exists($value, $this->dbs[$id])) {
-      $existente = $this->container->getValue($entityName);
-      $existente->_fromArray($this->dbs[$id][$value], "set");
-      $element->entities[$id]->_set("id",$existente->_get("id"));
-      $compare = $element->compare($id, $existente);  
-      if(!empty($compare)) {
-        if(!$element->update($entityName, $existente, $id, $updateMode)) return false;
+    try {
+      if(empty($name)) $name = $entityName;
+      $value = $element->entities[$name]->_get($fieldName);
+      if(key_exists($value, $this->dbs[$name])) {
+        if(!$element->compareUpdate($entityName, $value, $updateMode, $name)) return false;
+      } else {        
+        if(!$element->insert($entityName, $name)) return false;
       }
-    } else {        
-      if(!$element->insert($entityName, $id)) return false;
+      return $element->entities[$name]->_get("id");
+    } catch (Exception $e) {
+      $element->process = false;
+      $element->logs->addLog($name,"error",$e->getMessage());
+      return false;
     }
-
-    return $element->entities[$id]->_get("id");
   }
 
   public function insertElement(&$element, $entityName, $fieldName = "identifier", $id = null){
@@ -418,18 +416,26 @@ abstract class Import {
      * @param $value Valor de la entidad que la identifica univocamente
      * @param @id Identificador auxiliar de la entidad
      */
-    if(empty($id)) $id = $entityName;
-    $value = $element->entities[$id]->_get($fieldName);
+    try{
+      if(empty($id)) $id = $entityName;
+      $value = $element->entities[$id]->_get($fieldName);
 
-    if(!key_exists($value, $this->dbs[$id])) {
-      if(!$element->insert($entityName, $id)) return false;
-    } else {
-      $existente = $this->container->getValue($entityName);
-      $existente->_fromArray($this->dbs[$id][$value], "set");
-      $element->entities[$id]->_set("id",$existente->_get("id"));
+      if(!key_exists($value, $this->dbs[$id])) {
+        $element->insert($entityName, $id);
+      } else {
+        $existente = $this->container->getValue($entityName);
+        $existente->_fromArray($this->dbs[$id][$value], "set");
+        $element->entities[$id]->_set("id",$existente->_get("id"));
+      }
+      
+      return $value;
+
+    } catch (Exception $e) {
+      $element->process = false;
+      $element->logs->addLog($name,"error",$e->getMessage());
+      return false;
     }
     
-    return $value;
   }
 
   public function idEntityFieldCheck($id, $identifier, &$element){
