@@ -397,9 +397,9 @@ abstract class Import {
       if(empty($name)) $name = $entityName;
       $value = $element->entities[$name]->_get($fieldName);
       if(key_exists($value, $this->dbs[$name])) {
-        if(!$element->compareUpdate($entityName, $value, $updateMode, $name)) return false;
+        $element->compareUpdate($entityName, $value, $updateMode, $name);
       } else {        
-        if(!$element->insert($entityName, $name)) return false;
+        $element->insert($entityName, $name);
       }
       return $element->entities[$name]->_get("id");
     } catch (Exception $e) {
