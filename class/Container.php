@@ -18,6 +18,10 @@ class Container {
   static $controller = []; //no todos los controladores son singletones
   static $structure = false; //flag para indicar que se generaron todas las entidades
 
+  public function vendorAutoload(){
+    require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_ROOT . '/vendor/autoload.php');
+  }
+
   public function getDb() {
     if (isset(self::$db)) return self::$db;
     require_once("class/model/Ma.php");
@@ -91,6 +95,7 @@ class Container {
     return self::$field[$entity.$field] = $c; 
   }
 
+  
   protected function getInstanceFromDir($dir, $action, $entityName){
     $d = snake_case_to("xxYy", $dir);
     $D = snake_case_to("XxYy", $dir);
@@ -119,6 +124,11 @@ class Container {
   public function getScript($action, $entityName) {
     return $this->getInstanceFromDir("script",$action,$entityName);
   }
+
+  public function getPdf($action, $entityName) {
+    return $this->getInstanceFromDir("pdf",$action,$entityName);
+  }
+  
 
 
   public function getController($controller, $singleton = false){
