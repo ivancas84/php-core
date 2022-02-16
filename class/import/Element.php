@@ -78,7 +78,7 @@ abstract class ImportElement { //2
   }
 
 
-  public function compareUpdate($entityName, $id, $updateMode, $name){
+  public function compareUpdate($entityName, $id, $updateMode = true, $name = null){
     /**
      * Realiza la comparacion y actualiza
      * 
@@ -96,7 +96,7 @@ abstract class ImportElement { //2
     return $this->update($compare, $entityName, $existente, $name);
   }
 
-  public function update($compare, $entityName, $existente, $name){
+  public function update($compare, $entityName, $existente, $name, $updateNullExistent = false){
     /**
      * Analiza el resultado de la comparacion y decide la accion a realizar
      * 
@@ -109,9 +109,22 @@ abstract class ImportElement { //2
      * esto es porque es habitual reimplementar update y realizar comparaciones
      * adicionales en funcion del valor.
      **/
-    if(!empty($compare)) throw new Exception("El registro debe ser actualizado, comparar");
-    // $this->logs->addLog($name,"info","Registro existente, se actualizara campos");
-    // $this->sql .= $this->container->getSqlo($entityName)->update($this->entities[$name]->_toArray("sql"));
+    if(empty($compare)) {
+      $this->logs->addLog($name,"info","Registro existente, campos identicos, no se realizara actualizacion");
+      return;
+    }
+    
+    $compareAux = $compare;
+    if($updateNullExistent) {
+      $compareAux = [];
+      foreach($compare as $key){
+        if(!is_null($existente->_get($key))) array_push($compareAux, $key);
+      }
+    }  
+
+    if(!empty($compareAux)) throw new Exception("El registro debe ser actualizado, comparar");
+    $this->logs->addLog($name,"info","Registro existente, se actualizara campos");
+    $this->sql .= $this->container->getSqlo($entityName)->update($this->entities[$name]->_toArray("sql"));
    
 
 

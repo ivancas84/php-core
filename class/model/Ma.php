@@ -50,7 +50,6 @@ class Ma extends Db {
      * No se debe utilizar storage
      */
     $sql = $this->container->getSqlo($entity)->select($render);
-    
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
