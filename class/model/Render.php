@@ -257,7 +257,7 @@ class Render {
 
     foreach($uniqueFields as $field){
       foreach($params as $key => $value){
-        if($key == $field) {
+        if(($key == $field) && !empty($value)) {
           array_push($condition, [$key, "=", $value, "or"]);
         }
       }
