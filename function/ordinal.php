@@ -6,5 +6,6 @@ function ordinal(int $number){
   if ($number<=count ($ordinales)){
       return $ordinales[$number-1];
   }
-    return $number.'-esimo';
+  
+  return $number.'-esimo';
 }
