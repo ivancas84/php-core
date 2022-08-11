@@ -78,15 +78,12 @@ abstract class ImportElement { //2
   }
 
 
-  public function compareUpdate($entityName, $id, $updateMode = true, $name = null){
+  public function compareUpdate($entityName, $id, $name){
     /**
      * Realiza la comparacion y actualiza
      * 
      * Este metodo se define de forma independiente para facilitar su reimplementacion
      * @param $id Valor del identificador
-     * @param $updateMode: Modo de actualizacion 
-     *   true actualiza
-     *   false error log indicando que debe actualizarse)
      * @param $name Nombre alternativo de la entityName que es utilizado para identificar la entidad
      */
     $existente = $this->container->getValue($entityName);
@@ -105,22 +102,20 @@ abstract class ImportElement { //2
      * 
      * Este metodo se define de forma independiente para facilitar su reimplementacion
      * Es comun tomar decisiones dependiendo del resultado de la comparacoin
-     * Como se puede apreciar en el parametro se incluye $existente pero no se utiliza
-     * esto es porque es habitual reimplementar update y realizar comparaciones
-     * adicionales en funcion del valor.
      **/
     if(empty($compare)) {
       $this->logs->addLog($name,"info","Registro existente, campos identicos, no se realizara actualizacion");
       return;
     }
     
-    $compareAux = $compare;
     if($updateNullExistent) {
       $compareAux = [];
       foreach($compare as $key){
         if(!is_null($existente->_get($key))) array_push($compareAux, $key);
       }
-    }  
+    } else {
+      $compareAux = $compare;
+    }
 
     if(!empty($compareAux)) throw new Exception("El registro debe ser actualizado, comparar");
     $this->logs->addLog($name,"info","Registro existente, se actualizara campos");
@@ -134,6 +129,8 @@ abstract class ImportElement { //2
 
   public function compare(string $id, $existent, $updateNull = false){
     /**
+     * Comparacion para determinar si se actualiza o no
+     * 
      * @return 
      *   false si algo falla (es mas que nada si se reimplementa)
      *   array vacio si los campos son iguales
