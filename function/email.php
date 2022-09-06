@@ -16,7 +16,7 @@ function email($addresses, $subject, $body){
   $mail = new PHPMailer(true);
 
   //Server settings
-  $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      // Enable verbose debug output
+  //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      // Enable verbose debug output
   $mail->isSMTP();                                            // Send using SMTP
   $mail->SMTPAuth   = true;                                   // Enable SMTP authentication
   $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         // Enable TLS encryption; `PHPMailer::ENCRYPTION_SMTPS` encouraged
@@ -30,9 +30,9 @@ function email($addresses, $subject, $body){
 
   //Recipients
   $mail->setFrom("docentes@planfines2.com.ar", "Docentes CENS 462");
-  $mail->AddAddress("ivancas84@gmail.com", "Ivan Castañeda");
-  echo "voy a enviar";
-  //foreach($addresses as $email => $name) $mail->AddAddress($email, $name);
+  foreach($addresses as $email => $name) $mail->AddAddress($email, $name);
+  $mail->addBCC('docentes.cens462@gmail.com');
+
 
   // Content
   $mail->isHTML(true);                                  // Set email format to HTML
