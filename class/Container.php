@@ -191,13 +191,19 @@ class Container {
   }
 
   
-  public function getImportElement($entityName){
+  /**
+   * Obtener elemento de importacion
+   * 
+   * @param $import Clase de importacion
+   */
+  public function getImportElement($entityName, $import){
     $path = "class/import/" . snake_case_to("xxYy", $entityName) . "/Element.php";
     $className = snake_case_to("XxYy", $entityName)."ImportElement";    
     require_once($path);
     $c = new $className;
     $c->entityName = $entityName;
     $c->logs = $this->getTool("logs");
+    $c->import = $import;
     $c->container = $this;
     return $c;
   }
