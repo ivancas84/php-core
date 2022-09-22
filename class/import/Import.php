@@ -12,7 +12,6 @@ require_once("function/error_handler.php");
  * $container = new Container();
  * $import = $container->getImport("alumno");
  * $import->defineSource();
- * $import->pathSummary = $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
  * $import->main();
  */
 abstract class Import {
@@ -21,42 +20,25 @@ abstract class Import {
      */
 
     public $id; //identificacion de la importacion
-    public $start = 0; //comienzo
     public $source; //fuente de los datos a procesar
-    public $pathSummary; //directorio donde se almacena el resumen del procesamiento
-      //ej. $_SERVER["DOCUMENT_ROOT"] ."/".PATH_ROOT . "/info/import/" . $import->id;
-      //utilizando el mismo path se definen dos archivos, uno html con el resumen y otro sql con la sentencia ejecutada
-    
+    public $start = 0; //fila de comienzo del source
     public $headers; //encabezados
-    /**
-     *  si no se incluyen se procesara la primer fila como encabezados
-     */ 
-
-    public $mode = "csv";  
-    /**
-     * @property $mode: Modo de definicion de datos
-     * 
-     * "csv" (defecto), "db", "tab" 
-     */
-
-    public $updateNull = false; //flag para indicar si se deben actualizar valores nulos del source
     
-    public $import = null; //referencia a la clase de importacion para acceder a atributos y datos adicionales
     public $ids = []; //array asociativo con identificadores
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
     public $elements = []; //array de elementos a importar
-    public $db;
+    public $entityNames = []; //array asociativo que indica la entidad correspondiente a un nombre
     public $container;
     
     public function main(){
-      $this->define();
+      $this->config(); //utiliza element
+      $this->define(); //utiliza element
       $this->identify();
       $this->query();
       $this->process();
-      $this->persist();
+
     }
 
-    public function element($i, $data, &$import){
     /**
      * Metodo principal para definir elementos.
      * 
@@ -68,60 +50,61 @@ abstract class Import {
      * sobrescribir element para definir varios elementos (uno por cada juego)
      * Existe una clase abstracta Element que posee un conjunto de metodos de 
      * uso habitual para los elementos
+     * 
+     * @param $i Identificacion del elemento
+     * @param $data Juego de datos del elemento
      */
-
-      $element = $this->container->getImportElement($this->id);
-      $element->import = $import; //referencia a la clase de importacion      
+    public function element($i, $data){
+      $element = $this->container->getImportElement($this->id, $this);
       $element->index = $i;
-      if($data === false) {
-        $element->process = false;
-        $element->logs->addLog("data", "error", "Los datos están vacíos o no pudieron combinarse");
-      } else {
+      try{
+        if(empty($data)) throw new Exception("Datos vacios para el elemento ". $i);
         $element->setEntities($data);
+      } catch (Exception $exception){
+        $element->process = false;
+        $element->logs->addLog("element", "error", $exception->getMessage() . "(". $element->index .")");
       }
       array_push($this->elements, $element);
     }
-        
-    abstract public function identify();
+
+    /** 
+     * Configuracion inicial
+     * 
+     * Se definen entre otras cosas los identificadores de la entidad
+     * 
+     * @example Chequeo de existencia de valor
+     * public function config(){
+     *   if(Validation::is_empty($this->idComision)) throw new Exception("El id no se encuentra definido");
+     * }
+     * 
+     * @example Definir identificadores
+     * 
+     */
+    abstract public function config();
+    
+
+
     /**
      * Identificar entidades
      * 
      * Recorre los elementos definidos y completa el atributo ids definiendo 
-     * por cada entidad un identificador. Habitualmente se utiliza el atributo
-     * "identifier".
+     * por cada entidad un identificador previamente configurado.
      * 
-     * Existen un conjunto de metodos para facilitar la identificacion:
-     *   idEntityFieldCheck: Definicion de id y chequeo de que ya no exista. 
+     * Puede utilizar metodos de Element para facilitar:
+     *   identifyCheck: Definicion de id y chequeo de que ya no exista. 
      * valor
-     *   idEntityField: Definicion de id sin chequeo.
+     *   idEntity: Definicion de id sin chequeo.
      * 
      * @example 1: Persona se identifica con el dni y no debe existir en el 
      * conjunto de datos, dos veces la misma persona
      *   
-     *   $this->ids["persona"] = [];
      *   foreach($this->elements as &$element){
-     *     $dni = $element->entities["persona"]->numeroDocumento();
-     *     if(Validation::is_empty($dni)){
-     *       $element->process = false;                
-     *       $element->logs->addLog("persona", "error", "El número de documento no se encuentra definido");
-     *       continue;
-     *     }
-     *   }
-     * 
-     *   if(in_array($dni, $this->ids["persona"])) $element->logs->addLog("persona","error","El número de documento ya existe");
-     *   else array_push($this->ids["persona"], $element->entities["persona"]->numeroDocumento());
-     * 
-     * @example 2: Lugar utiliza un "identifier"
-     *   $this->ids["lugar"] = [];
-     *   foreach($this->elements as &$element){
-     *     $element->entities["lugar"]->_set("identifier", 
-     *       $element->entities["lugar"]->distrito().UNDEFINED.
-     *       $element->entities["lugar"]->provincia()
-     *     );
-     *
-     *     if(!in_array($element->entities["lugar"]->_get("identifier"), $this->ids["lugar"])) array_push($this->ids["lugar"], $element->entities["lugar"]->_get("identifier"));
+     *     if(!$element->process) continue;
+     *     $element->identifyCheck("persona");
      *   }
      */
+    abstract public function identify();
+    
 
     abstract public function query();
     /**
@@ -129,10 +112,10 @@ abstract class Import {
      * a ejecutar o actualizar datos existentes.
      * Los datos consultados se cargan en el atributo dbs
      * 
-     * @example Puede utilizarse metodos predefinido queryEntityField
+     * @example Puede utilizarse metodos predefinido queryEntity
      * {
-     *   $this->queryEntityField("persona","numero_documento");
-     *   $this->queryEntityField("alumno","identifier");
+     *   $this->queryEntity("persona","numero_documento");
+     *   $this->queryEntity("alumno","identifier");
      * }
      **/
 
@@ -225,10 +208,35 @@ abstract class Import {
     <br><br>";                          
         }
          
-        if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".html", $informe);
     
         echo $informe;
     }
+
+
+  public function define(){
+    /**
+     * Datos definidos utilizando "tab"
+     */
+    if(empty($this->source)) throw new Exception("Source vacio");
+    $source = explode("\n", $this->source);
+
+    if(empty($this->headers)) {
+        $this->headers = [];
+        foreach( preg_split('/\t+/', $source[0]) as $h) array_push($this->headers, trim($h));
+        if($this->start == 0) $this->start = 1;
+    } 
+
+    for($i = $this->start; $i < count($source); $i++){
+      if(empty($source[$i])) break;
+      $datos = [];
+                  
+      foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
+      //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
+      $e = @array_combine($this->headers, $datos);
+      $this->element($i + $this->start, $e);                  
+      //if($i==100) break;           
+    }
+  }
 
   public function defineCsv(){
     if (($gestor = fopen("../../tmp/" . $this->source . ".csv", "r")) !== FALSE) {
@@ -240,44 +248,17 @@ abstract class Import {
           $i++;
           if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
           $e = array_combine($encabezados, $datos);
-          $this->element($i, $e, $this);                  
+          $this->element($i, $e);                  
           //if($i==100) break;           
       }
       fclose($gestor);
     }
   }
 
-  public function defineTab(){
-
-    $source = explode("\n", $this->source);
-
-    if(empty($this->headers)) {
-        $this->headers = [];
-        foreach( preg_split('/\t+/', $source[0]) as $h) array_push($this->headers, trim($h));
-        $start = 1;
-    } else {
-        $start = 0;
-    }
-    
-    for($i = $start; $i < count($source); $i++){
-      if(empty($source[$i])) break;
-      $datos = [];
-                  
-      foreach( explode("\t", $source[$i]) as $d) array_push($datos, trim($d));
-      //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $datos = array_map("utf8_encode", $datos);
-      $e = @array_combine($this->headers, $datos);
-      $this->element($i + $this->start, $e, $this);                  
-      //if($i==100) break;           
-    }
-  }
-
+  
   protected function defineDb(){
     /**
      * Datos definidos desde la base datos
-     * 
-     * Requieren un metodo adicional para definir el atributo source. Habi-
-     * tualmente se define el metodo defineSource que accede a la base de
-     * datos.
      */
     
     if(empty($this->source)) throw new Exception("No existen datos para procesar");
@@ -293,32 +274,6 @@ abstract class Import {
     }
   }
     
-  public function define(){
-    /**
-     * Definicion de elementos que seran utilizados en la importacion
-     * 
-     * Invoca al metodo element() para definir un elemento.
-     * 
-     * Recorre los datos de entrada y los acomoda para definir elementos. Cada
-     * elemento se traducira en un juego de datos para ser importado.
-     */
-    switch($this->mode){
-      case "tab": $this->defineTab(); break;
-      /**
-       * Datos enviados como parametros
-       */
-
-      case "db": $this->defineDb(); break;
-      /**
-       * Datos definidos desde la base datos
-       */
-
-      default: $this->defineCsv();
-      /**
-       * Datos enviados en un archivo csv
-       */
-    }
-  }
 
   public function persist(){
     $sql = "";
@@ -328,10 +283,23 @@ abstract class Import {
         $sql .= $element->sql;
       }
     }
-    if(!empty($this->pathSummary)) file_put_contents($this->pathSummary . ".sql", $sql);
+  }
+
+  public function sql(){
+    $sql = "";
+    foreach($this->elements as $element) {
+      if($element->process) {
+        $sql .= $element->sql;
+      }
+    }
+    return $sql;
   }
  
-  protected function queryEntityField($entityName, $field = "identifier", $id = null){
+  public function getEntityName($name){
+    return (in_array($name, $this->entityNames)) ? $this->entityNames[$name] : $name;
+  }
+
+  protected function queryEntity($name){
     /**
      * Consulta a la base de datos de la entidad $entityName.
      * 
@@ -340,131 +308,27 @@ abstract class Import {
      * Todos los resultados los carga en el atributo "dbs" que indica los va-
      * lores que fueron extraidos de la base de datos.
      */
-    if(!$id) $id = $entityName;
-    $this->dbs[$id] = [];
-    if(empty($this->ids[$id])) return;
+    $this->dbs[$name] = [];
+    if(empty($this->ids[$name])) throw new Exception("query error: No se encuentran definidos los identificadores de " . $name);
 
-    $render = new Render();
-    $render->setFields([$field]);
+    $entityName = $this->getEntityName($name);
+    $render = $this->container->getRender($entityName);
+    $render->setFields(["identifier"]);
     $render->setSize(false);
-    $render->addCondition([$field,"=",$this->ids[$id]]);
+    $render->addCondition(["identifier","=",$this->ids[$name]]);
     $rows = $this->container->getDb()->all($entityName, $render);
 
     //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
-    $this->dbs[$id] = array_combine_key(
+    $this->dbs[$name] = array_combine_key(
       $rows,
-      $field
+      "identifier"
     );
   }
 
-  public function existElement(&$element, string $entityName, string $fieldName = "identifier", string $id = null){
-    /**
-     * Chequear que la entidad exista si o si en la base de datos
-     * 
-     * En el caso de que exista se carga el id.
-     * En el caso de que no exista se carga un log con el error.
-     */
-    $value = $element->entities[$entityName]->_get($fieldName);
 
-    if(empty($id)) $id = $entityName;
 
-    if(!key_exists($value, $this->dbs[$id])){
-      $element->process = false;
-      $element->logs->addLog($entityName, "error", "No existe " . $entityName . " en la base de datos");
-      return false;
-    }
-    $existente = $this->container->getValue($entityName);
-    $existente->_fromArray($this->dbs[$id][$value], "set");
-    $element->entities[$entityName]->_set("id",$existente->_get("id"));
-    //$element->logs->addLog($entityName, "info", "Registro existente, no será actualizado");
-    return $value;    
-  }
 
-  public function processElement(&$element, $entityName, $fieldName = "identifier", $updateMode = true, $name = null){
-    /**
-     * Procesamiento de una entidad del elemento
-     * 
-     * Si la entidad existe se realiza una comparacion para determinada si debe ser actualizada
-     * Si la entidad no existe se inserta
-     * 
-     * @param $entityName Nombre de la entidad
-     * @param $name Identificador auxiliar de la entidad
-     * @param $updateMode: 
-     *   true En base al resultado de la comparacion, actualiza.
-     *   false En base al resultado de la comparacion, avisa mediante log.
-     */
-    try {
-      if(empty($name)) $name = $entityName;
-      $value = $element->entities[$name]->_get($fieldName);
-      if(key_exists($value, $this->dbs[$name])) {
-        $element->compareUpdate($entityName, $value, $name);
-      } else {        
-        $element->insert($entityName, $name);
-      }
-      return $element->entities[$name]->_get("id");
-    } catch (Exception $e) {
-      $element->process = false;
-      $element->logs->addLog($name,"error",$e->getMessage());
-      return false;
-    }
-  }
-
-  public function insertElement(&$element, $entityName, $fieldName = "identifier", $id = null){
-    /**
-     * Si no existe lo inserta, nunca actualiza
-     * @param $entityName Nombre de la entidad
-     * @param $value Valor de la entidad que la identifica univocamente
-     * @param @id Identificador auxiliar de la entidad
-     */
-    try{
-      if(empty($id)) $id = $entityName;
-      $value = $element->entities[$id]->_get($fieldName);
-
-      if(!key_exists($value, $this->dbs[$id])) {
-        $element->insert($entityName, $id);
-      } else {
-        $existente = $this->container->getValue($entityName);
-        $existente->_fromArray($this->dbs[$id][$value], "set");
-        $element->entities[$id]->_set("id",$existente->_get("id"));
-      }
-      
-      return $value;
-
-    } catch (Exception $e) {
-      $element->process = false;
-      $element->logs->addLog($name,"error",$e->getMessage());
-      return false;
-    }
-    
-  }
-
-  public function idEntityFieldCheck($id, $identifier, &$element){
-    /**
-     * Carga de $this->ids[$id] = $identifier correspondiente a $element
-     * Si ya existe $identifier, dispara error de Valor duplicado
-     */
-    if(Validation::is_empty($identifier)) {
-      $element->process = false;                
-      $element->logs->addLog($id, "error", "El identificador de " . $id . " esta vacio" );
-    }
-    if(!key_exists($id, $this->ids)) $this->ids[$id] = [];
-    if(in_array($identifier, $this->ids[$id])) {
-      $element->logs->addLog($id,"error"," Valor duplicado");
-      $element->process = false;
-      return false;       
-    }
-    array_push($this->ids[$id], $identifier);
-    return true;
-  }
-
-  public function idEntityField($entityName, $identifier){
-    /**
-     * Carga de $this->ids[$id] = $identifier correspondiente a $element
-     */
-    if(Validation::is_empty($identifier)) throw new Exception ("Identificador vacio");
-    if(!key_exists($entityName, $this->ids)) $this->ids[$entityName] = [];
-    if(!in_array($identifier, $this->ids[$entityName])) array_push($this->ids[$entityName], $identifier);
-  }
+  
 
 
 }
