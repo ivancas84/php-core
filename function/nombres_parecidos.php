@@ -10,12 +10,19 @@ function nombres_parecidos($nombre1, $nombre2, $longitud = null){
    * por ejemplo si se considera que mirta es la misma persona que mirtha, se puede establecer una longitud de 4
    */
 
+  if(empty($nombre1)) throw new Exception("Nombre 1 vacio");
+  if(empty($nombre2)) throw new Exception("Nombre 2 vacio");
+
   $n1 = mb_strtoupper(
-    str_replace_name($nombre1),
+    str_replace_name(
+      preg_replace('/\s+/', ' ', $nombre1)
+    ),
     "UTF-8"
   );
   $n2 = mb_strtoupper(
-    str_replace_name($nombre2),
+    str_replace_name(
+      preg_replace('/\s+/', ' ', $nombre2)
+    ),
     "UTF-8"
   );
   
@@ -24,10 +31,14 @@ function nombres_parecidos($nombre1, $nombre2, $longitud = null){
   
   foreach($array1 as $a1){
     if(!$longitud) $longitud = strlen($a1);
+
     foreach($array2 as $a2){
       $s = substr($a1, 0, $longitud);
+      if(empty($s)) continue;
       $pos = strpos($a2, $s);
-      if($pos !== false) return true;
+      if($pos !== false) {
+        return true;
+      }
     }
   }
   
