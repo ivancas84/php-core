@@ -56,20 +56,31 @@ class EntitySqlo { //2
     return implode(', ', $fieldsQuery_);
   }
 
-  public function select(Render $render) {
-    $fieldsQuery = $this->fieldsQuery($render);
+  protected function groupBy(){
+    $fields = $render->getGroup();
 
-    $group_ = [];
-    if(!empty($render->getGroup())){
-      foreach($render->getGroup() as $field){
-        $f = $this->container->getRel($this->entityName)->mapping($field);
-        array_push($group_, $f);
+    $fieldsQuery_ = [];
+    foreach($fields as $key => $fieldName){
+      if(is_array($fieldName)){
+        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
+        $f = $key;
+      } else {
+        $map = $this->mapping($fieldName);
+        $f = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
       }
+      array_push($fieldsQuery_, $f);
     }
 
+    $group_ = implode(', ', $fieldsQuery_);
     $group = empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
 ";
 
+  }
+
+
+  public function select(Render $render) {
+    $fieldsQuery = $this->fieldsQuery($render);
+    $group = $this->groupBy($render);
     $having_ = $this->container->getSql($this->entityName)->having($render);
     $having = empty($having_) ? "" : "HAVING {$having_}
 ";
