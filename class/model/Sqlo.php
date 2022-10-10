@@ -56,10 +56,10 @@ class EntitySqlo { //2
     return implode(', ', $fieldsQuery_);
   }
 
-  protected function groupBy(){
+  protected function groupBy(Render $render){
     $fields = $render->getGroup();
 
-    $fieldsQuery_ = [];
+    $group_ = [];
     foreach($fields as $key => $fieldName){
       if(is_array($fieldName)){
         if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
@@ -68,11 +68,10 @@ class EntitySqlo { //2
         $map = $this->mapping($fieldName);
         $f = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
       }
-      array_push($fieldsQuery_, $f);
+      array_push($group_, $f);
     }
 
-    $group_ = implode(', ', $fieldsQuery_);
-    $group = empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
+    return empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
 ";
 
   }
