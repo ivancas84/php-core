@@ -182,6 +182,10 @@ class Render {
     $this->group = $group;
     return $this;
   }
+  public function addGroup (array $group = null) { 
+    $this->group = array_unique(array_merge($this->group, $group)); 
+    return $this;
+  }
   public function getGroup () { return $this->group; }
 
   public function setHaving (array $having = null) { 
