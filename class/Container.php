@@ -1,6 +1,7 @@
 <?php
 
 require_once("function/snake_case_to.php");
+require_once("class/model/Entity.php");
 
 class Container {
   /**
@@ -40,28 +41,31 @@ class Container {
   public function getStructure(){
     if(self::$structure) return self::$entity;
     require_once("function/get_entity_names.php");
-    foreach(get_entity_names() as $entityName) $this->getEntity($entityName);
+    foreach(get_entity_names() as $entityName){
+      $this->getEntity($entityName);
+    }
     self::$structure = true;
     return self::$entity;
   }
 
   public function getEntity($entityName){
+    
     if (isset(self::$entity[$entityName])) return self::$entity[$entityName];
 
-    $dir = "class/model/entity/";
-    $name = snake_case_to("XxYy", $entityName) . ".php";
+    self::$entity[$entityName] = new Entity;
+    self::$entity[$entityName]->container = $this;
 
-    if((@include_once $dir.$name) == true) 
-      $className = snake_case_to("XxYy", $entityName) . "Entity";
-    else{      
-      require_once($dir."_".$name);
-      $className = "_".snake_case_to("XxYy", $entityName) . "Entity";
-    }
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "_entities.json");
+    $array = json_decode($string, true);
+    self::$entity[$entityName]->fromArray($array[$entityName]);
     
-    $c = new $className;
-    $c->container = $this;
-    self::$entity[$entityName] = $c; //se asigna previamente como clase estatica antes de llamar a la estructura, la estructura poseera tambien la entidad
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entities.json");
+    $array = json_decode($string, true);
+
+    if(array_key_exists($entityName, $array)) self::$entity[$entityName]->fromArray($array[$entityName]);
+    
     self::$entity[$entityName]->structure = $this->getStructure();
+
     return self::$entity[$entityName];
   }
 

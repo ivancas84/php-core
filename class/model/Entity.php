@@ -6,7 +6,7 @@ require_once("function/snake_case_to.php");
  * Esta clase no deberia poseer seters publicos. Una vez definidos sus atributos, no deberian poder modificarse.
  * Entity debe poseer toda la configuracion necesaria, no importa el contexto en que se este trabajando. Si un determinado contexto posee cierta configuracion se define en la clase Entity, por ejemplo, el atributo "schema" es exclusivo de un contexto de acceso a traves de Sistemas de Administracion de Base de Datos.
  */
-abstract class Entity {
+class Entity {
 
   public $structure = NULL; //array. Estructura de tablas, se asigna en el contenedor.
 
@@ -76,6 +76,12 @@ abstract class Entity {
    */
 
   public $container;
+
+  public function fromArray(array $array){
+    foreach ($array as $key => $value) {
+        $this->$key = $value;
+    }
+  }
 
   /**
    * Metodos para facilitar la sintaxis del sql
