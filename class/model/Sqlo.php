@@ -143,7 +143,7 @@ WHERE id IN ({$ids_});
      * El conjunto de valores debe estar previamente formateado
      */
 
-    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusiveAdmin($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesAdmin($this->container->getEntity($this->entityName));
     $sql = "
   INSERT INTO " . $this->container->getEntity($this->entityName)->sn_() . " (";    
     $sql .= implode(", ", $fns);    
@@ -161,7 +161,7 @@ VALUES ( ";
     $sql = "
 UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
 ";   
-    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusiveAdmin($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesAdmin($this->container->getEntity($this->entityName));
     foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
     $sql = substr($sql, 0, -2); //eliminar ultima coma
 
