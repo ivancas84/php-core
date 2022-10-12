@@ -59,11 +59,10 @@ class EntityRel {
     if($c = $this->container->getConditionAux($this->entityName)->_($field, $option, $value)) return $c;
   }
 
-
+  /**
+   * Array de nombres de campos definidos entidad principal y sus relaciones, de la forma fieldId-fieldName
+   */
   public function fieldNames(){
-    /**
-     * Array de nombres de campos definidos entidad principal y sus relaciones, de la forma prefix-field
-     */
     $fieldNames = $this->container->getEntity($this->entityName)->getFieldNames();
     foreach(get_entity_rel($this->entityName) as $prefix => $value){
       $fieldNames = array_unique(

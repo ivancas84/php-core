@@ -29,18 +29,10 @@ class StructTools {
     return $fields;
   }
 
-  public function getFieldNamesExclusive($entity){ //pk, nf, fk
+  public function getFieldNamesAdmin($entity){ //pk, nf, fk
     $names = [];
     foreach($entity->getFields() as $field) {
-      if($field->isExclusive()) array_push($names, $field->getName());
-    }
-    return $names;
-  }
-
-  public function getFieldNamesExclusiveAdmin($entity){ //pk, nf, fk
-    $names = [];
-    foreach($entity->getFields() as $field) {
-      if($field->isExclusive() && $field->isAdmin()) array_push($names, $field->getName());
+      if($field->isAdmin()) array_push($names, $field->getName());
     }
     return $names;
   }

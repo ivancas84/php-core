@@ -56,20 +56,30 @@ class EntitySqlo { //2
     return implode(', ', $fieldsQuery_);
   }
 
-  public function select(Render $render) {
-    $fieldsQuery = $this->fieldsQuery($render);
+  protected function groupBy(Render $render){
+    $fields = $render->getGroup();
 
     $group_ = [];
-    if(!empty($render->getGroup())){
-      foreach($render->getGroup() as $field){
-        $f = $this->container->getRel($this->entityName)->mapping($field);
-        array_push($group_, $f);
+    foreach($fields as $key => $fieldName){
+      if(is_array($fieldName)){
+        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
+        $f = $key;
+      } else {
+        $map = $this->mapping($fieldName);
+        $f = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
       }
+      array_push($group_, $f);
     }
 
-    $group = empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
+    return empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
 ";
 
+  }
+
+
+  public function select(Render $render) {
+    $fieldsQuery = $this->fieldsQuery($render);
+    $group = $this->groupBy($render);
     $having_ = $this->container->getSql($this->entityName)->having($render);
     $having = empty($having_) ? "" : "HAVING {$having_}
 ";
@@ -133,7 +143,7 @@ WHERE id IN ({$ids_});
      * El conjunto de valores debe estar previamente formateado
      */
 
-    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusiveAdmin($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesAdmin($this->container->getEntity($this->entityName));
     $sql = "
   INSERT INTO " . $this->container->getEntity($this->entityName)->sn_() . " (";    
     $sql .= implode(", ", $fns);    
@@ -151,7 +161,7 @@ VALUES ( ";
     $sql = "
 UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
 ";   
-    $fns = $this->container->getController("struct_tools")->getFieldNamesExclusiveAdmin($this->container->getEntity($this->entityName));
+    $fns = $this->container->getController("struct_tools")->getFieldNamesAdmin($this->container->getEntity($this->entityName));
     foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
     $sql = substr($sql, 0, -2); //eliminar ultima coma
 

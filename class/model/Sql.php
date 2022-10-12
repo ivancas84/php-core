@@ -155,8 +155,8 @@ class EntitySql {
     return $this->container->getEntity($this->entityName)->sn_();
  
  /*
- $fieldNamesExclusive = $this->container->getController("struct_tools")->getFieldNamesExclusive();
- $fields = implode(",", $this->container->getFieldAlias($this->entityName, $this->prefix)->_toArrayFields($fieldNamesExclusive);
+ $fieldNames = $this->container->getController("struct_tools")->getFieldNames();
+ $fields = implode(",", $this->container->getFieldAlias($this->entityName, $this->prefix)->_toArrayFields($fieldNames);
  return "( SELECT DISTINCT
 {$fields}
 {$this->_from($render)}
