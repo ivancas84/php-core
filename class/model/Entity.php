@@ -71,7 +71,7 @@ class Entity {
 
   public $container;
 
-  public function __constructor(array $array){
+  public function __construct(array $array){
     foreach ($array as $key => $value) {
       $this->$key = $value;
     }

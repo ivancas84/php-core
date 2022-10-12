@@ -72,31 +72,35 @@ class Container {
   }
   
   public function getEntityNames() {
-    $tree = $this->getEntitiesTreeJson();
+    $tree = $this->getEntitiesJson();
     return array_keys($tree);
   }
   
   
   public function getStructure(){
     if(self::$structure) return self::$entity;
-    require_once("function/get_entity_names.php");
-    foreach(get_entity_names() as $entityName){
+    foreach($this->getEntityNames() as $entityName){
       $this->getEntity($entityName);
     }
     self::$structure = true;
     return self::$entity;
   }
 
-  public function getEntitiesJson(){
-    if (isset(self::$entitiesJson)) return self::$entitiesJson;
-
+  public function getEntitiesJson(){    
+    if (!empty(self::$entitiesJson)) return self::$entitiesJson;
     $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "_entities.json");
+    $array = json_decode($string, true);
+
     $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entities.json");
-    if($string2){
-      self::$entitiesJson = array_merge(
-        json_decode($string, true), 
-        json_decode($string2, true)
-      );
+    if(!empty($string2)){
+      $array2 = json_decode($string2, true);
+      foreach($array as $entityName => $value){
+        if(array_key_exists($entityName, $array2)){
+          
+          $array[$entityName] = array_merge($array[$entityName], $array2[$entityName]);
+        }
+      }
+      self::$entitiesJson = $array;
     } else {
       self::$entitiesJson = json_decode($string, true); 
     }
@@ -109,15 +113,15 @@ class Container {
     $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/_" . $entityName . ".json");
     $array = json_decode($string, true);
     
-    $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json");
-    if($string2){
+    if(file_exists($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json")){
+      $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json");
       $array2 = json_decode($string2, true);
       foreach($array as $fieldName => $value){
         if(array_key_exists($fieldName, $array2)){
           $array[$fieldName] = array_merge($array[$fieldName], $array2[$fieldName]);
         }
       }
-    } 
+    }
     self::$fieldsJson[$entityName] = $array;
     return self::$fieldsJson[$entityName];
   }
@@ -129,18 +133,17 @@ class Container {
     self::$entity[$entityName] = new Entity($entitiesJson[$entityName]);
     self::$entity[$entityName]->container = $this;
     self::$entity[$entityName]->structure = $this->getStructure();
-
     return self::$entity[$entityName];
   }
 
   public function getField($entityName, $fieldName){
-    if (isset(self::$field[$entityName.UNDEFINED.$fieldName])) return self::$field[$entityName.$fieldName]; 
+    if (isset(self::$field[$entityName.UNDEFINED.$fieldName])) return self::$field[$entityName.UNDEFINED.$fieldName]; 
 
     $fieldsJson = $this->getFieldsJson($entityName);
     self::$field[$entityName.UNDEFINED.$fieldName] = new Field($fieldsJson[$fieldName]);
     self::$field[$entityName.UNDEFINED.$fieldName]->container = $this;
     self::$field[$entityName.UNDEFINED.$fieldName]->entityName = $entityName;
-    return self::$field[$entityName.$fieldName]; 
+    return self::$field[$entityName.UNDEFINED.$fieldName]; 
   }
 
   protected function getInstanceFromDir($dir, $action, $entityName){

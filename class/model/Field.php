@@ -2,7 +2,7 @@
 
 require_once("function/snake_case_to.php");
 
-abstract class Field {
+class Field {
 
   protected static $instances = [];
 
@@ -88,7 +88,7 @@ abstract class Field {
    * string, integer, float, boolean, datetime
    */
 
-  public function __constructor(array $array){
+  public function __construct(array $array){
     foreach ($array as $key => $value) {
       $this->$key = $value;
     }
