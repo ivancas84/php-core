@@ -25,7 +25,7 @@ class RelValue {
     $this->row = $row;
     $tree = get_entity_tree($this->entityName);
     $this->value[$this->entityName] = $this->container->getValue($this->entityName)->_fromArray($this->row, "set");
-    $this->fk($tree, $this->value);
+    $this->fk($tree);
     return $this->value;
   }
 
