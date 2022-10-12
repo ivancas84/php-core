@@ -50,12 +50,6 @@ class Entity {
    * Array, ejemplo: ["field1","field2",...];
    */
 
-  public $noExclusive = [];
-  /**
-   * Valores no exclusivos
-   * Array, ejemplo: ["field1","field2",...];
-   */
-
   public $main = ["id"];
   /**
    * Valores principales
@@ -77,9 +71,9 @@ class Entity {
 
   public $container;
 
-  public function fromArray(array $array){
+  public function __constructor(array $array){
     foreach ($array as $key => $value) {
-        $this->$key = $value;
+      $this->$key = $value;
     }
   }
 

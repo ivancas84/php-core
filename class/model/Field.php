@@ -88,6 +88,12 @@ abstract class Field {
    * string, integer, float, boolean, datetime
    */
 
+  public function __constructor(array $array){
+    foreach ($array as $key => $value) {
+      $this->$key = $value;
+    }
+  }
+  
   //Retornar instancia de Entity correspondiente al field
   public function getEntity() {
     return $this->container->getEntity($this->entityName);

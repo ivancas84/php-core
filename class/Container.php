@@ -2,6 +2,8 @@
 
 require_once("function/snake_case_to.php");
 require_once("class/model/Entity.php");
+require_once("class/model/Field.php");
+
 
 class Container {
   /**
@@ -11,6 +13,10 @@ class Container {
    * Si una clase debe utilizar container,  entonces debe instanciarse desde container y no deberia tener elementos static.   
    * Si un elemento puede almacenarse en un atributo estatico para ser reutilizado debe definirse un método de instanciacion exclusivo en el contenedor
    */
+  static $entitiesTreeJson = [];
+  static $entitiesRelationsJson = [];
+  static $entitiesJson = [];
+  static $fieldsJson = [];
   static $db = null;
   static $modelTools = null;
   static $sqlo = []; //las instancias dependen de la entidad
@@ -38,6 +44,39 @@ class Container {
     return $c;
   }
 
+  public function getEntitiesTreeJson(){
+    if (!empty(self::$entitiesTreeJson)) return self::$entitiesTreeJson;
+
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-tree.json");
+    self::$entitiesTreeJson = json_decode($string, true); 
+    return self::$entitiesTreeJson;
+  }
+
+
+  public function getEntityTree($entityName) {
+    $tree = $this->getEntitiesTreeJson();
+    return array_key_exists($entityName, $tree) ? $tree[$entityName] : [];
+  }
+  
+  public function getEntitiesRelationsJson(){
+    if (!empty(self::$entitiesRelationsJson)) return self::$entitiesRelationsJson;
+
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-tree.json");
+    self::$entitiesRelationsJson = json_decode($string, true); 
+    return self::$entitiesRelationsJson;
+  }
+
+  public function getEntityRelations($entityName) {
+    $tree = $this->getEntitiesRelationsJson();
+    return array_key_exists($entityName, $tree) ? $tree[$entityName] : [];
+  }
+  
+  public function getEntityNames() {
+    $tree = $this->getEntitiesTreeJson();
+    return array_keys($tree);
+  }
+  
+  
   public function getStructure(){
     if(self::$structure) return self::$entity;
     require_once("function/get_entity_names.php");
@@ -48,58 +87,62 @@ class Container {
     return self::$entity;
   }
 
-  public function getEntity($entityName){
-    
-    if (isset(self::$entity[$entityName])) return self::$entity[$entityName];
-
-    self::$entity[$entityName] = new Entity;
-    self::$entity[$entityName]->container = $this;
+  public function getEntitiesJson(){
+    if (isset(self::$entitiesJson)) return self::$entitiesJson;
 
     $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "_entities.json");
-    $array = json_decode($string, true);
-    self::$entity[$entityName]->fromArray($array[$entityName]);
-    
-    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entities.json");
-    $array = json_decode($string, true);
+    $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entities.json");
+    if($string2){
+      self::$entitiesJson = array_merge(
+        json_decode($string, true), 
+        json_decode($string2, true)
+      );
+    } else {
+      self::$entitiesJson = json_decode($string, true); 
+    }
+    return self::$entitiesJson;
+  }
 
-    if(array_key_exists($entityName, $array)) self::$entity[$entityName]->fromArray($array[$entityName]);
+  public function getFieldsJson($entityName){
+    if (isset(self::$fieldsJson[$entityName])) return self::$fieldsJson[$entityName];
+
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/_" . $entityName . ".json");
+    $array = json_decode($string, true);
     
+    $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json");
+    if($string2){
+      $array2 = json_decode($string2, true);
+      foreach($array as $fieldName => $value){
+        if(array_key_exists($fieldName, $array2)){
+          $array[$fieldName] = array_merge($array[$fieldName], $array2[$fieldName]);
+        }
+      }
+    } 
+    self::$fieldsJson[$entityName] = $array;
+    return self::$fieldsJson[$entityName];
+  }
+
+  public function getEntity($entityName){
+    if (isset(self::$entity[$entityName])) return self::$entity[$entityName];
+
+    $entitiesJson = $this->getEntitiesJson();
+    self::$entity[$entityName] = new Entity($entitiesJson[$entityName]);
+    self::$entity[$entityName]->container = $this;
     self::$entity[$entityName]->structure = $this->getStructure();
 
     return self::$entity[$entityName];
   }
 
+  public function getField($entityName, $fieldName){
+    if (isset(self::$field[$entityName.UNDEFINED.$fieldName])) return self::$field[$entityName.$fieldName]; 
 
-  public function getField($entity, $field){
-    if (isset(self::$field[$entity.$field])) return self::$field[$entity.$field]; 
-
-    $dir = "class/model/field/" . snake_case_to("xxYy", $entity) . "/";
-    $name = snake_case_to("XxYy", $field) . ".php";    
-    $prefix = "";
-
-    if((@include_once $dir.$name) == true){
-      $className = "Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);  
-    } elseif((@include_once $dir."_".$name) == true) {
-        $className = "_Field".snake_case_to("XxYy", $entity) . snake_case_to("XxYy", $field);  
-    } else {
-      /**
-       * Campos de uso general
-       * Por el moment solo se encuentran definidos en el core
-       * 
-       * En el caso de que se encuentre alguna utilidad, 
-       * se modificara el codigo para permitir campos de uso general en la estructura de una app particular
-       */
-      require_once("class/model/field/".$name);
-      $className = "_Field".snake_case_to("XxYy", $field);  
-    }
-    
-    $c = new $className;
-    $c->container = $this;
-    $c->entityName = $entity;
-    return self::$field[$entity.$field] = $c; 
+    $fieldsJson = $this->getFieldsJson($entityName);
+    self::$field[$entityName.UNDEFINED.$fieldName] = new Field($fieldsJson[$fieldName]);
+    self::$field[$entityName.UNDEFINED.$fieldName]->container = $this;
+    self::$field[$entityName.UNDEFINED.$fieldName]->entityName = $entityName;
+    return self::$field[$entityName.$fieldName]; 
   }
 
-  
   protected function getInstanceFromDir($dir, $action, $entityName){
     $d = snake_case_to("xxYy", $dir);
     $D = snake_case_to("XxYy", $dir);
@@ -133,8 +176,6 @@ class Container {
     return $this->getInstanceFromDir("pdf",$action,$entityName);
   }
   
-
-
   public function getController($controller, $singleton = false){
     /**
      * Controlador (si utilizan container o algun elemento que pueda instanciarse desde container entonces es un controlador)
