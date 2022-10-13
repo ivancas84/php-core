@@ -61,7 +61,7 @@ class Container {
   public function getEntitiesRelationsJson(){
     if (!empty(self::$entitiesRelationsJson)) return self::$entitiesRelationsJson;
 
-    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-tree.json");
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-relations.json");
     self::$entitiesRelationsJson = json_decode($string, true); 
     return self::$entitiesRelationsJson;
   }

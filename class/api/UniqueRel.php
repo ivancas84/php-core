@@ -1,7 +1,6 @@
 <?php
 require_once("class/model/Ma.php");
 require_once("class/model/Render.php");
-require_once("function/get_entity_tree.php");
 require_once("function/php_input.php");
 
 class UniqueRelApi { //1.1
@@ -72,7 +71,7 @@ class UniqueRelApi { //1.1
   }
 
   public function query(){
-    $tree = get_entity_tree($this->entityName);
+    $tree = $this->container->getEntityTree($this->entityName);
 
     if(array_key_exists($this->entityName,$this->params)){
       $render = $this->container->getRender($this->entityName);

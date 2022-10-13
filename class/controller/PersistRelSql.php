@@ -2,7 +2,6 @@
 
 require_once("class/model/Rel.php");
 require_once("function/php_input.php");
-require_once("function/get_entity_rel.php");
 
 class PersistRelSql { //3
   /**
@@ -118,8 +117,8 @@ class PersistRelSql { //3
 
   public function procesarParamsRel($key){
     //1) Definir $entityName, $fieldName en base a $key y $this->entityName
-    $entityName = get_entity_rel($this->entityName)[$key]["entity_name"];
-    $fieldName = get_entity_rel($this->entityName)[$key]["field_name"];
+    $entityName = $this->container->getEntityRelations($this->entityName)[$key]["entity_name"];
+    $fieldName = $this->container->getEntityRelations($this->entityName)[$key]["field_name"];
     
     //2) Definir $render en base a $entityName
     $render = $this->container->getRender($entityName);

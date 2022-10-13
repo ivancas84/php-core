@@ -39,9 +39,6 @@ class Ma extends Db {
     return intval($row["_count"]);
   }
 
-  public function advanced($entity, Render $render){
-    return $this->select($entity, $render);
-  }
 
   public function select($entity, Render $render){
     /**

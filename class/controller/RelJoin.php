@@ -1,7 +1,5 @@
 <?php
 
-require_once("function/get_entity_tree.php");
-
 class RelJoin {
   /**
    * controlador para definir el sql join de una entidad
@@ -14,7 +12,7 @@ class RelJoin {
 
   public function main($render){
     $this->render = $render;
-    $tree = get_entity_tree($this->entityName);
+    $tree = $this->container->getEntityTree($this->entityName);
     $this->fk($tree, "");
     return $this->sql;
   }

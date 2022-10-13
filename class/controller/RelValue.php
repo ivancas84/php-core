@@ -1,7 +1,5 @@
 <?php
 
-require_once("function/get_entity_tree.php");
-
 class RelValue {
   /**
    * controlador para definir el sql join de una entidad
@@ -23,7 +21,7 @@ class RelValue {
      * ]
      */
     $this->row = $row;
-    $tree = get_entity_tree($this->entityName);
+    $tree = $this->container->getEntityTree($this->entityName);
     $this->value[$this->entityName] = $this->container->getValue($this->entityName)->_fromArray($this->row, "set");
     $this->fk($tree);
     return $this->value;

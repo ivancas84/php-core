@@ -3,7 +3,6 @@
 require_once("function/snake_case_to.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
-require_once("function/get_entity_rel.php");
 
 
 class EntitySqlo { //2
@@ -22,7 +21,7 @@ class EntitySqlo { //2
     $f = explode("-",$fieldName);
     if(count($f) == 2) {
       $prefix = $f[0];
-      $entityName = get_entity_rel($this->entityName)[$f[0]]["entity_name"];
+      $entityName = $this->container->getEntityRelations($this->entityName)[$f[0]]["entity_name"];
       $mapping = $this->container->getMapping($entityName, $prefix);
       $fieldName = $f[1];
     } else { 

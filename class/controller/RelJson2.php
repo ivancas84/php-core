@@ -1,7 +1,5 @@
 <?php
 
-require_once("function/get_entity_tree.php");
-
 class RelJson2 {
   /**
    * controlador para definir el json de una entidad y sus relaciones
@@ -29,7 +27,7 @@ class RelJson2 {
 
   public function main($row){
     $this->row = $row;
-    $tree = get_entity_tree($this->entityName);
+    $tree = $this->container->getEntityTree($this->entityName);
     $id = (empty($this->prefix)) ? $this->entityName : $this->prefix;
     $this->json[$id] = $this->container->getValue($this->entityName)->_fromArray($this->row, "set")->_toArray("json");
     $this->fk($tree);

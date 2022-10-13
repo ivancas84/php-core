@@ -34,7 +34,29 @@ class MappingEntityOptions extends EntityOptions {
   }
 
   public function label(){
-    return $this->container->getControllerEntity("mapping_label", $this->entityName)->main($this->prefix);
+    $fieldsLabel = [];
+
+    $tree = $this->container->getEntityTree($this->entityName);
+
+    foreach($tree as $key => $subtree) {
+      //if($this->container->getField($this->entityName, $subtree["field_name"])->isMain()) 
+      $this->recursiveLabel($key, $subtree, $fieldsLabel);
+    }
+        
+    array_walk($fieldsLabel, function(&$field) { 
+      $field =  $this->container->getRel($this->entityName, $this->prefix)->mapping($field); });
+
+    return "CONCAT_WS(' ', " . implode(",", $fieldsLabel). ")";
+  }
+
+  protected function recursiveLabel(string $key, array $tree, array &$fieldsLabel){
+    $entity = $this->container->getEntity($tree["entity_name"]);
+    
+    foreach($entity->getFields() as $field){
+      if($field->isMain()) array_push($fieldsLabel, $key."-".$field->getName());
+    }      
+    
+    foreach($tree["children"] as $subkey => $subtree) $this->recursiveLabel($subkey, $subtree, $fieldsLabel);
   }
 
   public function search(){

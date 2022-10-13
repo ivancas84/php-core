@@ -2,7 +2,6 @@
 
 require_once("class/model/Rel.php");
 require_once("function/php_input.php");
-require_once("function/get_entity_rel.php");
 
 class PersistRelApi {
   /**
