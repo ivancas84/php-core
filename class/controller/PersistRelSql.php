@@ -3,7 +3,7 @@
 require_once("class/model/Rel.php");
 require_once("function/php_input.php");
 
-class PersistRelSql { //3
+class PersistRelSql {
   /**
    * Controlador para procesar una entidad y sus relaciones 
    * recibe un array multiple, ejemplo:

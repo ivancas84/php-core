@@ -77,33 +77,61 @@ class EntityRel {
     return $fieldNames;
   }
 
-  
-  
-  public function join(Render $render){
-    return $this->container->getControllerEntity("rel_join", $this->entityName)->main($render);
+
+  public function join($render){
+    $sql = "";
+    $tree = $this->container->getEntityTree($this->entityName);
+    $this->joinFk($tree, "", $sql, $render);
+    return $sql;
+  }
+
+  protected function joinfk(array $tree, $tablePrefix, &$sql, Render $render){
+    if (empty ($tablePrefix)) $tablePrefix = $this->container->getEntity($this->entityName)->getAlias();
+
+    foreach ($tree as $prefix => $value) {      
+      $sql .= $this->container->getSql($value["entity_name"], $prefix)->_join($value["field_name"], $tablePrefix, $render) . "
+";
+
+      if(!empty($value["children"])) $this->joinfk($value["children"], $prefix, $sql, $render);
+    }
   }
 
   public function json($row){
-    return $this->container->getControllerEntity("rel_json", $this->entityName)->main($row);
+    $tree = $this->container->getEntityTree($this->entityName);
+    if(empty($row)) return null;
+    $this->json = $this->container->getValue($this->entityName)->_fromArray($row, "set")->_toArray("json");
+    $this->jsonFk($tree, $this->json, $row);
+    return $this->json;
   }
+
+  protected function jsonFk(array $tree, &$json, &$row){
+    foreach ($tree as $prefix => $value) {
+      if(!is_null($row[$prefix.'_id'])) {   
+        $json[$value["field_name"]."_"] = $this->container->getValue($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
+        if(!empty($value["children"])) $this->jsonFk($value["children"], $json[$value["field_name"]."_"], $row);
+      }
+    }
+  }
+
 
   public function json2($row){
-    /**
-     * @return $example = [ //para la entidad alumno
-     *   "id" => "...",
-     *   "activo" => false,
-     *   "persona_" => [
-     *     "id" => "..."
-     *     "numero_documento" > "..."¨
-     *     "domicilio_" => [ ... ]
-     *   ]
-     * ]
-     */
-    return $this->container->getControllerEntity("rel_json_2", $this->entityName, $this->prefix)->main($row);
+    $json = [];
+    $tree = $this->container->getEntityTree($this->entityName);
+    $id = (empty($this->prefix)) ? $this->entityName : $this->prefix;
+    $json[$id] = $this->container->getValue($this->entityName)->_fromArray($row, "set")->_toArray("json");
+    $this->json2Fk($tree, $row, $json);
+    return $json;
   }
 
-  public function value($row){
-    /**
+  protected function json2Fk(array $tree, $row, &$json){
+    foreach ($tree as $prefix => $value) {
+      $id = (empty($this->prefix)) ? $prefix : $this->prefix . "_".$prefix;
+      $json[$id] = $this->container->getValue($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
+      if(!empty($value["children"])) $this->json2Fk($value["children"], $row, $json);
+    }
+  }
+
+   /**
      * Recorre la cadena de relaciones del resultado de una consulta y retorna instancias de EntityValues
      * El resultado es almacenado en un array asociativo.
      * Las claves del array son identificadores unicos representativos del nombre del campo
@@ -117,12 +145,34 @@ class EntityRel {
      * por ejemplo $resultado["nombre_fk] = "id_fk"
      * $resultado["_nombre_fk"] = array asociativo con los valores de la entidad para el id "id_fk"
      */
-    return $this->container->getControllerEntity("rel_value", $this->entityName)->main($row);
+  public function value($row){
+    $value = [];
+    $tree = $this->container->getEntityTree($this->entityName);
+    $value[$this->entityName] = $this->container->getValue($this->entityName)->_fromArray($row, "set");
+    $this->valueFk($tree, $row, $value);
+    return $value;
   }
 
+  protected function valueFk(array $tree, $row, &$value){
+    foreach ($tree as $fieldId => $subtree) {
+      $value[$fieldId] = $this->container->getValue($subtree["entity_name"], $fieldId)->_fromArray($row, "set");
+      if(!empty($subtree["children"])) $this->valueFk($subtree["children"], $row, $value);
+    }
+  }
 
   public function jsonAll($rows){
     foreach($rows as &$row) $row = $this->json($row);
+    return $rows;
+  }
+
+  public function json2All($rows){
+    foreach($rows as &$row) $row = $this->json2($row);
+    return $rows;
+  }
+
+
+  public function valueAll($rows){
+    foreach($rows as &$row) $row = $this->value($row);
     return $rows;
   }
 
