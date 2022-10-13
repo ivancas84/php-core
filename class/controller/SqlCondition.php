@@ -92,13 +92,6 @@ class SqlCondition {
  
 
   protected function field($field, $option, $value) {
-    /**
-     * se verifica inicialmente la condicion auxiliar
-     * las condiciones auxiliares no siguen la estructura definida de condicion
-     */
-    $condition = $this->container->getConditionAux($this->entityName)->_eval($field, [$option, $value]);
-    if($condition) return $condition;
-    
     if(!is_array($value)) {
       $condition = $this->container->getCondition($this->entityName)->_eval($field, [$option, $value]);
       return $condition;

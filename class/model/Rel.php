@@ -45,19 +45,6 @@ class EntityRel {
     return $this->container->getCondition($this->entityName)->_($field, $option, $value);
   }
   
-  public function conditionAux($field, $option, $value) {
-    /**
-     * Condicion de field auxiliar
-     */
-    $f = explode("-",$field);
-    if(count($f) == 2) {
-      $prefix = $f[0];
-      $entityName = $this->container->getEntityRelations($this->entityName)[$f[0]]["entity_name"];
-      if($c = $this->container->getConditionAux($entityName, $prefix)->_($f[1], $option, $value)) return $c;
-    } 
-    if($c = $this->container->getConditionAux($this->entityName)->_($field, $option, $value)) return $c;
-  }
-
   /**
    * Array de nombres de campos definidos entidad principal y sus relaciones, de la forma fieldId-fieldName
    */

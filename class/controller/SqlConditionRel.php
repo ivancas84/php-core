@@ -77,13 +77,6 @@ class SqlConditionRel {
   }
 
   protected function field($field, $option, $value){    
-    /**
-     * se verifica inicialmente la condicion auxiliar. 
-     * las condiciones auxiliares no siguen la estructura definida de condicion
-     */    
-    $condition = $this->container->getRel($this->entityName)->conditionAux($field, $option, $value);
-    if($condition) return $condition;
-    
     if(!is_array($value)) {      
       $condition = $this->container->getRel($this->entityName)->condition($field, $option, $value);
       if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$this->entityName}.{$field}");

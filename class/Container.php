@@ -380,24 +380,6 @@ class Container {
     return $c;    
   }
 
-  public function getConditionAux($entityName, $prefix = ""){
-    $dir = "class/model/conditionAux/";
-    $name = snake_case_to("XxYy", $entityName) . ".php";
-    $prf = "";
-    if((@include_once $dir.$name) == true){
-      $className = $prf.snake_case_to("XxYy", $entityName) . "ConditionAux";      
-    } else{
-      require_once("class/model/entityOptions/ConditionAux.php");
-      $className = "ConditionAuxEntityOptions";
-    }
-    
-    $c = new $className;
-    $c->container = $this;
-    if($prefix) $c->prefix = $prefix;
-    $c->entityName = $entityName;
-    return $c;
-  }
-
   public function getValue($entityName, $prefix = ""){
     /**
      * Definir instancia de Value para la entidad.
