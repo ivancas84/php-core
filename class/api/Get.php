@@ -19,7 +19,7 @@ class GetApi {
     $render = $this->container->getRender($this->entityName);
     if(empty($id)) throw new Exception("Identificador no definido");
     $row = $this->container->getDb()->get($render->entityName, $id);
-    return $this->container->getRel($render->entityName)->json($row);
+    return $this->container->getEntityTools($render->entityName)->json($row);
   }
 
 }

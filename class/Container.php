@@ -3,7 +3,8 @@
 require_once("function/snake_case_to.php");
 require_once("class/model/Entity.php");
 require_once("class/model/Field.php");
-
+require_once("class/model/Sqlo.php");
+require_once("class/model/Tools.php");
 
 class Container {
   /**
@@ -19,6 +20,7 @@ class Container {
   static $fieldsJson = [];
   static $db = null;
   static $modelTools = null;
+  static $tools = []; //las instancias dependen de la entidad
   static $sqlo = []; //las instancias dependen de la entidad
   static $entity = []; //las instancias dependen de la entidad
   static $field = []; //las instancias dependen de la entidad
@@ -259,18 +261,7 @@ class Container {
   public function getSqlo($entity) {
     if (isset(self::$sqlo[$entity])) return self::$sqlo[$entity];
 
-    $dir = "class/model/sqlo/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $prefix = "";
-
-    if((@include_once $dir.$name) == true){
-      $className = snake_case_to("XxYy", $entity) . "Sqlo";
-    } else {
-      require_once("class/model/Sqlo.php");
-      $className = "EntitySqlo";
-    }
-
-    $c = new $className;
+    $c = new EntitySqlo;
     $c->entityName = $entity;
     $c->container = $this;
     return self::$sqlo[$entity] = $c;
@@ -284,46 +275,13 @@ class Container {
     return $render;
   }
 
-  public function getSql($entity, $prefix = null){
-    $dir = "class/model/sql/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    $prf = "";
+  public function getEntityTools($entity) {
+    if (isset(self::$tools[$entity])) return self::$tools[$entity];
 
-    if((@include_once $dir.$name) == true){
-      $className = snake_case_to("XxYy", $entity) . "Sql";
-    
-    } else {
-      require_once("class/model/Sql.php");
-      $className = "EntitySql";
-    }
-    
-    $sql = new $className;
-    if($prefix) $sql->prefix = $prefix;
-    $sql->container = $this;  
-    $sql->entityName = $entity;    
-    return $sql;    
-  }
-
-  public function getRel($entity, $prefix = "") {
-    //if (isset(self::$rel[$entity])) return self::$rel[$entity];
-    //si utiliza prefijo no debe utilizarse static!
-
-    $dir = "class/model/rel/";
-    $name = snake_case_to("XxYy", $entity) . ".php";
-    
-    if((@include_once $dir.$name) == true){
-      $className = snake_case_to("XxYy", $entity) . "Rel";
-    
-    } else {
-      require_once("class/model/Rel.php");
-      $className = "EntityRel";
-    }
-      
-    $c = new $className;
+    $c = new EntityTools;
     $c->entityName = $entity;
-    $c->prefix = $prefix;
     $c->container = $this;
-    return $c;
+    return self::$tools[$entity] = $c;
   }
 
   public function getModelTools(){

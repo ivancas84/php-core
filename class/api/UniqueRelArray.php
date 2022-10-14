@@ -39,7 +39,7 @@ class UniqueRelArrayApi extends UniqueRel {
           $render = $this->container->getRender($tree[$prefix]["entity_name"]);
           $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
           if(!empty($row)) {
-            $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
+            $data = $this->container->getEntityTools($render->entityName, $prefix)->json2($row);
             foreach($data as $k => $v) $this->row[$prefix."-". $k] = $v;
           } else {
             $data = [];

@@ -20,7 +20,7 @@ class ConditionEntityOptions extends EntityOptions {
     elseif($option == "!=") $option = "!=~";
     if(($option != "!=~") && ($option != "=~")) throw new Exception("Opción no válida para 'search'");
     $field = $this->container->getMapping($this->entityName, $this->prefix)->_("search");
-    return $this->container->getController("sql_tools", true)->approxCast($field, $option, $value);  
+    return $this->_approxCast($field, $option, $value);  
   }
 
   protected function _defineCondition($param){
@@ -51,8 +51,8 @@ class ConditionEntityOptions extends EntityOptions {
 
   protected function _default($fieldName, $option, $value) { 
     $field = $this->container->getMapping($this->entityName, $this->prefix)->_($fieldName);
-    if($c = $this->container->getController("sql_tools", true)->exists($field, $option, $value)) return $c;
-    if($c = $this->container->getController("sql_tools", true)->approxCast($field, $option, $value)) return $c;
+    if($c = $this->_existsAux($field, $option, $value)) return $c;
+    if($c = $this->_approxCast($field, $option, $value)) return $c;
     $v = $this->container->getValue($this->entityName, $this->prefix);
     $v->_set($fieldName, $value);  
     if(!$v->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _default: " . $this->entityName . " " .$fieldName . " " . $option . " " . $value);
@@ -61,8 +61,8 @@ class ConditionEntityOptions extends EntityOptions {
 
   protected function _string($fieldName, $option, $value) { 
     $field = $this->container->getMapping($this->entityName, $this->prefix)->_($fieldName);
-    if($c = $this->container->getController("sql_tools", true)->exists($field, $option, $value)) return $c;
-    if($c = $this->container->getController("sql_tools", true)->approx($field, $option, $value)) return $c;
+    if($c = $this->_existsAux($field, $option, $value)) return $c;
+    if($c = $this->_approx($field, $option, $value)) return $c;
     $v = $this->container->getValue($this->entityName, $this->prefix);
     $v->_set($fieldName, $value);  
     if(!$v->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _string: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
@@ -79,6 +79,30 @@ class ConditionEntityOptions extends EntityOptions {
 
   protected function _exists($fieldName, $option, $value) { 
     $field = $this->container->getMapping($this->entityName, $this->prefix)->_($fieldName);
-    return $this->container->getController("sql_tools", true)->exists($field, $option, settypebool($value));
+    return $this->_existsAux($field, $option, settypebool($value));
+  }
+
+
+  protected function _existsAux($field, $option, $value) {
+    if($value == "" || is_null($value) || $value == "true" || $value == "false" || is_bool($value) ) {
+      if (($option != "=") && ($option != "!=")) throw new Exception("La combinacion field-option-value no está permitida para definir existencia: " . $field. " " . $option . " " . $value, 404);
+
+      switch(settypebool($value)){
+        case true:
+          return ($option == "=") ? "({$field} IS NOT NULL) " : "({$field} IS NULL) ";
+        default:
+          return ($option == "=") ? "({$field} IS NULL) " : "({$field} IS NOT NULL) ";
+      }
+    }
+  }
+
+  public function _approxCast($field, $option, $value) {
+    if($option == "=~") return "(CAST({$field} AS CHAR) LIKE '%{$value}%' )";
+    if($option == "!=~") return "(CAST({$field} AS CHAR) NOT LIKE '%{$value}%' )";
+  }
+
+  public function _approx($field, $option, $value) {
+    if($option == "=~") return "(lower({$field}) LIKE lower('%{$value}%'))";
+    if($option == "!=~") return "(lower({$field}) NOT LIKE lower('%{$value}%'))";
   }
 }

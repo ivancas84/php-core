@@ -19,7 +19,7 @@ class GetAllApi {
     $render = $this->container->getRender($this->entityName);
     if(empty($ids)) throw new Exception("Identificadores no definidos");
     $rows = $this->container->getDb()->getAll($render->entityName, $ids);
-    $rel = $this->container->getRel($render->entityName);
+    $rel = $this->container->getEntityTools($render->entityName);
     foreach($rows as &$row) $row = $rel->json($row);
     return $rows;
     

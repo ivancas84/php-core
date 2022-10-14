@@ -328,15 +328,36 @@ class ValueEntityOptions extends EntityOptions {
     return call_user_func_array(array($this, $m), [$fieldName]);    
   }
 
-  protected function _sqlDate($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "Y-m-d"); }
-  protected function _sqlTime($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "H:i:s"); }
-  protected function _sqlTimestamp($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "Y-m-d H:i:s"); }
-  protected function _sqlHm($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "H:i"); }
-  protected function _sqlYm($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "Y-m"); }
-  protected function _sqlY($fieldName){ return $this->container->getController("sql_tools", true)->dateTime($this->value[$fieldName], "Y"); }
-  protected function _sqlBoolean($fieldName){ return $this->container->getController("sql_tools", true)->boolean($this->value[$fieldName]); }
-  protected function _sqlNumber($fieldName){ return $this->container->getController("sql_tools", true)->number($this->value[$fieldName]); }
-  protected function _sqlString($fieldName){ return $this->container->getController("sql_tools", true)->string($this->value[$fieldName]); }
+
+  
+  protected function _sqlDateTime($value, $format){
+    if(Validation::is_undefined($value)) return UNDEFINED;
+    if(Validation::is_empty($value)) return 'null';
+    return "'" . $value->format($format) . "'";
+  }
+
+  protected function _sqlDate($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y-m-d"); }
+  protected function _sqlTime($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "H:i:s"); }
+  protected function _sqlTimestamp($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y-m-d H:i:s"); }
+  protected function _sqlHm($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "H:i"); }
+  protected function _sqlYm($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y-m"); }
+  protected function _sqlY($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y"); }
+  protected function _sqlBoolean($fieldName){ 
+    if(Validation::is_undefined($value)) return UNDEFINED;
+    return ( $value ) ? 'true' : 'false';
+  }
+
+  protected function _sqlNumber($fieldName){ 
+    if(Validation::is_undefined($value)) return UNDEFINED;
+    if(is_null($value) || $value === "") return "null";
+    return $value;
+  }
+
+  protected function _sqlString($fieldName){ 
+    if(Validation::is_undefined($value)) return UNDEFINED;
+    if(Validation::is_empty($value)) return 'null';
+    return "'" . $this->container->getDb()->escape_string($value) . "'";  
+  }
 
   protected function _defineCheck($fieldName){
     $param = explode(".",$fieldName);

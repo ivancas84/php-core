@@ -19,7 +19,7 @@ class UniqueApi {
     $render = $this->container->getRender($this->entityName)->setDisplay($display);
 
     $row = $this->container->getDb()->unique($render->entityName, $params);
-    return $this->container->getRel($render->entityName)->json($row);
+    return $this->container->getEntityTools($render->entityName)->json($row);
   }
 
 }

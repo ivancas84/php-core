@@ -63,7 +63,7 @@ class Ma extends Db {
     $render = $this->container->getRender($entityName);
     $c = $render->setConditionUniqueFields($params);
 
-    $render->addFields($this->container->getRel($entityName)->fieldNames());
+    $render->addFields($this->container->getEntityTools($entityName)->fieldNames());
     $sql = $this->container->getSqlo($entityName)->select($render);
     if(empty($sql)) return null;
 
@@ -121,9 +121,8 @@ class Ma extends Db {
      * todos los valores
      */
     if(!$render) $render = new Render();
-    $render->addFields($this->container->getRel($entityName)->fieldNames());
+    $render->addFields($this->container->getEntityTools($entityName)->fieldNames());
     $sql = $this->container->getSqlo($entityName)->select($render);
-
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
@@ -149,7 +148,7 @@ class Ma extends Db {
     if(!$render) $render = new Render();
     $render->setSize(false);
     $render->addCondition(["id","=",$ids]);
-    $render->setFields($this->container->getRel($entityName)->fieldNames());
+    $render->setFields($this->container->getEntityTools($entityName)->fieldNames());
 
     return $this->all($entityName, $render);
   }

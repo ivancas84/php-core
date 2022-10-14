@@ -17,7 +17,7 @@ class AllApi {
     $display = php_input();
     $render = $this->container->getRender($this->entityName)->setDisplay($display);
     $rows = $this->container->getDb()->all($render->entityName, $render);
-    return $this->container->getRel($render->entityName)->jsonAll($rows);
+    return $this->container->getEntityTools($render->entityName)->jsonAll($rows);
   }
 
 }

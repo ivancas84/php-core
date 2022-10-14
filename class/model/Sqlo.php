@@ -4,94 +4,31 @@ require_once("function/snake_case_to.php");
 require_once("class/model/Render.php");
 require_once("function/settypebool.php");
 
-
-class EntitySqlo { //2
-  /**
-   * SQL Object
-   * Definir SQL para ser ejecutado directamente por el motor de base de datos
-   */
-
+/**
+ * SQL Object
+ * Definir SQL para ser ejecutado directamente por el motor de base de datos
+ */
+class EntitySqlo {
+  
   public $container;
   public $entityName;
-
-  protected function mapping($fieldName){
-     /**
-     * Interpretar prefijo y obtener mapping
-     */
-    $f = explode("-",$fieldName);
-    if(count($f) == 2) {
-      $prefix = $f[0];
-      $entityName = $this->container->getEntityRelations($this->entityName)[$f[0]]["entity_name"];
-      $mapping = $this->container->getMapping($entityName, $prefix);
-      $fieldName = $f[1];
-    } else { 
-      $mapping = $this->container->getMapping($this->entityName);
-    }
-
-    return [$mapping,$fieldName];
-  }
-  
-  protected function fieldsQuery(Render $render){
-    $fields = array_merge($render->getGroup(), $render->getFields());
-
-    $fieldsQuery_ = [];
-    foreach($fields as $key => $fieldName){
-      if(is_array($fieldName)){
-        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
-        $map_ = [];
-        foreach($fieldName as $fn){
-          $map = $this->mapping($fn);
-          array_push($map_, $map[0]->_($map[1]));
-        } 
-        $f = "CONCAT_WS(', ', " . implode(",",$map_) . ") AS " . $key;
-      } else {
-        $map = $this->mapping($fieldName);
-        $alias = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
-        $f = $map[0]->_($map[1]) . " AS " . $alias;
-      }
-      array_push($fieldsQuery_, $f);
-    }
-
-    return implode(', ', $fieldsQuery_);
-  }
-
-  protected function groupBy(Render $render){
-    $fields = $render->getGroup();
-
-    $group_ = [];
-    foreach($fields as $key => $fieldName){
-      if(is_array($fieldName)){
-        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
-        $f = $key;
-      } else {
-        $map = $this->mapping($fieldName);
-        $f = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
-      }
-      array_push($group_, $f);
-    }
-
-    return empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
-";
-
-  }
-
 
   public function select(Render $render) {
     $fieldsQuery = $this->fieldsQuery($render);
     $group = $this->groupBy($render);
-    $having_ = $this->container->getSql($this->entityName)->having($render);
-    $having = empty($having_) ? "" : "HAVING {$having_}
-";
+    $having = $this->container->getControllerEntity("sql_condition", $this->entityName)->main($render->getHaving());    
+    $condition = $this->container->getControllerEntity("sql_condition", $this->entityName)->main($render->condition);
+    $order = $this->container->getControllerEntity("sql_order", $this->entityName)->main($render->getOrder());
 
     $sql = "SELECT DISTINCT
 {$fieldsQuery}
-{$this->container->getSql($this->entityName)->fromSubSql($render)}
-{$this->container->getRel($this->entityName)->join($render)}
-" . concat($this->container->getSql($this->entityName)->condition($render), 'WHERE ') . "
+{$this->from()}
+{$this->join()}
+" . concat($condition, 'WHERE ') . "
 {$group}
-{$having}
-{$this->container->getSql($this->entityName)->orderBy($render->getOrder())}
-{$this->container->getSql($this->entityName)->limit($render->getPage(), $render->getSize())}
+" . concat($having, 'HAVING ') . "
+{$order}
+{$this->limit($render->getPage(), $render->getSize())}
 ";
 
     return $sql;
@@ -114,7 +51,7 @@ WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} = {$r
      * @return string sql de actualizacion
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
-    $ids_ = $this->container->getSql($this->entityName)->formatIds($ids);
+    $ids_ = $this->formatIds($ids);
     $r_ = $this->container->getValue($this->entityName)->_fromArray($row, "set")->_toArray("sql");
     return "
 {$this->_update($r_)}
@@ -129,13 +66,12 @@ WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} IN ({
      * debe verificarse la existencia de ids correctos
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
-    $ids_ = $this->container->getSql($this->entityName)->formatIds($ids);
+    $ids_ = $this->formatIds($ids);
     return "
 DELETE FROM {$this->container->getEntity($this->entityName)->sn_()}
 WHERE id IN ({$ids_});
 ";
   }
-
 
   public function insert(array $row){
     /**
@@ -165,6 +101,132 @@ UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
     $sql = substr($sql, 0, -2); //eliminar ultima coma
 
     return $sql;
+  }
+
+
+  protected function formatIds(array $ids = []) {
+    /**
+     * Formato sql de ids
+     */
+    $ids_ = [];
+    $value = $this->container->getValue($this->entityName);
+    for($i = 0; $i < count($ids); $i++) {
+      $value->_set("id",$ids[$i]);
+      array_push($ids_, $value->_sql("id"));
+    }
+    return implode(', ', $ids_);
+  }
+  
+
+  public function mapping($fieldName, $prefix = ""){
+    /**
+     * Traducir campo para ser interpretado correctamente por el SQL
+     */
+    $map = $this->_mapping($fieldName, $prefix);
+    return $map[0]->_($map[1]);
+  }
+
+  protected function _mapping($fieldName, $prefix = ""){
+     /**
+     * Interpretar prefijo y obtener mapping
+     */
+    $f = explode("-",$fieldName);
+    if(count($f) == 2) {
+      $prefix_ = (empty($this->prefix)) ? $f[0] : $prefix . "_" . $f[0];
+      $entityName = $this->container->getEntityRelations($this->entityName)[$f[0]]["entity_name"];
+      $mapping = $this->container->getMapping($entityName, $prefix_);
+      $fieldName = $f[1];
+    } else { 
+      $mapping = $this->container->getMapping($this->entityName, $prefix);
+    }
+
+    return [$mapping,$fieldName];
+  }
+  
+  protected function fieldsQuery(Render $render){
+    $fields = array_merge($render->getGroup(), $render->getFields());
+
+    $fieldsQuery_ = [];
+    foreach($fields as $key => $fieldName){
+      if(is_array($fieldName)){
+        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
+        $map_ = [];
+        foreach($fieldName as $fn){
+          array_push($map_, $this->mapping($fn));
+        } 
+        $f = "CONCAT_WS(', ', " . implode(",",$map_) . ") AS " . $key;
+      } else {
+        $map = $this->_mapping($fieldName);
+        $alias = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
+        $f = $map[0]->_($map[1]) . " AS " . $alias;
+      }
+      array_push($fieldsQuery_, $f);
+    }
+
+    return implode(', ', $fieldsQuery_);
+  }
+
+  protected function groupBy(Render $render){
+    $fields = $render->getGroup();
+
+    $group_ = [];
+    foreach($fields as $key => $fieldName){
+      if(is_array($fieldName)){
+        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
+        $f = $key;
+      } else {
+        $map = $this->mapping($fieldName);
+        $f = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
+      }
+      array_push($group_, $f);
+    }
+
+    return empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
+";
+  }
+
+  protected function join(){
+    $sql = "";
+    $tree = $this->container->getEntityTree($this->entityName);
+    $this->joinFk($tree, "", $sql);
+    return $sql;
+  }
+
+  protected function joinfk(array $tree, $tablePrefix, &$sql){
+    if (empty ($tablePrefix)) $tablePrefix = $this->container->getEntity($this->entityName)->getAlias();
+
+    foreach ($tree as $prefix => $value) {      
+      $entitySn =  $this->container->getEntity($value["field_name"])->sn_();
+      $sql .= $this->_join($entitySn, $value["field_name"], $tablePrefix, $prefix) . "
+";
+
+      if(!empty($value["children"])) $this->joinfk($value["children"], $prefix, $sql);
+    }
+  }
+
+  protected function limit($page = 1, $size = false){
+    if ($size) {
+      return " LIMIT {$size} OFFSET " . ( ($page - 1) * $size ) . "
+";
+    }
+    return "";
+  }
+
+  protected function from(){    
+    return " FROM 
+
+" . $this->container->getEntity($this->entityName)->sn_() . "
+
+ AS {$this->container->getEntity($this->entityName)->getAlias()}
+";
+  }
+
+  /**
+   * Definir SQL de relacion 
+   */
+  protected function _join($entitySn, $field, $fromTable, $table){
+    return "LEFT OUTER JOIN " . $entitySn . " AS $table ON ($fromTable.$field = $table.id)
+";
   }
 
 }

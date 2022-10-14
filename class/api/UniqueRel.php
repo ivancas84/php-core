@@ -77,7 +77,7 @@ class UniqueRelApi { //1.1
       $render = $this->container->getRender($this->entityName);
       $row = $this->container->getDb()->unique($render->entityName, $this->params[$this->entityName]);
       if(!empty($row)) {
-        $data = $this->container->getRel($render->entityName)->json2($row);
+        $data = $this->container->getEntityTools($render->entityName)->json2($row);
         $this->row[$this->entityName] = $data[$this->entityName];
       } else {
         $data = [];
@@ -127,7 +127,7 @@ class UniqueRelApi { //1.1
     $render = $this->container->getRender($leaf["entity_name"]);
     $row = $this->container->getDb()->get($render->entityName, $this->row[$previousKey][$leaf["field_name"]]);
     if(!empty($row)) {
-      $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
+      $data = $this->container->getEntityTools($render->entityName, $prefix)->json2($row);
       $this->row[$prefix] = $data[$prefix];
     } else {
       $data = [];
@@ -140,7 +140,7 @@ class UniqueRelApi { //1.1
     $render = $this->container->getRender($leaf["entity_name"]);
     $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
     if(!empty($row)) {
-      $data = $this->container->getRel($render->entityName, $prefix)->json2($row);
+      $data = $this->container->getEntityTools($render->entityName, $prefix)->json2($row);
       $this->row[$prefix] = $data[$prefix];
     } else {
       $data = [];
