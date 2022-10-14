@@ -343,20 +343,20 @@ class ValueEntityOptions extends EntityOptions {
   protected function _sqlYm($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y-m"); }
   protected function _sqlY($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y"); }
   protected function _sqlBoolean($fieldName){ 
-    if(Validation::is_undefined($value)) return UNDEFINED;
-    return ( $value ) ? 'true' : 'false';
+    if(Validation::is_undefined($this->value[$fieldName])) return UNDEFINED;
+    return ( $this->value[$fieldName] ) ? 'true' : 'false';
   }
 
   protected function _sqlNumber($fieldName){ 
-    if(Validation::is_undefined($value)) return UNDEFINED;
-    if(is_null($value) || $value === "") return "null";
-    return $value;
+    if(Validation::is_undefined($this->value[$fieldName])) return UNDEFINED;
+    if(is_null($this->value[$fieldName]) || $this->value[$fieldName] === "") return "null";
+    return $this->value[$fieldName];
   }
 
   protected function _sqlString($fieldName){ 
-    if(Validation::is_undefined($value)) return UNDEFINED;
-    if(Validation::is_empty($value)) return 'null';
-    return "'" . $this->container->getDb()->escape_string($value) . "'";  
+    if(Validation::is_undefined($this->value[$fieldName])) return UNDEFINED;
+    if(Validation::is_empty($this->value[$fieldName])) return 'null';
+    return "'" . $this->container->getDb()->escape_string($this->value[$fieldName]) . "'";  
   }
 
   protected function _defineCheck($fieldName){
