@@ -1,7 +1,7 @@
 <?php
 
 
-class DeleteRenderSql {
+class DeleteEntityRenderSql {
   /**
    * Definir SQL de eliminacion.
    * Se realiza una consulta a la base de datos para obtener los ids a eliminar.
@@ -11,11 +11,11 @@ class DeleteRenderSql {
   public $container;
   public $entityName;
 
-  public function main(Render $render) {
+  public function main(EntityRender $render) {
     $ids = $this->container->getDb()->ids($this->entityName, $render);
     if(empty($ids)) return ["ids" => [], "sql"=>""];
 
-    $sql = $this->container->getSqlo($this->entityName)->delete($ids);
+    $sql = $this->container->getEntitySqlo($this->entityName)->delete($ids);
     return["ids" => $ids, "sql"=>$sql];
   }
 }

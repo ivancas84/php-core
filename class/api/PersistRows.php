@@ -22,7 +22,7 @@ class PersistRowsApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $data = php_input();
-    $render = $this->container->getRender($this->entityName);
+    $render = $this->container->getEntityRender($this->entityName);
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
     
     $ids = [];

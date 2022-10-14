@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/model/Render.php");
+require_once("class/model/EntityRender.php");
 require_once("function/php_input.php");
 
 class AllApi {
@@ -15,7 +15,7 @@ class AllApi {
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     $display = php_input();
-    $render = $this->container->getRender($this->entityName)->setDisplay($display);
+    $render = $this->container->getEntityRender($this->entityName)->setDisplay($display);
     $rows = $this->container->getDb()->all($render->entityName, $render);
     return $this->container->getEntityTools($render->entityName)->jsonAll($rows);
   }

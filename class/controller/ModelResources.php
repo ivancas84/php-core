@@ -14,7 +14,7 @@ class ModelResources {
      * Transferencia simple de una relacion um de una entidad
      * Simple se refiere a que no necesita ninguna comparacion adicional, simplemente debe modificarse la clave foranea
      */
-    $render = $this->container->getRender($entityName);
+    $render = $this->container->getEntityRender($entityName);
     $render->setCondition([
       [$fkName,"=",$fkValue]
     ]);
@@ -30,7 +30,7 @@ class ModelResources {
       $tr->_fastSet($fkName,$fkValueTransfer);
       $tr->_call("reset")->_call("check");
       if($tr->logs->isError()) throw new Exception($tr->logs->toString());
-      $sql .= $this->container->getSqlo($entityName)->update($tr->_toArray("sql"));      
+      $sql .= $this->container->getEntitySqlo($entityName)->update($tr->_toArray("sql"));      
     }
 
     return ["sql"=>$sql,"detail"=>$detail];

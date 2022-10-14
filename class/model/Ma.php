@@ -5,7 +5,6 @@
  */
 
 require_once("class/model/Db.php");
-require_once("class/model/Render.php");
 
 
 class Ma extends Db {
@@ -25,14 +24,14 @@ class Ma extends Db {
     /**
      * cantidad
      */
-    $r = Render::getInstance($render);
+    $r = EntityRender::getInstance($render);
     $r->setSize(false);
     $r->setPage(1);
     $r->setOrder([]);
 
     if(!in_array("_count", $r->getFields())) $r->setFields(["_count"]);
     
-    $sql = $this->container->getSqlo($entity)->select($r);
+    $sql = $this->container->getEntitySqlo($entity)->select($r);
     $result = $this->query($sql);
     $row = $result->fetch_assoc();
     $result->free();
@@ -40,13 +39,13 @@ class Ma extends Db {
   }
 
 
-  public function select($entity, Render $render){
+  public function select($entity, EntityRender $render){
     /**
      * consulta avanzada
      * Reduce la cantidad de campos a consultar
      * No se debe utilizar storage
      */
-    $sql = $this->container->getSqlo($entity)->select($render);
+    $sql = $this->container->getEntitySqlo($entity)->select($render);
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
@@ -60,11 +59,11 @@ class Ma extends Db {
      *   array("nombre_field" => "valor_field", ...)
      */
     if(empty($params)) return null;
-    $render = $this->container->getRender($entityName);
+    $render = $this->container->getEntityRender($entityName);
     $c = $render->setConditionUniqueFields($params);
 
     $render->addFields($this->container->getEntityTools($entityName)->fieldNames());
-    $sql = $this->container->getSqlo($entityName)->select($render);
+    $sql = $this->container->getEntitySqlo($entityName)->select($render);
     if(empty($sql)) return null;
 
     $result = $this->query($sql);
@@ -77,7 +76,7 @@ class Ma extends Db {
 
   public function ids($entityName, $render = null){   
     $render->setFields(["id"]);
-    $sql = $this->container->getSqlo($entityName)->select($render);
+    $sql = $this->container->getEntitySqlo($entityName)->select($render);
     $result = $this->query($sql);
     $ids = $this->fetch_all_columns($result, 0);
     $result->free();
@@ -120,9 +119,9 @@ class Ma extends Db {
     /**
      * todos los valores
      */
-    if(!$render) $render = new Render();
+    if(!$render) $render = new EntityRender();
     $render->addFields($this->container->getEntityTools($entityName)->fieldNames());
-    $sql = $this->container->getSqlo($entityName)->select($render);
+    $sql = $this->container->getEntitySqlo($entityName)->select($render);
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
@@ -145,7 +144,7 @@ class Ma extends Db {
   public function getAll($entityName, $ids, $render = null){ //busqueda por ids
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
-    if(!$render) $render = new Render();
+    if(!$render) $render = new EntityRender();
     $render->setSize(false);
     $render->addCondition(["id","=",$ids]);
     $render->setFields($this->container->getEntityTools($entityName)->fieldNames());
@@ -205,7 +204,7 @@ class Ma extends Db {
     /**
      * Insercion directa (no realiza chequeo de valores)
      */
-    $insert = $this->container->getSqlo($entity)->insert($row);
+    $insert = $this->container->getEntitySqlo($entity)->insert($row);
     $result = $this->query($insert["sql"]);
     return array("id" => $insert["id"], "detail"=>$insert["detail"]);
   }
@@ -222,7 +221,7 @@ class Ma extends Db {
   public function delete($entityName, array $ids){ 
     /**
      */
-    $sql = $this->container->getSqlo($entityName)->delete($ids);
+    $sql = $this->container->getEntitySqlo($entityName)->delete($ids);
     $result = $this->query($sql);
     return array("ids" => $ids, "detail"=>preg_filter('/^/', $entityName, $ids));
   }

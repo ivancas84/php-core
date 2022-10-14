@@ -10,7 +10,7 @@ class CountApi {
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     $display = php_input();
-    $render = $this->container->getRender($this->entityName)->setDisplay($display);
+    $render = $this->container->getEntityRender($this->entityName)->setDisplay($display);
 
     return $this->container->getDb()->count($render->entityName, $render);
   }

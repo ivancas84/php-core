@@ -1,6 +1,6 @@
 <?php
 
-class Render {
+class EntityRender {
 
   public $container;
   public $entityName; //entidad principal a la que esta destinada la consulta
@@ -14,7 +14,6 @@ class Render {
    *    ]
    * ]
    */  
-  public $generalCondition = array(); //condicion utilizada solo en la estructura general 
   public $order = array();
   public $page = 1;
   public $size = 100;
@@ -48,12 +47,12 @@ class Render {
 
   public static function getInstance($render = null){
     /**
-     * @param String | Object | Array | Render En función del tipo de parámetro define el render
-     * @return Render Clase de presentacion
+     * @param String | Object | Array | EntityRender En función del tipo de parámetro define el render
+     * @return EntityRender Clase de presentacion
      */
     if(gettype($render) == "object") return $render;
 
-    $r = new Render();
+    $r = new EntityRender();
     if(gettype($render) == "string") $r->setCondition(["_search","=~",$render]);
     elseif (gettype($render) == "array") $r->setCondition($render);
     return $r;
@@ -64,7 +63,7 @@ class Render {
      * Instanciar render a partir de un display
      * Importante: Define las condiciones y parametros como condiciones generales
      */
-    $render = new Render;
+    $render = new EntityRender;
     $render->setDisplay($display);
     return $render;
   }
@@ -76,8 +75,8 @@ class Render {
      */
     if(!empty($display["page"])) $this->setPage($display["page"]);
     if(!empty($display["order"])) $this->setOrder($display["order"]);
-    if(!empty($display["condition"])) $this->setGeneralCondition($display["condition"]);
-    if(!empty($display["params"])) $this->setGeneralParams($display["params"]);
+    if(!empty($display["condition"])) $this->setCondition($display["condition"]);
+    if(!empty($display["params"])) $this->setParams($display["params"]);
     if(!empty($display["fields"])) $this->setFields($display["fields"]);
     if(!empty($display["group"])) $this->setGroup($display["group"]);
     if(!empty($display["having"])) $this->setHaving($display["having"]);
@@ -85,7 +84,7 @@ class Render {
   }
 
   public static function getInstanceParams(array $params = null){
-    $render = new Render;
+    $render = new EntityRender;
     if(!empty($params)) $render->setParams($params);
     return $render;
   }
@@ -110,32 +109,8 @@ class Render {
     }
     return $this;
   } 
-
   
-  public function setGeneralParams (array $params = []) {
-    foreach($params as $key => $value) {
-      $this->addGeneralCondition([$key, "=", $value]); 
-    }
-    return $this;
-  } 
-  
-  //public function addParam ($key, $value) { $this->addCondition([$key, "=", $value]); }
-  /**
-   * este metodo permite ahorrar 5 caracteres, no se si es conveniente, setParams es valido porque facilita el envio de parametros
-   * params es una forma corta de asignar condiciones a traves de un array asociativo
-   * solo define campo y valor, siempre toma la opcion como "="
-   */
-
-  public function setGeneralCondition ($generalCondition = null) { 
-    $this->generalCondition = $generalCondition; 
-    return $this;
-  }
-  public function addGeneralCondition ($gc = null) { 
-    if(!empty($gc)) array_push ( $this->generalCondition, $gc ); 
-    return $this;
-  }
-
-  public function getGeneralCondition(){ return $this->generalCondition; }
+  public function addParam ($key, $value) { $this->addCondition([$key, "=", $value]); }
 
   public function setOrder (array $order) { 
     $this->order = $order;
@@ -212,7 +187,6 @@ class Render {
 
   public function addPrefix($prefix){
     $this->addPrefixRecursive($this->condition, $prefix);
-    $this->addPrefixRecursive($this->generalCondition, $prefix);
     
     foreach($this->order as $k=>$v){
       $this->order[$prefix.$k] = $v;
@@ -234,7 +208,6 @@ class Render {
 
   public function removePrefix($prefix){
     $this->removePrefixRecursive($this->condition, $prefix);
-    $this->removePrefixRecursive($this->generalCondition, $prefix);
     
     foreach($this->order as $k=>$v){
       $count = 1;

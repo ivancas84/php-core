@@ -1,6 +1,6 @@
 <?php
 require_once("function/php_input.php");
-require_once("class/model/Render.php");
+require_once("class/model/EntityRender.php");
 
 
 class UniqueIdApi {
@@ -15,7 +15,7 @@ class UniqueIdApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $params = php_input();
-    $render = $this->container->getRender($this->entityName);
+    $render = $this->container->getEntityRender($this->entityName);
     try {
       $row = $this->container->getDb()->unique($render->entityName, $params);
       return ($row) ? $row["id"] : null;

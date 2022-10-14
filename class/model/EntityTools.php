@@ -1,7 +1,6 @@
 <?php
 
 require_once("function/snake_case_to.php");
-require_once("class/model/Render.php");
 require_once("function/settypebool.php");
 require_once("function/array_add_prefix.php");
 

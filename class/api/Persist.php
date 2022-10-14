@@ -18,7 +18,7 @@ class PersistApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $data = php_input();
-    $render = $this->container->getRender($this->entityName);
+    $render = $this->container->getEntityRender($this->entityName);
     
     $persist = $this->container->getControllerEntity("persist_sql", $render->entityName)->main($data);
     $this->container->getDb()->multi_query_transaction($persist["sql"]);

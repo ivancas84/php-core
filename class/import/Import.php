@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/model/Render.php");
+require_once("class/model/EntityRender.php");
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
 
@@ -312,7 +312,7 @@ abstract class Import {
     if(empty($this->ids[$name])) throw new Exception("query error: No se encuentran definidos los identificadores de " . $name);
 
     $entityName = $this->getEntityName($name);
-    $render = $this->container->getRender($entityName);
+    $render = $this->container->getEntityRender($entityName);
     $render->setFields(["identifier"]);
     $render->setSize(false);
     $render->addCondition(["identifier","=",$this->ids[$name]]);

@@ -3,8 +3,10 @@
 require_once("function/snake_case_to.php");
 require_once("class/model/Entity.php");
 require_once("class/model/Field.php");
-require_once("class/model/Sqlo.php");
-require_once("class/model/Tools.php");
+require_once("class/model/EntitySqlo.php");
+require_once("class/model/EntityTools.php");
+require_once("class/model/EntityRender.php");
+
 
 class Container {
   /**
@@ -258,30 +260,29 @@ class Container {
     return $c;
   }
 
-  public function getSqlo($entity) {
-    if (isset(self::$sqlo[$entity])) return self::$sqlo[$entity];
+  public function getEntitySqlo($entityName) {
+    if (isset(self::$sqlo[$entityName])) return self::$sqlo[$entityName];
 
     $c = new EntitySqlo;
-    $c->entityName = $entity;
+    $c->entityName = $entityName;
     $c->container = $this;
-    return self::$sqlo[$entity] = $c;
+    return self::$sqlo[$entityName] = $c;
   }
 
-  public function getRender($entityName = null){
-    require_once("class/model/Render.php");
-    $render = new Render;
+  public function getEntityRender($entityName = null){
+    $render = new EntityRender;
     $render->entityName = $entityName;
     $render->container = $this;
     return $render;
   }
 
-  public function getEntityTools($entity) {
-    if (isset(self::$tools[$entity])) return self::$tools[$entity];
+  public function getEntityTools($entityName) {
+    if (isset(self::$tools[$entityName])) return self::$tools[$entityName];
 
     $c = new EntityTools;
-    $c->entityName = $entity;
+    $c->entityName = $entityName;
     $c->container = $this;
-    return self::$tools[$entity] = $c;
+    return self::$tools[$entityName] = $c;
   }
 
   public function getModelTools(){

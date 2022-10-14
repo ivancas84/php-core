@@ -1,6 +1,6 @@
 <?php
 require_once("class/model/Ma.php");
-require_once("class/model/Render.php");
+require_once("class/model/EntityRender.php");
 require_once("function/php_input.php"); 
 
 class SelectApi extends AdvancedApi {

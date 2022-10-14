@@ -13,13 +13,13 @@ class PersistSqlValue { //2
     if(!Validation::is_empty($value->_get("id"))){
       $value->_call("reset")->_call("check");
       if($value->logs->isError()) throw new Exception($value->logs->toString());
-      $sql = $this->container->getSqlo($this->entityName)->update($value->_toArray("sql"));
+      $sql = $this->container->getEntitySqlo($this->entityName)->update($value->_toArray("sql"));
     } else {
       $value->_call("setDefault");
       $value->_set("id",uniqid()); //id habitualmente esta en null y no se asigna al definir valores por defecto
       $value->_call("reset")->_call("check");
       if($value->logs->isError()) throw new Exception($value->logs->toString());
-      $sql = $this->container->getSqlo($this->entityName)->insert($value->_toArray("sql"));
+      $sql = $this->container->getEntitySqlo($this->entityName)->insert($value->_toArray("sql"));
     }
 
     return["id" => $value->_get("id"),"sql"=>$sql];
@@ -31,13 +31,13 @@ class PersistSqlValue { //2
       $value->_set("id",$row["id"]);
       $value->_call("reset")->_call("check");
       if($value->logs->isError()) throw new Exception($value->logs->toString());
-      $sql = $this->container->getSqlo($this->entityName)->update($value->_toArray("sql"));
+      $sql = $this->container->getEntitySqlo($this->entityName)->update($value->_toArray("sql"));
     } else {
       $value->_call("setDefault");
       $value->_set("id",uniqid()); //id habitualmente esta en null y no se asigna al definir valores por defecto
       $value->_call("reset")->_call("check");
       if($value->logs->isError()) throw new Exception($value->logs->toString());
-      $sql = $this->container->getSqlo($this->entityName)->insert($value->_toArray("sql"));
+      $sql = $this->container->getEntitySqlo($this->entityName)->insert($value->_toArray("sql"));
     }
     return["id" => $value->_get("id"),"sql"=>$sql];
   }

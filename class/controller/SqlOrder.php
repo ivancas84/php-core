@@ -44,7 +44,7 @@ class SqlOrder {
 
     foreach($order as $key => $value){
       $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
-      $sql_ = "{$this->container->getSqlo($this->entityName)->mapping($key)} IS NULL, {$this->container->getSqlo($this->entityName)->mapping($key)} {$value}";
+      $sql_ = "{$this->container->getEntitySqlo($this->entityName)->mapping($key)} IS NULL, {$this->container->getEntitySqlo($this->entityName)->mapping($key)} {$value}";
       $sql .= concat($sql_, ', ', ' ORDER BY', $sql);
     }
 

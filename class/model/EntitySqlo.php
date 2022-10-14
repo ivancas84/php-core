@@ -1,7 +1,6 @@
 <?php
 
 require_once("function/snake_case_to.php");
-require_once("class/model/Render.php");
 require_once("function/settypebool.php");
 
 /**
@@ -13,7 +12,7 @@ class EntitySqlo {
   public $container;
   public $entityName;
 
-  public function select(Render $render) {
+  public function select(EntityRender $render) {
     $fieldsQuery = $this->fieldsQuery($render);
     $group = $this->groupBy($render);
     $having = $this->container->getControllerEntity("sql_condition", $this->entityName)->main($render->getHaving());    
@@ -143,7 +142,7 @@ UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
     return [$mapping,$fieldName];
   }
   
-  protected function fieldsQuery(Render $render){
+  protected function fieldsQuery(EntityRender $render){
     $fields = array_merge($render->getGroup(), $render->getFields());
 
     $fieldsQuery_ = [];
@@ -166,7 +165,7 @@ UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
     return implode(', ', $fieldsQuery_);
   }
 
-  protected function groupBy(Render $render){
+  protected function groupBy(EntityRender $render){
     $fields = $render->getGroup();
 
     $group_ = [];

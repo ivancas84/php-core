@@ -1,5 +1,5 @@
 <?php
-require_once("class/model/Render.php");
+require_once("class/model/EntityRender.php");
 require_once("function/filter_file.php");
 
 class UploadApi {
@@ -59,7 +59,7 @@ class UploadApi {
   }
 
   public function insertFile(){
-    $sql = $this->container->getSqlo("file")->insert($this->fileValue->_toArray("sql"));
+    $sql = $this->container->getEntitySqlo("file")->insert($this->fileValue->_toArray("sql"));
     $this->container->getDb()->multi_query_transaction($sql);
   }
 }
