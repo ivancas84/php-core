@@ -119,7 +119,7 @@ class Ma extends Db {
     /**
      * todos los valores
      */
-    if(!$render) $render = new EntityRender();
+    if(!$render) $render = $this->container->getEntityRender($entityName);
     $render->addFields($this->container->getEntityTools($entityName)->fieldNames());
     $sql = $this->container->getEntitySqlo($entityName)->select($render);
     $result = $this->query($sql);
@@ -134,6 +134,27 @@ class Ma extends Db {
     if (!count($rows)) throw new Exception("La búsqueda por id no arrojó ningun resultado");
     return $rows[0];
   }
+
+  public function labelGet(string $entityName, $id, $render = null) { //busqueda por id
+    if(!$id) throw new Exception("No se encuentra definido el id");
+    $render = $this->container->getEntityRender($entityName);
+    $render->setFields(["id","label"]);
+    $render->setCondition(["id","=",$id]);
+    $rows = $this->select($entityName, $render);
+    if (count($rows) != 1) throw new Exception("Error al definir label");
+    return $rows[0];
+  }
+
+  public function labelGetAll(string $entityName, $ids, $render = null) { //busqueda por id
+    if(!$ids) throw new Exception("No se encuentra definido el id");
+    $render = $this->container->getEntityRender($entityName);
+    $render->setFields(["id","label"]);
+    $render->setCondition(["id","=",$ids]);
+    $rows = $this->select($entityName, $render);
+    return $rows;
+  }
+
+
 
   public function getOrNull($entity, $id, $render = null){ //busqueda por id o null
     if(empty($id)) return null;
