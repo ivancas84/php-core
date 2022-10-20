@@ -174,7 +174,7 @@ UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
         if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
         $f = $key;
       } else {
-        $map = $this->mapping($fieldName);
+        $map = $this->_mapping($fieldName);
         $f = (is_integer($key)) ? $map[0]->_pf() . str_replace(".","_",$map[1]) : $key;
       }
       array_push($group_, $f);
