@@ -36,12 +36,14 @@ class MappingEntityOptions extends EntityOptions {
   public function label(){
     $fieldsLabel = [];
 
+    $entity = $this->container->getEntity($this->entityName);
+    foreach($entity->getFields() as $field){
+      if($field->isMain()) array_push($fieldsLabel, $field->getName());
+    }      
+
     $tree = $this->container->getEntityTree($this->entityName);
 
-    foreach($tree as $key => $subtree) {
-      //if($this->container->getField($this->entityName, $subtree["field_name"])->isMain()) 
-      $this->recursiveLabel($key, $subtree, $fieldsLabel);
-    }
+    foreach($tree as $key => $subtree) $this->recursiveLabel($key, $subtree, $fieldsLabel);
         
     array_walk($fieldsLabel, function(&$field) { 
       $field =  $this->container->getEntitySqlo($this->entityName)->mapping($field, $this->prefix); });
