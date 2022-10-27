@@ -1,5 +1,7 @@
 <?php
 
+
+
 require_once("function/snake_case_to.php");
 require_once("class/model/Entity.php");
 require_once("class/model/Field.php");

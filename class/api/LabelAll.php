@@ -16,9 +16,7 @@ class LabelAllApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $display = php_input();
-    $render = $this->container->getEntityRender($this->entityName)->setDisplay($display);
-    $render->setFields(["id","label"]);
-    $rows = $this->container->getDb()->select($this->entityName, $render);
+    $rows = $this->container->getEntityRender($this->entityName)->display($display)->fieldAdd(["id","label"])->all();
     return $rows;
   }
 

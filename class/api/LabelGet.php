@@ -16,9 +16,8 @@ class LabelApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $id = file_get_contents("php://input");
-    $render = $this->container->getEntityRender($this->entityName);
     if(empty($id)) throw new Exception("Identificador no definido");
-    return $this->container->getDb()->labelGet($render->entityName, $id);
+    return $this->container->getEntityRender($this->entityName)->fieldAdd(["id","label"])->param("id", $id)->one();
   }
 
 }

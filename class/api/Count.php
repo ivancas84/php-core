@@ -9,10 +9,9 @@ class CountApi {
 
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
-    $display = php_input();
-    $render = $this->container->getEntityRender($this->entityName)->setDisplay($display);
-
-    return $this->container->getDb()->count($render->entityName, $render);
+    //$display = php_input();
+    $display = [];
+    return intval($this->container->getEntityRender($this->entityName)->display($display)->fieldAdd(["count"])->columnOne());
   }
 
 }

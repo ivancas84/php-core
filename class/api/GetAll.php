@@ -16,10 +16,9 @@ class GetAllApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $ids = php_input();
-    $render = $this->container->getEntityRender($this->entityName);
     if(empty($ids)) throw new Exception("Identificadores no definidos");
-    $rows = $this->container->getDb()->getAll($render->entityName, $ids);
-    $rel = $this->container->getEntityTools($render->entityName);
+    $rows = $this->container->getEntityRender($this->entityName)->param("id",$ids)->fieldTree()->all();
+    $rel = $this->container->getEntityTools($this->entityName);
     foreach($rows as &$row) $row = $rel->json($row);
     return $rows;
     

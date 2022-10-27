@@ -15,9 +15,8 @@ class AllApi {
   public function main() {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     $display = php_input();
-    $render = $this->container->getEntityRender($this->entityName)->setDisplay($display);
-    $rows = $this->container->getDb()->all($render->entityName, $render);
-    return $this->container->getEntityTools($render->entityName)->jsonAll($rows);
+    $rows = $this->container->getEntityRender($this->entityName)->display($display)->fieldTree()->all();
+    return $this->container->getEntityTools($this->entityName)->jsonAll($rows);
   }
 
 }

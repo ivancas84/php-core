@@ -195,7 +195,7 @@ UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
     if (empty ($tablePrefix)) $tablePrefix = $this->container->getEntity($this->entityName)->getAlias();
 
     foreach ($tree as $prefix => $value) {      
-      $entitySn =  $this->container->getEntity($value["field_name"])->sn_();
+      $entitySn =  $this->container->getEntity($value["entity_name"])->sn_();
       $sql .= $this->_join($entitySn, $value["field_name"], $tablePrefix, $prefix) . "
 ";
 

@@ -16,9 +16,7 @@ class UniqueApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $params = php_input();
-    $render = $this->container->getEntityRender($this->entityName)->setDisplay($display);
-
-    $row = $this->container->getDb()->unique($render->entityName, $params);
+    $row = $this->container->getEntityRender($this->entityName)->unique($params)->fieldTree()->one();
     return $this->container->getEntityTools($render->entityName)->json($row);
   }
 
