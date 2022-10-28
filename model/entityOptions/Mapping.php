@@ -1,12 +1,12 @@
 <?php
 
-require_once("class/model/entityOptions/EntityOptions.php");
+require_once("model/entityOptions/EntityOptions.php");
 
 class MappingEntityOptions extends EntityOptions {
   /**
-   * Ejemplo redefinicion: Ruta class/mapping/Comision.php
+   * Ejemplo redefinicion: Ruta mapping/Comision.php
    * 
-   * require_once("class/model/entityOptions/Mapping.php");
+   * require_once("model/entityOptions/Mapping.php");
    * 
    * class ComisionMapping extends MappingEntityOptions{
    *   public function numero() {

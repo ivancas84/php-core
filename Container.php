@@ -3,12 +3,12 @@
 
 
 require_once("function/snake_case_to.php");
-require_once("class/model/Entity.php");
-require_once("class/model/Field.php");
-require_once("class/model/EntityPersist.php");
-require_once("class/model/EntityTools.php");
-require_once("class/model/EntityQuery.php");
-require_once("class/model/Db.php");
+require_once("model/Entity.php");
+require_once("model/Field.php");
+require_once("model/EntityPersist.php");
+require_once("model/EntityTools.php");
+require_once("model/EntityQuery.php");
+require_once("model/Db.php");
 
 
 class Container {
@@ -46,7 +46,7 @@ class Container {
   }
 
   public function auth(){
-    require_once("class/tools/Auth.php");
+    require_once("tools/Auth.php");
     $c = new Auth();
     return $c;
   }
@@ -54,7 +54,7 @@ class Container {
   public function treeJson(){
     if (!empty(self::$entitiesTreeJson)) return self::$entitiesTreeJson;
 
-    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-tree.json");
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT. DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-tree.json");
     self::$entitiesTreeJson = json_decode($string, true); 
     return self::$entitiesTreeJson;
   }
@@ -68,7 +68,7 @@ class Container {
   public function relationsJson(){
     if (!empty(self::$entitiesRelationsJson)) return self::$entitiesRelationsJson;
 
-    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-relations.json");
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR .  "model" . DIRECTORY_SEPARATOR . "entity-relations.json");
     self::$entitiesRelationsJson = json_decode($string, true); 
     return self::$entitiesRelationsJson;
   }
@@ -95,10 +95,10 @@ class Container {
 
   public function entitiesJson(){    
     if (!empty(self::$entitiesJson)) return self::$entitiesJson;
-    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "_entities.json");
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT. DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "_entities.json");
     $array = json_decode($string, true);
 
-    $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entities.json");
+    $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT. DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entities.json");
     if(!empty($string2)){
       $array2 = json_decode($string2, true);
       foreach($array as $entityName => $value){
@@ -117,11 +117,11 @@ class Container {
   public function fieldsJson($entityName){
     if (isset(self::$fieldsJson[$entityName])) return self::$fieldsJson[$entityName];
 
-    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/_" . $entityName . ".json");
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT. DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/_" . $entityName . ".json");
     $array = json_decode($string, true);
     
-    if(file_exists($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json")){
-      $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json");
+    if(file_exists($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT. DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json")){
+      $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT. DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json");
       $array2 = json_decode($string2, true);
       foreach($array as $fieldName => $value){
         if(array_key_exists($fieldName, $array2)){
@@ -160,11 +160,11 @@ class Container {
     $A = snake_case_to("XxYy", $action);
     $E = snake_case_to("XxYy", $entityName);
 
-    $path = "class/" . $d . "/" . $a . "/" .$E . ".php";
+    $path = "" . $d . "/" . $a . "/" .$E . ".php";
     if((@include_once $path) == true){
       $className =  $E . $A . $D;
     } else{
-      require_once("class/". $d . "/" . $A . ".php");
+      require_once("". $d . "/" . $A . ".php");
       $className = $A   . $D;
     }
 
@@ -190,7 +190,7 @@ class Container {
     /**
      * Controlador (si utilizan container o algun elemento que pueda instanciarse desde container entonces es un controlador)
      */
-    $dir = "class/controller/";
+    $dir = "controller/";
     $name = snake_case_to("XxYy", $controller) . ".php";
     $className = snake_case_to("XxYy", $controller);    
     require_once($dir.$name);
@@ -207,7 +207,7 @@ class Container {
     /**
      * Tools (no se les asigna ningun parametro adicional)
      */
-    $dir = "class/tools/";
+    $dir = "tools/";
     $name = snake_case_to("XxYy", $tool) . ".php";
     $className = snake_case_to("XxYy", $tool);    
     require_once($dir.$name);
@@ -219,12 +219,12 @@ class Container {
     /**
      * Controlador asociado a entidad
      */
-    $path = "class/controller/" . snake_case_to("xxYy", $controller) . "/" . snake_case_to("XxYy", $entityName) . ".php";
+    $path = "controller/" . snake_case_to("xxYy", $controller) . "/" . snake_case_to("XxYy", $entityName) . ".php";
     
     if((@include_once $path) == true){
       $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller);    
     } else{
-      require_once("class/controller/" . snake_case_to("XxYy", $controller) . ".php");
+      require_once("controller/" . snake_case_to("XxYy", $controller) . ".php");
       $className = snake_case_to("XxYy", $controller);    
     }
 
@@ -236,7 +236,7 @@ class Container {
   }
 
   public function import($id){
-    $path = "class/import/" . snake_case_to("xxYy", $id) . "/Import.php";
+    $path = "import/" . snake_case_to("xxYy", $id) . "/Import.php";
     $className = snake_case_to("XxYy", $id)."Import";    
     require_once($path);
     $c = new $className;
@@ -252,7 +252,7 @@ class Container {
    * @param $import Clase de importacion
    */
   public function importElement($entityName, $import){
-    $path = "class/import/" . snake_case_to("xxYy", $entityName) . "/Element.php";
+    $path = "import/" . snake_case_to("xxYy", $entityName) . "/Element.php";
     $className = snake_case_to("XxYy", $entityName)."ImportElement";    
     require_once($path);
     $c = new $className;
@@ -290,12 +290,12 @@ class Container {
 
 
   public function mapping($entityName, $prefix = ""){
-    $dir = "class/model/mapping/";
+    $dir = "model/mapping/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
     if((@include_once $dir.$name) == true){
       $className = snake_case_to("XxYy", $entityName) . "Mapping";
     } else{
-      require_once("class/model/entityOptions/Mapping.php");
+      require_once("model/entityOptions/Mapping.php");
       $className = "MappingEntityOptions";
     }
     
@@ -307,12 +307,12 @@ class Container {
   }
   
   public function condition($entityName, $prefix = ""){
-    $dir = "class/model/condition/";
+    $dir = "model/condition/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
     if((@include_once $dir.$name) == true){      
       $className = $prf.snake_case_to("XxYy", $entityName) . "Condition";
     } else {
-      require_once("class/model/entityOptions/Condition.php");
+      require_once("model/entityOptions/Condition.php");
       $className = "ConditionEntityOptions";
     }
 
@@ -333,12 +333,12 @@ class Container {
      * @param prefix Prefijo de identificacion. El prefijo es util cuando los 
      * valores se obtienen de resultado de relaciones.
      */
-    $dir = "class/model/value/";
+    $dir = "model/value/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
     if((@include_once $dir.$name) == true){ //si existe se utiliza la clase exclusiva
       $className = snake_case_to("XxYy", $entityName) . "Value";
     } else { //si no existe clase exclusiva, se utiliza clase general
-      require_once("class/model/entityOptions/Value.php");
+      require_once("model/entityOptions/Value.php");
       $className = "ValueEntityOptions";
     }
 
