@@ -22,7 +22,6 @@ class PersistRowsApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $data = php_input();
-    $render = $this->container->query($this->entityName);
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
     
     $ids = [];
@@ -30,13 +29,13 @@ class PersistRowsApi {
     $detail = [];
 
     foreach($data as $row){
-        $persist = $this->container->getControllerEntity("persist_sql", $render->entityName)->main($row);
+        $persist = $this->container->controller("persist_sql", $this->entityName)->main($row);
         $sql .= $persist["sql"];
         array_push($ids, $persist["id"]);
-      array_push($detail, $render->entityName.$row["id"]);
+      array_push($detail, $this->entityName.$row["id"]);
     }
 
-    $this->container->getDb()->multi_query_transaction($sql);
+    $this->container->db()->multi_query_transaction($sql);
 
     return ["ids" => $ids, "detail" => $detail];
   }

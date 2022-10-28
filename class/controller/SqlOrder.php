@@ -21,7 +21,7 @@ class SqlOrder {
      * Si no existe ordenamiento por defecto,
      * se definen los campos principales nf de la entidad principal    
      */
-    $e = $this->container->getEntity($this->entityName);
+    $e = $this->container->entity($this->entityName);
     if(!empty($of = $e->getOrderDefault())) return $of; //se retorna ordenamiento por defecto definido
         
     $fieldsMain = $e->main;
@@ -44,7 +44,7 @@ class SqlOrder {
 
     foreach($order as $key => $value){
       $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
-      $sql_ = "{$this->container->getEntityPersist($this->entityName)->mapping($key)} IS NULL, {$this->container->getEntityPersist($this->entityName)->mapping($key)} {$value}";
+      $sql_ = "{$this->container->query($this->entityName)->mapping($key)} IS NULL, {$this->container->query($this->entityName)->mapping($key)} {$value}";
       $sql .= concat($sql_, ', ', ' ORDER BY', $sql);
     }
 

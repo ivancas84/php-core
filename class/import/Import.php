@@ -143,7 +143,7 @@ abstract class Import {
      *     if(!$element->process) continue;
      *
      *     if(key_exists($element->entities["persona"]->numeroDocumento(), $this->dbs["persona"])){
-     *       $personaExistente = $this->container->getValues("persona");
+     *       $personaExistente = $this->container->values("persona");
      *       $dni = $element->entities["persona"]->numeroDocumento();
      *       $personaExistente->_fromArray($this->dbs["persona"][$dni]);
      *       if(!$element->entities["persona"]->checkNombresParecidos($personaExistente)){                    

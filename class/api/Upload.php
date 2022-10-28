@@ -45,7 +45,7 @@ class UploadApi {
 
   public function createFileValue(){
     $ext = pathinfo($this->file["name"], PATHINFO_EXTENSION);
-    $this->fileValue = $this->container->getValue("file")->_fromArray($this->file,"set")->_call("setDefault");
+    $this->fileValue = $this->container->value("file")->_fromArray($this->file,"set")->_call("setDefault");
     $this->fileValue->_set("id",uniqid());
     $this->fileValue->_set("content",$this->dir.$this->fileValue->_get("id").".".$ext);    
     $this->fileValue->_call("reset")->_call("check");
@@ -59,7 +59,7 @@ class UploadApi {
   }
 
   public function insertFile(){
-    $sql = $this->container->getEntityPersist("file")->insert($this->fileValue->_toArray("sql"));
+    $sql = $this->container->persist("file")->insert($this->fileValue->_toArray("sql"));
     $this->container->getDb()->multi_query_transaction($sql);
   }
 }

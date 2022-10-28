@@ -2,11 +2,11 @@
 require_once("class/model/Ma.php");
 require_once("class/model/EntityQuery.php");
 
-
+/**
+ * Consulta de campo unico
+ */
 class UniqueApi {
-  /**
-   * Comportamiento general de all
-   */
+  
 
   public $entityName;
   public $container;
@@ -17,7 +17,7 @@ class UniqueApi {
     
     $params = php_input();
     $row = $this->container->query($this->entityName)->unique($params)->fieldTree()->one();
-    return $this->container->getEntityTools($render->entityName)->json($row);
+    return $this->container->tools($this->entityName)->json($row);
   }
 
 }

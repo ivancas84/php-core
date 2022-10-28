@@ -25,10 +25,10 @@ class MappingEntityOptions extends EntityOptions {
      * 
      * Pueden ser campos de relaciones.
      */
-    $entity = $this->container->getEntity($this->entityName);  
-    if(empty($entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->container->getEntity($this->entityName)->getName()); 
+    $entity = $this->container->entity($this->entityName);  
+    if(empty($entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->container->entity($this->entityName)->getName()); 
     $identifier = [];
-    foreach($entity->getIdentifier() as $id) array_push($identifier, $this->container->getEntityPersist($this->entityName)->mapping($id, $this->prefix));
+    foreach($entity->getIdentifier() as $id) array_push($identifier, $this->container->query($this->entityName)->mapping($id, $this->prefix));
     return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
 ";
   }
@@ -36,23 +36,23 @@ class MappingEntityOptions extends EntityOptions {
   public function label(){
     $fieldsLabel = [];
 
-    $entity = $this->container->getEntity($this->entityName);
+    $entity = $this->container->entity($this->entityName);
     foreach($entity->getFields() as $field){
       if($field->isMain()) array_push($fieldsLabel, $field->getName());
     }      
 
-    $tree = $this->container->getEntityTree($this->entityName);
+    $tree = $this->container->tree($this->entityName);
 
     foreach($tree as $key => $subtree) $this->recursiveLabel($key, $subtree, $fieldsLabel);
         
     array_walk($fieldsLabel, function(&$field) { 
-      $field =  $this->container->getEntityPersist($this->entityName)->mapping($field, $this->prefix); });
+      $field =  $this->container->query($this->entityName)->mapping($field, $this->prefix); });
 
     return "CONCAT_WS(' ', " . implode(",", $fieldsLabel). ")";
   }
 
   protected function recursiveLabel(string $key, array $tree, array &$fieldsLabel){
-    $entity = $this->container->getEntity($tree["entity_name"]);
+    $entity = $this->container->entity($tree["entity_name"]);
     
     foreach($entity->getFields() as $field){
       if($field->isMain()) array_push($fieldsLabel, $key."-".$field->getName());
@@ -62,8 +62,8 @@ class MappingEntityOptions extends EntityOptions {
   }
 
   public function search(){
-    $fields = $this->container->getEntity($this->entityName)->nf;
-    array_walk($fields, function(&$field) { $field = $this->container->getMapping($this->entityName, $this->prefix)->_($field); });
+    $fields = $this->container->entity($this->entityName)->nf;
+    array_walk($fields, function(&$field) { $field = $this->container->mapping($this->entityName, $this->prefix)->_($field); });
     return "CONCAT_WS(' ', " . implode(",", $fields). ")";
   }
 

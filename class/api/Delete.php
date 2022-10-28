@@ -29,9 +29,8 @@ class DeleteApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $ids = php_input();
-    $render = $this->container->query($this->entityName);
-    $sql = $this->container->getEntityPersist($render->entityName)->delete($ids);
-    $this->container->getDb()->multi_query_transaction($sql);
+    $sql = $this->container->persist($this->entityName)->delete($ids);
+    $this->container->db()->multi_query_transaction($sql);
     $detail = array_map(array($this, 'concat'), $ids);    
 
     return ["ids" => $ids, "detail" => $detail];

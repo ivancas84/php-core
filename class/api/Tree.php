@@ -7,7 +7,7 @@ class TreeApi extends BaseApi {
   public $container;
 
   public function main(){
-    return $this->container->getEntitiesTreeJson();    
+    return $this->container->treeJson();    
   }
 }
 

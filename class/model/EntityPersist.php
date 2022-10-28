@@ -31,7 +31,7 @@ WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} = {$r
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->formatIds($ids);
-    $r_ = $this->container->getValue($this->entityName)->_fromArray($row, "set")->_toArray("sql");
+    $r_ = $this->container->value($this->entityName)->_fromArray($row, "set")->_toArray("sql");
     return "
 {$this->_update($r_)}
 WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} IN ({$ids_});
@@ -88,7 +88,7 @@ UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
      * Formato sql de ids
      */
     $ids_ = [];
-    $value = $this->container->getValue($this->entityName);
+    $value = $this->container->value($this->entityName);
     for($i = 0; $i < count($ids); $i++) {
       $value->_set("id",$ids[$i]);
       array_push($ids_, $value->_sql("id"));

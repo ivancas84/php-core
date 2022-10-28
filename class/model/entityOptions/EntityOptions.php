@@ -13,7 +13,7 @@ class EntityOptions {
    * prefijo fields
    */
   
-  public function _pt(){ return (empty($this->prefix)) ?  $this->container->getEntity($this->entityName)->getAlias() : $this->prefix; }
+  public function _pt(){ return (empty($this->prefix)) ?  $this->container->entity($this->entityName)->getAlias() : $this->prefix; }
   /**
    * prefijo tabla
    */
@@ -30,7 +30,7 @@ class EntityOptions {
     /**
      * Llamar a _callFields utilizando los fieldNames definidos en la entidad.
      */
-    return $this->_callFields($this->container->getEntity($this->entityName)->getFieldNames(), $method);
+    return $this->_callFields($this->container->eEntity($this->entityName)->getFieldNames(), $method);
   }
 
   function _toArrayFields($fieldNames, $method = ""){

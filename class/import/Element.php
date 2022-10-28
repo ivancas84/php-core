@@ -49,7 +49,7 @@ abstract class ImportElement { //2
    */
   public function setEntity($data, $name, $prefix = ""){
     $entityName = $this->import->getEntityName($name);
-    $this->entities[$name] = $this->container->getValue($entityName, $prefix);
+    $this->entities[$name] = $this->container->value($entityName, $prefix);
     if(!$data) throw new Exception("Error al definir datos iniciales");
     $this->entities[$name]->_fromArray($data, "set");
 
@@ -74,7 +74,7 @@ abstract class ImportElement { //2
     if(Validation::is_empty($this->entities[$name]->_get("id"))) $this->entities[$name]->_set("id",uniqid());
     $this->entities[$name]->_call("setDefault");
     $entityName = $this->import->getEntityName($name);
-    $this->sql .= $this->container->getEntityPersist($entityName)->insert($this->entities[$name]->_toArray("sql"));
+    $this->sql .= $this->container->persist($entityName)->insert($this->entities[$name]->_toArray("sql"));
     return $this->entities[$name]->_get("id");
   }
 
@@ -134,7 +134,7 @@ abstract class ImportElement { //2
     if(!$identifier = $this->getIdentifier($name)) return false;
     if(!array_key_exists($identifier, $this->import->dbs[$name])) return false;
     $entityName = $this->import->getEntityName($name);
-    $existente = $this->container->getValue($entityName);
+    $existente = $this->container->value($entityName);
     $existente->_fromArray($this->import->dbs[$name][$identifier], "set");
     $this->entities[$name]->_set("id",$existente->_get("id"));
     return $existente;
@@ -142,7 +142,7 @@ abstract class ImportElement { //2
 
   public function update($name){
     $entityName = $this->import->getEntityName($name);
-    $this->sql .= $this->container->getEntityPersist($entityName)->update($this->entities[$name]->_toArray("sql"));
+    $this->sql .= $this->container->persist($entityName)->update($this->entities[$name]->_toArray("sql"));
     $this->logs->addLog($name,"info","Registro existente, se actualizara campos");
     return $this->entities[$name]->_get("id");
   }

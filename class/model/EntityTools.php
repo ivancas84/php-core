@@ -15,13 +15,13 @@ class EntityTools {
    * Array de nombres de campos definidos entidad principal y sus relaciones, de la forma fieldId-fieldName
    */
   public function fieldNames(){
-    $fieldNames = $this->container->getEntity($this->entityName)->getFieldNames();
-    foreach($this->container->getEntityRelations($this->entityName) as $prefix => $value){
+    $fieldNames = $this->container->entity($this->entityName)->getFieldNames();
+    foreach($this->container->relations($this->entityName) as $prefix => $value){
       $fieldNames = array_unique(
         array_merge(
           $fieldNames, 
           array_add_prefix(
-            $this->container->getEntity($value["entity_name"])->getFieldNames(),
+            $this->container->entity($value["entity_name"])->getFieldNames(),
             $prefix."-"
           )
         )
@@ -32,9 +32,9 @@ class EntityTools {
 
 
   public function json($row){
-    $tree = $this->container->getEntityTree($this->entityName);
+    $tree = $this->container->tree($this->entityName);
     if(empty($row)) return null;
-    $this->json = $this->container->getValue($this->entityName)->_fromArray($row, "set")->_toArray("json");
+    $this->json = $this->container->value($this->entityName)->_fromArray($row, "set")->_toArray("json");
     $this->jsonFk($tree, $this->json, $row);
     return $this->json;
   }
@@ -42,7 +42,7 @@ class EntityTools {
   protected function jsonFk(array $tree, &$json, &$row){
     foreach ($tree as $prefix => $value) {
       if(!is_null($row[$prefix.'_id'])) {   
-        $json[$value["field_name"]."_"] = $this->container->getValue($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
+        $json[$value["field_name"]."_"] = $this->container->value($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
         if(!empty($value["children"])) $this->jsonFk($value["children"], $json[$value["field_name"]."_"], $row);
       }
     }
@@ -50,9 +50,9 @@ class EntityTools {
 
   public function json2($row){
     $json = [];
-    $tree = $this->container->getEntityTree($this->entityName);
+    $tree = $this->container->tree($this->entityName);
     $id =  $this->entityName;
-    $json[$id] = $this->container->getValue($this->entityName)->_fromArray($row, "set")->_toArray("json");
+    $json[$id] = $this->container->value($this->entityName)->_fromArray($row, "set")->_toArray("json");
     $this->json2Fk($tree, $row, $json);
     return $json;
   }
@@ -60,7 +60,7 @@ class EntityTools {
   protected function json2Fk(array $tree, $row, &$json){
     foreach ($tree as $prefix => $value) {
       $id =  $prefix;
-      $json[$id] = $this->container->getValue($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
+      $json[$id] = $this->container->value($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
       if(!empty($value["children"])) $this->json2Fk($value["children"], $row, $json);
     }
   }
@@ -81,15 +81,15 @@ class EntityTools {
      */
   public function value($row){
     $value = [];
-    $tree = $this->container->getEntityTree($this->entityName);
-    $value[$this->entityName] = $this->container->getValue($this->entityName)->_fromArray($row, "set");
+    $tree = $this->container->tree($this->entityName);
+    $value[$this->entityName] = $this->container->value($this->entityName)->_fromArray($row, "set");
     $this->valueFk($tree, $row, $value);
     return $value;
   }
 
   protected function valueFk(array $tree, $row, &$value){
     foreach ($tree as $fieldId => $subtree) {
-      $value[$fieldId] = $this->container->getValue($subtree["entity_name"], $fieldId)->_fromArray($row, "set");
+      $value[$fieldId] = $this->container->value($subtree["entity_name"], $fieldId)->_fromArray($row, "set");
       if(!empty($subtree["children"])) $this->valueFk($subtree["children"], $row, $value);
     }
   }

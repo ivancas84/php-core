@@ -71,13 +71,13 @@ class UniqueRelApi { //1.1
   }
 
   public function query(){
-    $tree = $this->container->getEntityTree($this->entityName);
+    $tree = $this->container->tree($this->entityName);
 
     if(array_key_exists($this->entityName,$this->params)){
-      $render = $this->container->query($this->entityName);
-      $row = $this->container->getDb()->unique($render->entityName, $this->params[$this->entityName]);
+      $row = $this->container->query($this->entityName)->unique($this->params[$this->entityName])->fieldsTree()->one();
+      
       if(!empty($row)) {
-        $data = $this->container->getEntityTools($render->entityName)->json2($row);
+        $data = $this->container->tools($this->entityName)->json2($row);
         $this->row[$this->entityName] = $data[$this->entityName];
       } else {
         $data = [];
@@ -124,10 +124,10 @@ class UniqueRelApi { //1.1
   }
 
   public function previousParam($leaf, $prefix, $previousKey){
-    $render = $this->container->query($leaf["entity_name"]);
-    $row = $this->container->getDb()->get($render->entityName, $this->row[$previousKey][$leaf["field_name"]]);
+    $row = $this->container->query($leaf["entity_name"])->param("id", $this->row[$previousKey][$leaf["field_name"]])->fieldsTree()->one();
+   
     if(!empty($row)) {
-      $data = $this->container->getEntityTools($render->entityName, $prefix)->json2($row);
+      $data = $this->container->tools($leaf["entity_name"], $prefix)->json2($row);
       $this->row[$prefix] = $data[$prefix];
     } else {
       $data = [];
@@ -137,10 +137,10 @@ class UniqueRelApi { //1.1
   }
 
   public function prefixParam($leaf, $prefix){
-    $render = $this->container->query($leaf["entity_name"]);
-    $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
+    $row = $this->container->query($leaf["entity_name"])->param("id", $this->params[$prefix])->fieldsTree()->one();
+    
     if(!empty($row)) {
-      $data = $this->container->getEntityTools($render->entityName, $prefix)->json2($row);
+      $data = $this->container->tools($leaf["entity_name"], $prefix)->json2($row);
       $this->row[$prefix] = $data[$prefix];
     } else {
       $data = [];

@@ -117,10 +117,10 @@ class SqlCondition {
     $f = explode("-",$field);
     if(count($f) == 2) {
       $prefix = $f[0];
-      $entityName = $this->container->getEntityRelations($this->entityName)[$f[0]]["entity_name"];
-      return $this->container->getCondition($entityName, $prefix)->_($f[1], $option, $value);
+      $entityName = $this->container->relations($this->entityName)[$f[0]]["entity_name"];
+      return $this->container->condition($entityName, $prefix)->_($f[1], $option, $value);
     } 
-    return $this->container->getCondition($this->entityName)->_($field, $option, $value);
+    return $this->container->condition($this->entityName)->_($field, $option, $value);
   }
 
 }

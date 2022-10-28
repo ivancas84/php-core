@@ -26,11 +26,11 @@ class ModelResources {
     if(empty($transferir)) return ["sql"=>$sql,"detail"=>$detail];
     
     foreach($transferir as $detalle){
-      $tr = $this->container->getValue($entityName)->_fromArray($detalle,"set");
+      $tr = $this->container->value($entityName)->_fromArray($detalle,"set");
       $tr->_fastSet($fkName,$fkValueTransfer);
       $tr->_call("reset")->_call("check");
       if($tr->logs->isError()) throw new Exception($tr->logs->toString());
-      $sql .= $this->container->getEntityPersist($entityName)->update($tr->_toArray("sql"));      
+      $sql .= $this->container->persist($entityName)->update($tr->_toArray("sql"));      
     }
 
     return ["sql"=>$sql,"detail"=>$detail];

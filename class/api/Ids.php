@@ -17,7 +17,7 @@ class IdsApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $display = php_input();
-    $ids = $this->container->query($this->entityName)->display($display)->fields(["id"])->column();
+    $ids = $this->container->query($this->entityName)->display($display)->field("id")->column();
     
     /**
      * los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)

@@ -18,7 +18,7 @@ class PersistRelApi {
 
     $params = php_input();
     
-    $persist = $this->container->getControllerEntity("persist_rel_sql", $this->entityName);
+    $persist = $this->container->controller("persist_rel_sql", $this->entityName);
     $p = $persist->main($params);
     $this->container->getDb()->multi_query_transaction($p["sql"]);
     return ["id" => $p["id"], "detail" => $p["detail"]];

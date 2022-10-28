@@ -8,6 +8,7 @@ require_once("class/model/Field.php");
 require_once("class/model/EntityPersist.php");
 require_once("class/model/EntityTools.php");
 require_once("class/model/EntityQuery.php");
+require_once("class/model/Db.php");
 
 
 class Container {
@@ -35,22 +36,22 @@ class Container {
     require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_ROOT . '/vendor/autoload.php');
   }
 
-  public function getDb() {
-    if (isset(self::$db)) return self::$db;
-    require_once("class/model/Ma.php");
-    $c = new Ma();
-    $c::$connections++;
-    $c->container = $this;
-    return self::$db = $c;
+  public function db() {
+    if (!isset(self::$db)) {
+      self::$db = new Db();
+      self::$db->container = $this;
+    }
+    self::$db::$connections++;
+    return self::$db;
   }
 
-  public function getAuth(){
+  public function auth(){
     require_once("class/tools/Auth.php");
     $c = new Auth();
     return $c;
   }
 
-  public function getEntitiesTreeJson(){
+  public function treeJson(){
     if (!empty(self::$entitiesTreeJson)) return self::$entitiesTreeJson;
 
     $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-tree.json");
@@ -59,12 +60,12 @@ class Container {
   }
 
 
-  public function getEntityTree($entityName) {
-    $tree = $this->getEntitiesTreeJson();
+  public function tree($entityName) {
+    $tree = $this->treeJson();
     return array_key_exists($entityName, $tree) ? $tree[$entityName] : [];
   }
   
-  public function getEntitiesRelationsJson(){
+  public function relationsJson(){
     if (!empty(self::$entitiesRelationsJson)) return self::$entitiesRelationsJson;
 
     $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-relations.json");
@@ -72,27 +73,27 @@ class Container {
     return self::$entitiesRelationsJson;
   }
 
-  public function getEntityRelations($entityName) {
-    $tree = $this->getEntitiesRelationsJson();
+  public function relations($entityName) {
+    $tree = $this->relationsJson();
     return array_key_exists($entityName, $tree) ? $tree[$entityName] : [];
   }
   
-  public function getEntityNames() {
-    $tree = $this->getEntitiesJson();
+  public function entityNames() {
+    $tree = $this->entitiesJson();
     return array_keys($tree);
   }
   
   
-  public function getStructure(){
+  public function structure(){
     if(self::$structure) return self::$entity;
-    foreach($this->getEntityNames() as $entityName){
-      $this->getEntity($entityName);
+    foreach($this->entityNames() as $entityName){
+      $this->entity($entityName);
     }
     self::$structure = true;
     return self::$entity;
   }
 
-  public function getEntitiesJson(){    
+  public function entitiesJson(){    
     if (!empty(self::$entitiesJson)) return self::$entitiesJson;
     $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "_entities.json");
     $array = json_decode($string, true);
@@ -113,7 +114,7 @@ class Container {
     return self::$entitiesJson;
   }
 
-  public function getFieldsJson($entityName){
+  public function fieldsJson($entityName){
     if (isset(self::$fieldsJson[$entityName])) return self::$fieldsJson[$entityName];
 
     $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_SRC . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/_" . $entityName . ".json");
@@ -132,27 +133,27 @@ class Container {
     return self::$fieldsJson[$entityName];
   }
 
-  public function getEntity($entityName){
+  public function entity($entityName){
     if (isset(self::$entity[$entityName])) return self::$entity[$entityName];
 
-    $entitiesJson = $this->getEntitiesJson();
+    $entitiesJson = $this->entitiesJson();
     self::$entity[$entityName] = new Entity($entitiesJson[$entityName]);
     self::$entity[$entityName]->container = $this;
-    self::$entity[$entityName]->structure = $this->getStructure();
+    self::$entity[$entityName]->structure = $this->structure();
     return self::$entity[$entityName];
   }
 
-  public function getField($entityName, $fieldName){
+  public function field($entityName, $fieldName){
     if (isset(self::$field[$entityName.UNDEFINED.$fieldName])) return self::$field[$entityName.UNDEFINED.$fieldName]; 
 
-    $fieldsJson = $this->getFieldsJson($entityName);
+    $fieldsJson = $this->fieldsJson($entityName);
     self::$field[$entityName.UNDEFINED.$fieldName] = new Field($fieldsJson[$fieldName]);
     self::$field[$entityName.UNDEFINED.$fieldName]->container = $this;
     self::$field[$entityName.UNDEFINED.$fieldName]->entityName = $entityName;
     return self::$field[$entityName.UNDEFINED.$fieldName]; 
   }
 
-  protected function getInstanceFromDir($dir, $action, $entityName){
+  protected function instanceFromDir($dir, $action, $entityName){
     $d = snake_case_to("xxYy", $dir);
     $D = snake_case_to("XxYy", $dir);
     $a = snake_case_to("xxYy", $action);
@@ -173,19 +174,19 @@ class Container {
     return $c;
   }
 
-  public function getApi($action, $entityName) {
-    return $this->getInstanceFromDir("api",$action,$entityName);
+  public function api($action, $entityName) {
+    return $this->instanceFromDir("api",$action,$entityName);
   }
 
-  public function getScript($action, $entityName) {
-    return $this->getInstanceFromDir("script",$action,$entityName);
+  public function script($action, $entityName) {
+    return $this->instanceFromDir("script",$action,$entityName);
   }
 
-  public function getPdf($action, $entityName) {
-    return $this->getInstanceFromDir("pdf",$action,$entityName);
+  public function pdf($action, $entityName) {
+    return $this->instanceFromDir("pdf",$action,$entityName);
   }
   
-  public function getController($controller, $singleton = false){
+  public function controller_($controller, $singleton = false){
     /**
      * Controlador (si utilizan container o algun elemento que pueda instanciarse desde container entonces es un controlador)
      */
@@ -202,7 +203,7 @@ class Container {
     return self::$controller[$controller];
   }
 
-  public function getTool($tool){
+  public function tools_($tool){
     /**
      * Tools (no se les asigna ningun parametro adicional)
      */
@@ -214,7 +215,7 @@ class Container {
     return $c;
   }
   
-  public function getControllerEntity($controller, $entityName, $prefix = null){
+  public function controller($controller, $entityName, $prefix = null){
     /**
      * Controlador asociado a entidad
      */
@@ -234,7 +235,7 @@ class Container {
     return $c;
   }
 
-  public function getImport($id){
+  public function import($id){
     $path = "class/import/" . snake_case_to("xxYy", $id) . "/Import.php";
     $className = snake_case_to("XxYy", $id)."Import";    
     require_once($path);
@@ -250,7 +251,7 @@ class Container {
    * 
    * @param $import Clase de importacion
    */
-  public function getImportElement($entityName, $import){
+  public function importElement($entityName, $import){
     $path = "class/import/" . snake_case_to("xxYy", $entityName) . "/Element.php";
     $className = snake_case_to("XxYy", $entityName)."ImportElement";    
     require_once($path);
@@ -262,7 +263,7 @@ class Container {
     return $c;
   }
 
-  public function getEntityPersist($entityName) {
+  public function persist($entityName) {
     if (isset(self::$sqlo[$entityName])) return self::$sqlo[$entityName];
 
     $c = new EntityPersist;
@@ -278,7 +279,7 @@ class Container {
     return $render;
   }
 
-  public function getEntityTools($entityName) {
+  public function tools($entityName) {
     if (isset(self::$tools[$entityName])) return self::$tools[$entityName];
 
     $c = new EntityTools;
@@ -287,27 +288,8 @@ class Container {
     return self::$tools[$entityName] = $c;
   }
 
-  public function getModelTools(){
-    /**
-     * Instanciar ModelTools
-     * 
-     * Model Tools es una clase especial del sistema para incorporar codigo de uso comun.
-     * Se especifica una clase principalmente para utilizar el Container
-     */
-    if(!self::$modelTools) {
-      require_once("class/controller/ModelTools.php");
-      self::$modelTools = new ModelTools;
-      self::$modelTools->container = $this;
-    }
-    return self::$modelTools;     
-  }
 
-  public function getMt(){ return $this->getModelTools(); }
-  /**
-   * Alias de getModelTools
-   */
-
-  public function getMapping($entityName, $prefix = ""){
+  public function mapping($entityName, $prefix = ""){
     $dir = "class/model/mapping/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
     if((@include_once $dir.$name) == true){
@@ -324,7 +306,7 @@ class Container {
     return $c;    
   }
   
-  public function getCondition($entityName, $prefix = ""){
+  public function condition($entityName, $prefix = ""){
     $dir = "class/model/condition/";
     $name = snake_case_to("XxYy", $entityName) . ".php";
     if((@include_once $dir.$name) == true){      
@@ -341,7 +323,7 @@ class Container {
     return $c;    
   }
 
-  public function getValue($entityName, $prefix = ""){
+  public function value($entityName, $prefix = ""){
     /**
      * Definir instancia de Value para la entidad.
      * 

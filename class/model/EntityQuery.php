@@ -76,13 +76,13 @@ class EntityQuery {
     /**
      * puede ser 0 o false para indicar todas las filas
      */
-    if(!empty($display["page"])) $this->setPage($display["page"]);
-    if(!empty($display["order"])) $this->setOrder($display["order"]);
-    if(!empty($display["condition"])) $this->setCondition($display["condition"]);
-    if(!empty($display["params"])) $this->setParams($display["params"]);
-    if(!empty($display["fields"])) $this->setFields($display["fields"]);
-    if(!empty($display["group"])) $this->setGroup($display["group"]);
-    if(!empty($display["having"])) $this->setHaving($display["having"]);
+    if(!empty($display["page"])) $this-page($display["page"]);
+    if(!empty($display["order"])) $this->order($display["order"]);
+    if(!empty($display["condition"])) $this->cond($display["condition"]);
+    if(!empty($display["params"])) $this->params($display["params"]);
+    if(!empty($display["fields"])) $this->fields($display["fields"]);
+    if(!empty($display["group"])) $this->group($display["group"]);
+    if(!empty($display["having"])) $this->having($display["having"]);
     return $this;
   }
 
@@ -103,34 +103,16 @@ class EntityQuery {
     return $this->cond([$key, "=", $value]); 
   }
 
-  public function setCondition (array $condition = null) { 
-    $this->condition = $condition; 
-    return $this;
-  }
 
-  public function addCondition ($condition = null) { 
-    if(!empty($condition)) {
-      array_push ( $this->condition, $condition );
-    }
-    return $this;
-  }
-
-  
-
-
-  public function getCondition(){ return $this->condition; }
-  
-  public function setParams (array $params = []) {
+  public function params (array $params = []) {
     foreach($params as $key => $value) {
-      $this->addCondition([$key, "=", $value]); 
+      $this->cond([$key, "=", $value]); 
     }
     return $this;
   } 
   
-  public function addParam ($key, $value) { return $this->cond([$key, "=", $value]); }
 
-
-  public function setOrder (array $order) { 
+  public function order (array $order) { 
     $this->order = $order;
     return $this;
   }
@@ -141,26 +123,28 @@ class EntityQuery {
    *    nombre_field => asc | desc,
    *  )
    */
-  public function getOrder(){ return $this->order; }
 
-  public function setPagination($size, $page) {
+  public function pagination($size, $page) {
     $this->size = $size;
     $this->page = $page;
     return $this;
   }
 
-  public function setSize($size) { 
+  public function size($size) { 
     $this->size = $size; 
     return $this;
   }
-  public function getSize(){ return $this->size; }
 
-  public function setPage($page) { 
+  public function page($page) { 
     $this->page = $page; 
     return $this;
   }
-  public function getPage(){ return $this->page; }
   
+  public function field(string $field) {
+    array_push($this->fields, $field);
+    return $this;
+  }
+
   public function fields(array $fields = null) {
     $this->fields = array_merge($this->fields, $fields);
     return $this;
@@ -170,44 +154,27 @@ class EntityQuery {
    * Asigna el arbol de field
    * Directamente reemplaza todo el array de fields, usar previo a fieldAdd
    */
-  public function fieldTree(){
-    $this->fields = $this->container->getEntityTools($this->entityName)->fieldNames();
+  public function fieldsTree(){
+    $this->fields = $this->container->tools($this->entityName)->fieldNames();
     return $this;
   }
 
-  public function setFields (array $fields = null) { 
-    $this->fields = $fields;
+  public function group (array $group = null) { 
+    $this->group = array_merge($this->group, $group); 
     return $this;
   }
-  public function addFields (array $fields = null) { 
-    $this->fields = array_unique(array_merge($this->fields, $fields)); 
-    return $this;
-  }
-  public function getFields () { return $this->fields; }
 
-  public function setGroup (array $group = null) { 
-    $this->group = $group;
-    return $this;
-  }
-  public function addGroup (array $group = null) { 
-    $this->group = array_unique(array_merge($this->group, $group)); 
-    return $this;
-  }
-  public function getGroup () { return $this->group; }
-
-  public function setHaving (array $having = null) { 
+  public function having (array $having = null) { 
     $this->having = $having; 
     return $this;
   }
-  public function getHaving () { return $this->having; }
 
-  public function setEntityName (array $entityName = null) { 
+  public function entityName (array $entityName = null) { 
     $this->entityName = $entityName; 
     return $this;
   }
-  public function getEntityName () { return $this->entityName; }
 
-  public function addPrefixRecursive(array &$condition, $prefix){
+  protected function addPrefixRecursive(array &$condition, $prefix){
     if(!key_exists(0, $condition)) return;
     if(is_array($condition[0])) {
       foreach($condition as &$value) $this->addPrefixRecursive($value,$prefix);  
@@ -227,7 +194,7 @@ class EntityQuery {
     return $this;
   }
 
-  public function removePrefixRecursive(array &$condition, $prefix){
+  protected function removePrefixRecursive(array &$condition, $prefix){
     if(!key_exists(0, $condition)) return;
     if(is_array($condition[0])) {
       foreach($condition as &$value) $this->removePrefixRecursive($value,$prefix);  
@@ -250,7 +217,7 @@ class EntityQuery {
     return $this;
   }
 
-  public function setConditionUniqueFields(array $params){
+  public function unique(array $params){
     /**
      * definir condicion para campos unicos
      * $params:
@@ -258,8 +225,8 @@ class EntityQuery {
      * los campos unicos simples se definen a traves del atributo Entity::$unique
      * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
      */
-    $uniqueFields = $this->container->getEntity($this->entityName)->unique;
-    $uniqueFieldsMultiple = $this->container->getEntity($this->entityName)->uniqueMultiple;
+    $uniqueFields = $this->container->entity($this->entityName)->unique;
+    $uniqueFieldsMultiple = $this->container->entity($this->entityName)->uniqueMultiple;
 
     $condition = array();
     if(array_key_exists("id",$params) && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
@@ -299,61 +266,111 @@ class EntityQuery {
 
     if(empty($condition)) throw new Exception("Error al definir condicion unica");
 
-    $this->addCondition($condition);
+    $this->cond($condition);
     return $this;
   }
 
 
-  public function column(){
-    /**
-     * Retorna la primera columna definida
-     * @example $render->fields(["id"]);
-     * @example $render->fields(["_count"]);
+  /**
+     * Retorna la columna indicada en el parametro
+     * @example $render->fields(["id","nombres"])->column();
+     * @example $render->fields(["_count"])->column();
      */
+  public function column($number = 0){
     $sql = $this->sql();
-    $result = $this->container->getDb()->query($sql);
-    $response = $this->container->getDb()->fetch_all_columns($result, 0);
+    $result = $this->container->db()->query($sql);
+    $response = $this->container->db()->fetch_all_columns($result, $number);
     $result->free();
     return $response;
   }
 
-  public function columnOne(){
+  /**
+   * Similar a column pero retorna un valor, error si no existe
+   */
+  public function columnOne($number = 0){
     /**
      * Retorna la primera columna definidas
      * @example $render->fields(["id"]);
      * @example $render->fields(["_count"]);
      */
-    $response = $this->column();
+    $response = $this->column($number);
     if(count($response) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
     elseif(count($response) == 1) return $response[0];
     else throw new Exception("La consulta no arrojó resultados");
   }
 
-  public function all(){
+  /**
+   * Similar a columnOne, null si no existe
+   */
+  public function columnOneOrNull($number = 0){
     /**
-     * consulta avanzada
-     * Reduce la cantidad de campos a consultar
-     * No se debe utilizar storage
+     * Retorna la primera columna definidas
+     * @example $render->fields(["id"]);
+     * @example $render->fields(["_count"]);
      */
+    $response = $this->column($number);
+    if(count($response) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
+    elseif(count($response) == 1) return $response[0];
+    else return null;
+  }
+
+  /**
+   * ejecucion del sql sin control adicional
+   */
+  public function all(){
     $sql = $this->sql();
-    $result = $this->container->getDb()->query($sql);
+    $result = $this->container->db()->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
     return $rows;    
   }
 
+  /**
+   * retornar el primer elemento de la consulta, error si la consulta no retorna elementos
+   */
+  public function first(){
+    $sql = $this->sql();
+    $result = $this->container->db()->query($sql);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+    $result->free();
+    if(empty($rows)) throw new Exception("La consulta no arrojó resultados");
+    return $rows[0];    
+  }
+
+  /**
+   * retornar el primer elemento de la consulta, null si la consulta no retorna elementos
+   */
+  public function firstOrNull(){
+    $sql = $this->sql();
+    $result = $this->container->db()->query($sql);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+    $result->free();
+    if(empty($rows)) return null;
+    return $rows[0];    
+  }
+
+  /**
+   * consulta de un valor
+   * error si la cantidad de elementos a retornar es distinto de 1
+   */
   public function one(){
-    /**
-     * consulta avanzada
-     * Reduce la cantidad de campos a consultar
-     * No se debe utilizar storage
-     */
     $response = $this->all();
     if(count($response) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
     elseif(count($response) == 1) return $response[0];
     else throw new Exception("La consulta no arrojó resultados");
   }
 
+   /**
+   * consulta de un valor
+   * error si la cantidad de elementos es mayor a 1
+   * null si la cantidad de elementos a retorar es 0
+   */
+  public function oneOrNull(){
+    $response = $this->all();
+    if(count($response) > 1 ) throw new Exception("La consulta retorno mas de un resultado");
+    elseif(count($response) == 1) return $response[0];
+    else return null;
+  }
 
   /**
    * Definir SQL
@@ -361,9 +378,9 @@ class EntityQuery {
   public function sql() {
     $fieldsQuery = $this->fieldsQuery();
     $group = $this->groupBy();
-    $having = $this->container->getControllerEntity("sql_condition", $this->entityName)->main($this->getHaving());    
-    $condition = $this->container->getControllerEntity("sql_condition", $this->entityName)->main($this->condition);
-    $order = $this->container->getControllerEntity("sql_order", $this->entityName)->main($this->getOrder());
+    $having = $this->container->controller("sql_condition", $this->entityName)->main($this->having);    
+    $condition = $this->container->controller("sql_condition", $this->entityName)->main($this->condition);
+    $order = $this->container->controller("sql_order", $this->entityName)->main($this->order);
 
     $sql = "SELECT DISTINCT
 {$fieldsQuery}
@@ -373,7 +390,7 @@ class EntityQuery {
 {$group}
 " . concat($having, 'HAVING ') . "
 {$order}
-{$this->limit($this->getPage(), $this->getSize())}
+{$this->limit($this->page, $this->size)}
 ";
 
     return $sql;
@@ -394,18 +411,18 @@ class EntityQuery {
     $f = explode("-",$fieldName);
     if(count($f) == 2) {
       $prefix_ = (empty($this->prefix)) ? $f[0] : $prefix . "_" . $f[0];
-      $entityName = $this->container->getEntityRelations($this->entityName)[$f[0]]["entity_name"];
-      $mapping = $this->container->getMapping($entityName, $prefix_);
+      $entityName = $this->container->relations($this->entityName)[$f[0]]["entity_name"];
+      $mapping = $this->container->mapping($entityName, $prefix_);
       $fieldName = $f[1];
     } else { 
-      $mapping = $this->container->getMapping($this->entityName, $prefix);
+      $mapping = $this->container->mapping($this->entityName, $prefix);
     }
 
     return [$mapping,$fieldName];
   }
 
   protected function fieldsQuery(){
-    $fields = array_merge($this->getGroup(), $this->getFields());
+    $fields = array_merge($this->group, $this->fields);
 
     $fieldsQuery_ = [];
     foreach($fields as $key => $fieldName){
@@ -429,10 +446,8 @@ class EntityQuery {
 
 
   protected function groupBy(){
-    $fields = $this->getGroup();
-
     $group_ = [];
-    foreach($fields as $key => $fieldName){
+    foreach($this->group as $key => $fieldName){
       if(is_array($fieldName)){
         if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
         $f = $key;
@@ -449,16 +464,16 @@ class EntityQuery {
 
   protected function join(){
     $sql = "";
-    $tree = $this->container->getEntityTree($this->entityName);
+    $tree = $this->container->tree($this->entityName);
     $this->joinFk($tree, "", $sql);
     return $sql;
   }
 
   protected function joinfk(array $tree, $tablePrefix, &$sql){
-    if (empty ($tablePrefix)) $tablePrefix = $this->container->getEntity($this->entityName)->getAlias();
+    if (empty ($tablePrefix)) $tablePrefix = $this->container->entity($this->entityName)->getAlias();
 
     foreach ($tree as $prefix => $value) {      
-      $entitySn =  $this->container->getEntity($value["entity_name"])->sn_();
+      $entitySn =  $this->container->entity($value["entity_name"])->sn_();
       $sql .= $this->_join($entitySn, $value["field_name"], $tablePrefix, $prefix) . "
 ";
 
@@ -477,9 +492,9 @@ class EntityQuery {
   protected function from(){    
     return " FROM 
 
-" . $this->container->getEntity($this->entityName)->sn_() . "
+" . $this->container->entity($this->entityName)->sn_() . "
 
- AS {$this->container->getEntity($this->entityName)->getAlias()}
+ AS {$this->container->entity($this->entityName)->getAlias()}
 ";
   }
 

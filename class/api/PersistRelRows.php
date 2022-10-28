@@ -31,7 +31,7 @@ class PersistRelRowsApi {
     $detail = [];
 
     foreach($data as $row){
-      $persist = $this->container->getControllerEntity("persist_rel_sql_array", $this->entityName);
+      $persist = $this->container->controller("persist_rel_sql_array", $this->entityName);
       $p = $persist->main($row);
       $sql .= $p["sql"];
       array_push($ids, $p["id"]);
