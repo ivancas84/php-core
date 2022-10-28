@@ -48,29 +48,6 @@ class EntityQuery {
    * array multiple cuya raiz es [field,option,value], ejemplo: [["nombre","=","unNombre"],[["apellido","=","unApellido"],["apellido","=","otroApellido","OR"]]]
    */
 
-  public static function getInstance($render = null){
-    /**
-     * @param String | Object | Array | EntityQuery En función del tipo de parámetro define el render
-     * @return EntityQuery Clase de presentacion
-     */
-    if(gettype($render) == "object") return $render;
-
-    $r = new EntityQuery();
-    if(gettype($render) == "string") $r->setCondition(["_search","=~",$render]);
-    elseif (gettype($render) == "array") $r->setCondition($render);
-    return $r;
-  }
-
-  public static function getInstanceDisplay(array $display = null){
-    /**
-     * Instanciar render a partir de un display
-     * Importante: Define las condiciones y parametros como condiciones generales
-     */
-    $render = new EntityQuery;
-    $render->display($display);
-    return $render;
-  }
-
   public function display(array $display = []){
     if(isset($display["size"])) $this->size($display["size"]);
     /**
@@ -84,12 +61,6 @@ class EntityQuery {
     if(!empty($display["group"])) $this->group($display["group"]);
     if(!empty($display["having"])) $this->having($display["having"]);
     return $this;
-  }
-
-  public static function getInstanceParams(array $params = null){
-    $render = new EntityQuery;
-    if(!empty($params)) $render->setParams($params);
-    return $render;
   }
 
   public function cond ($condition = null) { 
@@ -140,6 +111,10 @@ class EntityQuery {
     return $this;
   }
   
+  /**
+   * Carga de un unico field
+   * No admite alias
+   */
   public function field(string $field) {
     array_push($this->fields, $field);
     return $this;
@@ -159,13 +134,13 @@ class EntityQuery {
     return $this;
   }
 
-  public function group (array $group = null) { 
+  public function group(array $group = null) { 
     $this->group = array_merge($this->group, $group); 
     return $this;
   }
 
-  public function having (array $having = null) { 
-    $this->having = $having; 
+  public function having(array $having = null) { 
+    if(!empty($having)) array_push ( $this->having, $having );
     return $this;
   }
 
