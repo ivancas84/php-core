@@ -54,7 +54,7 @@ class Container {
   public function treeJson(){
     if (!empty(self::$entitiesTreeJson)) return self::$entitiesTreeJson;
 
-    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT. DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-tree.json");
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-tree.json");
     self::$entitiesTreeJson = json_decode($string, true); 
     return self::$entitiesTreeJson;
   }
@@ -68,7 +68,7 @@ class Container {
   public function relationsJson(){
     if (!empty(self::$entitiesRelationsJson)) return self::$entitiesRelationsJson;
 
-    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR .  "model" . DIRECTORY_SEPARATOR . "entity-relations.json");
+    $string = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT . DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "entity-relations.json");
     self::$entitiesRelationsJson = json_decode($string, true); 
     return self::$entitiesRelationsJson;
   }
@@ -257,7 +257,7 @@ class Container {
     require_once($path);
     $c = new $className;
     $c->entityName = $entityName;
-    $c->logs = $this->getTool("logs");
+    $c->logs = $this->tools_("logs");
     $c->import = $import;
     $c->container = $this;
     return $c;
@@ -346,7 +346,7 @@ class Container {
     if($prefix) $c->prefix = $prefix;
     $c->container = $this;
     $c->entityName = $entityName;
-    $c->logs = $this->getTool("logs");
+    $c->logs = $this->tools_("logs");
     return $c;    
   }
 

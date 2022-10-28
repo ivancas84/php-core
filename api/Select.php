@@ -1,6 +1,4 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/EntityQuery.php");
 require_once("function/php_input.php"); 
 
 class SelectApi {
@@ -14,7 +12,7 @@ class SelectApi {
   public $permission = "r";
 
   public function main() {
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
     
     $display = php_input();
     return $this->container->query($this->entityName)->display($display)->all();

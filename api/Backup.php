@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/controller/Base.php");
+require_once("controller/Base.php");
 
 class BackupApi extends BaseController{
   /**

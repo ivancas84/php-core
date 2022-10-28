@@ -52,7 +52,7 @@ class EntityOptions {
     /**
      * Ejecutar _toArrayFields para los campos definidos en la configuracion de la entidad principal
      */
-    return $this->_toArrayFields($this->container->getEntity($this->entityName)->getFieldNames(), $method);
+    return $this->_toArrayFields($this->container->entity($this->entityName)->getFieldNames(), $method);
   }
 
   function _fromArrayFields(array $row, $fieldNames, $method = ""){
@@ -74,7 +74,7 @@ class EntityOptions {
     /**
      * Ejecutar _fromArrayFields para los atributos definidos en la configuracion de la entidad principal
      */
-    return $this->_fromArrayFields($row, $this->container->getEntity($this->entityName)->getFieldNames(), $method);
+    return $this->_fromArrayFields($row, $this->container->entity($this->entityName)->getFieldNames(), $method);
   }
   
 }

@@ -18,7 +18,7 @@ class ModelResources {
     $render->setCondition([
       [$fkName,"=",$fkValue]
     ]);
-    $transferir = $this->container->getDb()->all($entityName,$render);
+    $transferir = $this->container->db()->all($entityName,$render);
      
     $sql = "";
     $detail = [];

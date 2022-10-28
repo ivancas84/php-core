@@ -1,8 +1,8 @@
 <?php
 
-require_once("class/model/entityOptions/EntityOptions.php");
-require_once("class/tools/Format.php");
-require_once("class/tools/SpanishDateTime.php");
+require_once("model/entityOptions/EntityOptions.php");
+require_once("tools/Format.php");
+require_once("tools/SpanishDateTime.php");
 
 class ValueEntityOptions extends EntityOptions {
 
@@ -59,7 +59,7 @@ class ValueEntityOptions extends EntityOptions {
   protected function _defineSet($fieldName){
     $param = explode(".",$fieldName);
     if(count($param) == 1) {
-      switch($this->container->getField($this->entityName, $param[0])->getDataType()) {
+      switch($this->container->field($this->entityName, $param[0])->getDataType()) {
         case "year": return "_setYear";
         case "time": case "date": case "timestamp": return "_setDatetime";
         case "integer": return "_setInteger";
@@ -115,7 +115,7 @@ class ValueEntityOptions extends EntityOptions {
   protected function _defineFastSet($fieldName){
     $param = explode(".",$fieldName);
     if(count($param) == 1) {
-      switch($this->container->getField($this->entityName, $param[0])->getDataType()) {
+      switch($this->container->field($this->entityName, $param[0])->getDataType()) {
         case "year": return "_setYear";
         case "time": case "date": case "timestamp": return "_fastSetDatetime";
         case "integer": return "_fastSetInteger";
@@ -156,7 +156,7 @@ class ValueEntityOptions extends EntityOptions {
     $param = explode(".",$fieldName);
     if(count($param)>1) return null; //los atributos derivados o calculados no tienen valor por defecto (puede que no exista el field)
     
-    $field = $this->container->getField($this->entityName, $param[0]);
+    $field = $this->container->field($this->entityName, $param[0]);
     switch($field->getDataType()){
       case "date": case "timestamp": case "year": case "time": 
         return (strpos(strtolower($field->getDefault()), "cur") !== false) ? date('c') : $field->getDefault();
@@ -187,7 +187,7 @@ class ValueEntityOptions extends EntityOptions {
      **/  
     $param = explode(".",$fieldName);
     if(count($param)==1){
-      switch($this->container->getField($this->entityName, $param[0])->getDataType()){
+      switch($this->container->field($this->entityName, $param[0])->getDataType()){
         case "string": case "text": return "_resetString"; break;
         default: return null; break;
       }
@@ -224,7 +224,7 @@ class ValueEntityOptions extends EntityOptions {
   public function _defineGet($fieldName){
     $param = explode(".",$fieldName);
     if(count($param) == 1) {
-      switch($this->container->getField($this->entityName, $param[0])->getDataType()) {         
+      switch($this->container->field($this->entityName, $param[0])->getDataType()) {         
         case "year": case "time": case "date": case "timestamp": return "_getDatetime";
         case "boolean": return "_getBoolean";
         case "string": case "text": return "_getString";
@@ -268,7 +268,7 @@ class ValueEntityOptions extends EntityOptions {
   
   public function _defineJson($fieldName){    
     $param = explode(".",$fieldName);
-    switch($this->container->getField($this->entityName, $param[0])->getDataType()) {         
+    switch($this->container->field($this->entityName, $param[0])->getDataType()) {         
       case "year": case "time": case "date": case "timestamp": return "_jsonDatetime";
       default: return "_jsonDefault";
     }
@@ -293,7 +293,7 @@ class ValueEntityOptions extends EntityOptions {
   protected function _defineSql($fieldName){
     $param = explode(".",$fieldName);
     if(count($param) == 1) {
-      $field = $this->container->getField($this->entityName, $param[0]);
+      $field = $this->container->field($this->entityName, $param[0]);
       switch($field->getDataType()){
         case "integer": case "float": return "_sqlNumber";
         case "boolean": return "_sqlBoolean";
@@ -356,14 +356,14 @@ class ValueEntityOptions extends EntityOptions {
   protected function _sqlString($fieldName){ 
     if(Validation::is_undefined($this->value[$fieldName])) return UNDEFINED;
     if(Validation::is_empty($this->value[$fieldName])) return 'null';
-    return "'" . $this->container->getDb()->escape_string($this->value[$fieldName]) . "'";  
+    return "'" . $this->container->db()->escape_string($this->value[$fieldName]) . "'";  
   }
 
   protected function _defineCheck($fieldName){
     $param = explode(".",$fieldName);
     $ret = [];
     if(count($param) == 1) {
-      $field = $this->container->getField($this->entityName, $param[0]);
+      $field = $this->container->field($this->entityName, $param[0]);
       if($field->isNotNull()) $ret["required"] = "required";
       switch($field->getDataType()){
         case "date": case "timestamp": case "year": case "time": $ret["type"] = "date"; break;

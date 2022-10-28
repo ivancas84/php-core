@@ -1,6 +1,4 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/EntityQuery.php");
 require_once("function/php_input.php");
 
 class UniqueRelApi { //1.1
@@ -40,7 +38,7 @@ class UniqueRelApi { //1.1
    */
 
   public function main() {
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
     
     if(empty($this->params)) $this->params = php_input();
     /**

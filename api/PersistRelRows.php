@@ -2,10 +2,7 @@
 
 
 
-require_once("class/model/Ma.php");
-
-require_once("class/model/Sqlo.php");
-require_once("class/tools/Validation.php");
+require_once("tools/Validation.php");
 require_once("function/php_input.php");
 
 class PersistRelRowsApi {
@@ -20,7 +17,7 @@ class PersistRelRowsApi {
   public $permission = "w";
 
   public function main(){
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
     
     $data = php_input();
     $render = $this->container->query($this->entityName);
@@ -38,7 +35,7 @@ class PersistRelRowsApi {
       array_push($detail, $render->entityName.$p["id"]);
     }
 
-    $this->container->getDb()->multi_query_transaction($sql);
+    $this->container->db()->multi_query_transaction($sql);
 
     return ["ids" => $ids, "detail" => $detail];
   }

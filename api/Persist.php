@@ -15,7 +15,7 @@ class PersistApi {
   public $permission = "w";
 
   public function main(){
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
     
     $data = php_input();
     $persist = $this->container->controller("persist_sql", $this->entityName)->main($data);

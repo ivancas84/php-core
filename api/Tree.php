@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/api/Base.php");
+require_once("api/Base.php");
 
 class TreeApi extends BaseApi {
 

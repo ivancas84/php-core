@@ -1,5 +1,4 @@
 <?php
-require_once("class/model/EntityQuery.php");
 require_once("function/filter_file.php");
 
 class UploadApi {
@@ -26,7 +25,7 @@ class UploadApi {
   }
 
   public function main() {
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
     
     $this->file = filter_file("file");
     if ( $this->file["error"] > 0 ) throw new Exception ( "Error al subir archivo");
@@ -60,7 +59,7 @@ class UploadApi {
 
   public function insertFile(){
     $sql = $this->container->persist("file")->insert($this->fileValue->_toArray("sql"));
-    $this->container->getDb()->multi_query_transaction($sql);
+    $this->container->db()->multi_query_transaction($sql);
   }
 }
 

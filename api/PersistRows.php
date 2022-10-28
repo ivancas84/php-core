@@ -1,11 +1,6 @@
 <?php
 
-
-
-require_once("class/model/Ma.php");
-
-require_once("class/model/Sqlo.php");
-require_once("class/tools/Validation.php");
+require_once("tools/Validation.php");
 require_once("function/php_input.php");
 
 class PersistRowsApi {
@@ -19,7 +14,7 @@ class PersistRowsApi {
   public $permission = "w";
 
   public function main(){
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
     
     $data = php_input();
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");

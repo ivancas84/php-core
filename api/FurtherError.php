@@ -1,6 +1,4 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/EntityQuery.php");
 
 /**
    * Consulta de errores avanzados de una entidad

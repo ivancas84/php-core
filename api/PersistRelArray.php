@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/api/PersistRel.php");
+require_once("api/PersistRel.php");
 
 class PersistRelArrayApi extends PersistRelApi{
   /**
@@ -14,13 +14,13 @@ class PersistRelArrayApi extends PersistRelApi{
   public $persistRelController = "persist_rel_sql_array";
 
   public function main(){
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
 
     $params = php_input();
     
     $persist = $this->container->controller("persist_rel_sql_array", $this->entityName);
     $p = $persist->main($params);
-    $this->container->getDb()->multi_query_transaction($p["sql"]);
+    $this->container->db()->multi_query_transaction($p["sql"]);
     return ["id" => $p["id"], "detail" => $p["detail"]];
   }
 }

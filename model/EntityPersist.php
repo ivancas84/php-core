@@ -16,7 +16,7 @@ class EntityPersist {
   public function update(array $row) { //sql de actualizacion
     return "
 {$this->_update($row)}
-WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} = {$row['id']};
+WHERE {$this->container->entity($this->entityName)->getPk()->getName()} = {$row['id']};
 ";
 
   }
@@ -34,7 +34,7 @@ WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} = {$r
     $r_ = $this->container->value($this->entityName)->_fromArray($row, "set")->_toArray("sql");
     return "
 {$this->_update($r_)}
-WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} IN ({$ids_});
+WHERE {$this->container->entity($this->entityName)->getPk()->getName()} IN ({$ids_});
 ";
   }
 
@@ -47,7 +47,7 @@ WHERE {$this->container->getEntity($this->entityName)->getPk()->getName()} IN ({
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->formatIds($ids);
     return "
-DELETE FROM {$this->container->getEntity($this->entityName)->sn_()}
+DELETE FROM {$this->container->entity($this->entityName)->sn_()}
 WHERE id IN ({$ids_});
 ";
   }
@@ -57,9 +57,9 @@ WHERE id IN ({$ids_});
      * El conjunto de valores debe estar previamente formateado
      */
 
-    $fns = $this->container->getController("struct_tools")->getFieldNamesAdmin($this->container->getEntity($this->entityName));
+    $fns = $this->container->controller_("struct_tools")->getFieldNamesAdmin($this->container->entity($this->entityName));
     $sql = "
-  INSERT INTO " . $this->container->getEntity($this->entityName)->sn_() . " (";    
+  INSERT INTO " . $this->container->entity($this->entityName)->sn_() . " (";    
     $sql .= implode(", ", $fns);    
     $sql .= ")
 VALUES ( ";
@@ -73,9 +73,9 @@ VALUES ( ";
 
   public function _update(array $row){
     $sql = "
-UPDATE " . $this->container->getEntity($this->entityName)->sn_() . " SET
+UPDATE " . $this->container->entity($this->entityName)->sn_() . " SET
 ";   
-    $fns = $this->container->getController("struct_tools")->getFieldNamesAdmin($this->container->getEntity($this->entityName));
+    $fns = $this->container->controller_("struct_tools")->getFieldNamesAdmin($this->container->entity($this->entityName));
     foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
     $sql = substr($sql, 0, -2); //eliminar ultima coma
 

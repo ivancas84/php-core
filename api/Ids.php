@@ -1,6 +1,5 @@
 <?php
 require_once("function/php_input.php");
-require_once("class/model/EntityQuery.php");
 require_once("function/to_string.php");
 
 
@@ -14,7 +13,7 @@ class IdsApi {
   public $permission = "r";
 
   public function main() {
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
     
     $display = php_input();
     $ids = $this->container->query($this->entityName)->display($display)->field("id")->column();

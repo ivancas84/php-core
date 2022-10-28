@@ -1,5 +1,5 @@
 <?php
-require_once("class/api/UniqueRel.php");
+require_once("api/UniqueRel.php");
 
 class UniqueRelArrayApi extends UniqueRel {
   /**
@@ -37,7 +37,7 @@ class UniqueRelArrayApi extends UniqueRel {
          */
         if(array_key_exists($prefix,$this->params)){
           $render = $this->container->query($tree[$prefix]["entity_name"]);
-          $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
+          $row = $this->container->db()->unique($render->entityName, $this->params[$prefix]);
           if(!empty($row)) {
             $data = $this->container->tools($render->entityName, $prefix)->json2($row);
             foreach($data as $k => $v) $this->row[$prefix."-". $k] = $v;

@@ -62,7 +62,7 @@ abstract class ImportElement { //2
   public function persist(){
     if(empty($this->sql)) return;
     try {
-      $this->container->getDb()->multi_query_transaction($this->sql);
+      $this->container->db()->multi_query_transaction($this->sql);
     } catch(Exception $exception){
       $this->logs->addLog("persist","error",$exception->getMessage());
     }

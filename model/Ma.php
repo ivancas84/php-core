@@ -4,7 +4,7 @@
  * @todo Implementar render en el getall
  */
 
-require_once("class/model/Db.php");
+require_once("model/Db.php");
 
 
 class Ma extends Db {
@@ -25,9 +25,9 @@ class Ma extends Db {
      * cantidad
      */
     $r = EntityQuery::getInstance($render);
-    $r->setSize(false);
-    $r->setPage(1);
-    $r->setOrder([]);
+    $r->size(false);
+    $r->page(1);
+    $r->order([]);
 
     if(!in_array("_count", $r->getFields())) $r->setFields(["_count"]);
     
@@ -166,7 +166,7 @@ class Ma extends Db {
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
     if(!$render) $render = new EntityQuery();
-    $render->setSize(false);
+    $render->size(false);
     $render->addCondition(["id","=",$ids]);
     $render->setFields($this->container->tools($entityName)->fieldNames());
 

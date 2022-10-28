@@ -1,13 +1,12 @@
 <?php
 
-require_once("class/model/EntityQuery.php");
 require_once("function/array_combine_key.php");
 require_once("function/error_handler.php");
 
 /**
  * Ejemplo ejecucion
  * require_once("../config/config.php");
- * require_once("class/Container.php");
+ * require_once("Container.php");
  * set_time_limit ( 0 );
  * $container = new Container();
  * $import = $container->getImport("alumno");
@@ -314,9 +313,9 @@ abstract class Import {
     $entityName = $this->getEntityName($name);
     $render = $this->container->query($entityName);
     $render->setFields(["identifier"]);
-    $render->setSize(false);
+    $render->size(false);
     $render->addCondition(["identifier","=",$this->ids[$name]]);
-    $rows = $this->container->getDb()->all($entityName, $render);
+    $rows = $this->container->db()->all($entityName, $render);
 
     //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
     $this->dbs[$name] = array_combine_key(

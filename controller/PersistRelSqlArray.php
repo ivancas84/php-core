@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/controller/PersistRelSql.php");
+require_once("controller/PersistRelSql.php");
 
 class PersistRelSqlArray extends PersistRelSql{
   

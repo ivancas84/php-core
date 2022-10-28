@@ -72,11 +72,11 @@ class EntityQuery {
   }
 
   public function display(array $display = []){
-    if(isset($display["size"])) $this->setSize($display["size"]);
+    if(isset($display["size"])) $this->size($display["size"]);
     /**
      * puede ser 0 o false para indicar todas las filas
      */
-    if(!empty($display["page"])) $this-page($display["page"]);
+    if(!empty($display["page"])) $this->page($display["page"]);
     if(!empty($display["order"])) $this->order($display["order"]);
     if(!empty($display["condition"])) $this->cond($display["condition"]);
     if(!empty($display["params"])) $this->params($display["params"]);

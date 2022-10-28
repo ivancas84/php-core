@@ -1,6 +1,4 @@
 <?php
-require_once("class/model/Ma.php");
-require_once("class/model/EntityQuery.php");
 
 /**
  * Consulta de campo unico
@@ -13,10 +11,10 @@ class UniqueApi {
   public $permission = "r";
 
   public function main() {
-    $this->container->getAuth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entityName, $this->permission);
     
     $params = php_input();
-    $row = $this->container->query($this->entityName)->unique($params)->fieldTree()->one();
+    $row = $this->container->query($this->entityName)->unique($params)->fieldsTree()->one();
     return $this->container->tools($this->entityName)->json($row);
   }
 

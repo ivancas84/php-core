@@ -96,11 +96,11 @@ class Field {
   
   //Retornar instancia de Entity correspondiente al field
   public function getEntity() {
-    return $this->container->getEntity($this->entityName);
+    return $this->container->entity($this->entityName);
   }
 
   public function getEntityRef(){
-    return ($this->entityRefName) ? $this->container->getEntity($this->entityRefName) : null;
+    return ($this->entityRefName) ? $this->container->entity($this->entityRefName) : null;
   }
   /**
    * Debe sobrescribirse para aquellos fields que sean fk

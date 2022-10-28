@@ -1,6 +1,5 @@
 <?php
 
-require_once("class/model/Rel.php");
 require_once("function/php_input.php");
 
 class PersistRelSql {
