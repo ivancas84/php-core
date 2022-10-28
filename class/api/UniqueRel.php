@@ -1,6 +1,6 @@
 <?php
 require_once("class/model/Ma.php");
-require_once("class/model/EntityRender.php");
+require_once("class/model/EntityQuery.php");
 require_once("function/php_input.php");
 
 class UniqueRelApi { //1.1
@@ -74,7 +74,7 @@ class UniqueRelApi { //1.1
     $tree = $this->container->getEntityTree($this->entityName);
 
     if(array_key_exists($this->entityName,$this->params)){
-      $render = $this->container->getEntityRender($this->entityName);
+      $render = $this->container->query($this->entityName);
       $row = $this->container->getDb()->unique($render->entityName, $this->params[$this->entityName]);
       if(!empty($row)) {
         $data = $this->container->getEntityTools($render->entityName)->json2($row);
@@ -124,7 +124,7 @@ class UniqueRelApi { //1.1
   }
 
   public function previousParam($leaf, $prefix, $previousKey){
-    $render = $this->container->getEntityRender($leaf["entity_name"]);
+    $render = $this->container->query($leaf["entity_name"]);
     $row = $this->container->getDb()->get($render->entityName, $this->row[$previousKey][$leaf["field_name"]]);
     if(!empty($row)) {
       $data = $this->container->getEntityTools($render->entityName, $prefix)->json2($row);
@@ -137,7 +137,7 @@ class UniqueRelApi { //1.1
   }
 
   public function prefixParam($leaf, $prefix){
-    $render = $this->container->getEntityRender($leaf["entity_name"]);
+    $render = $this->container->query($leaf["entity_name"]);
     $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
     if(!empty($row)) {
       $data = $this->container->getEntityTools($render->entityName, $prefix)->json2($row);

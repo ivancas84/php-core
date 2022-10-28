@@ -24,14 +24,14 @@ class Ma extends Db {
     /**
      * cantidad
      */
-    $r = EntityRender::getInstance($render);
+    $r = EntityQuery::getInstance($render);
     $r->setSize(false);
     $r->setPage(1);
     $r->setOrder([]);
 
     if(!in_array("_count", $r->getFields())) $r->setFields(["_count"]);
     
-    $sql = $this->container->getEntitySqlo($entity)->select($r);
+    $sql = $this->container->getEntityPersist($entity)->select($r);
     $result = $this->query($sql);
     $row = $result->fetch_assoc();
     $result->free();
@@ -39,13 +39,13 @@ class Ma extends Db {
   }
 
 
-  public function select($entity, EntityRender $render){
+  public function select($entity, EntityQuery $render){
     /**
      * consulta avanzada
      * Reduce la cantidad de campos a consultar
      * No se debe utilizar storage
      */
-    $sql = $this->container->getEntitySqlo($entity)->select($render);
+    $sql = $this->container->getEntityPersist($entity)->select($render);
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
@@ -59,11 +59,11 @@ class Ma extends Db {
      *   array("nombre_field" => "valor_field", ...)
      */
     if(empty($params)) return null;
-    $render = $this->container->getEntityRender($entityName);
+    $render = $this->container->query($entityName);
     $c = $render->setConditionUniqueFields($params);
 
     $render->addFields($this->container->getEntityTools($entityName)->fieldNames());
-    $sql = $this->container->getEntitySqlo($entityName)->select($render);
+    $sql = $this->container->getEntityPersist($entityName)->select($render);
     if(empty($sql)) return null;
 
     $result = $this->query($sql);
@@ -76,7 +76,7 @@ class Ma extends Db {
 
   public function ids($entityName, $render = null){   
     $render->setFields(["id"]);
-    $sql = $this->container->getEntitySqlo($entityName)->select($render);
+    $sql = $this->container->getEntityPersist($entityName)->select($render);
     $result = $this->query($sql);
     $ids = $this->fetch_all_columns($result, 0);
     $result->free();
@@ -119,9 +119,9 @@ class Ma extends Db {
     /**
      * todos los valores
      */
-    if(!$render) $render = $this->container->getEntityRender($entityName);
+    if(!$render) $render = $this->container->query($entityName);
     $render->addFields($this->container->getEntityTools($entityName)->fieldNames());
-    $sql = $this->container->getEntitySqlo($entityName)->select($render);
+    $sql = $this->container->getEntityPersist($entityName)->select($render);
     $result = $this->query($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
@@ -137,7 +137,7 @@ class Ma extends Db {
 
   public function labelGet(string $entityName, $id, $render = null) { //busqueda por id
     if(!$id) throw new Exception("No se encuentra definido el id");
-    $render = $this->container->getEntityRender($entityName);
+    $render = $this->container->query($entityName);
     $render->setFields(["id","label"]);
     $render->setCondition(["id","=",$id]);
     $rows = $this->select($entityName, $render);
@@ -147,7 +147,7 @@ class Ma extends Db {
 
   public function labelGetAll(string $entityName, $ids, $render = null) { //busqueda por id
     if(!$ids) throw new Exception("No se encuentra definido el id");
-    $render = $this->container->getEntityRender($entityName);
+    $render = $this->container->query($entityName);
     $render->setFields(["id","label"]);
     $render->setCondition(["id","=",$ids]);
     $rows = $this->select($entityName, $render);
@@ -165,7 +165,7 @@ class Ma extends Db {
   public function getAll($entityName, $ids, $render = null){ //busqueda por ids
     if(empty($ids)) return [];
     if(!is_array($ids)) $ids = [$ids];
-    if(!$render) $render = new EntityRender();
+    if(!$render) $render = new EntityQuery();
     $render->setSize(false);
     $render->addCondition(["id","=",$ids]);
     $render->setFields($this->container->getEntityTools($entityName)->fieldNames());
@@ -225,7 +225,7 @@ class Ma extends Db {
     /**
      * Insercion directa (no realiza chequeo de valores)
      */
-    $insert = $this->container->getEntitySqlo($entity)->insert($row);
+    $insert = $this->container->getEntityPersist($entity)->insert($row);
     $result = $this->query($insert["sql"]);
     return array("id" => $insert["id"], "detail"=>$insert["detail"]);
   }
@@ -242,7 +242,7 @@ class Ma extends Db {
   public function delete($entityName, array $ids){ 
     /**
      */
-    $sql = $this->container->getEntitySqlo($entityName)->delete($ids);
+    $sql = $this->container->getEntityPersist($entityName)->delete($ids);
     $result = $this->query($sql);
     return array("ids" => $ids, "detail"=>preg_filter('/^/', $entityName, $ids));
   }

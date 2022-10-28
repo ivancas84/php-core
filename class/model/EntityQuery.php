@@ -3,7 +3,7 @@
 require_once("function/to_string.php");
 
 
-class EntityRender {
+class EntityQuery {
 
   public $container;
   public $entityName; //entidad principal a la que esta destinada la consulta
@@ -50,12 +50,12 @@ class EntityRender {
 
   public static function getInstance($render = null){
     /**
-     * @param String | Object | Array | EntityRender En función del tipo de parámetro define el render
-     * @return EntityRender Clase de presentacion
+     * @param String | Object | Array | EntityQuery En función del tipo de parámetro define el render
+     * @return EntityQuery Clase de presentacion
      */
     if(gettype($render) == "object") return $render;
 
-    $r = new EntityRender();
+    $r = new EntityQuery();
     if(gettype($render) == "string") $r->setCondition(["_search","=~",$render]);
     elseif (gettype($render) == "array") $r->setCondition($render);
     return $r;
@@ -66,7 +66,7 @@ class EntityRender {
      * Instanciar render a partir de un display
      * Importante: Define las condiciones y parametros como condiciones generales
      */
-    $render = new EntityRender;
+    $render = new EntityQuery;
     $render->display($display);
     return $render;
   }
@@ -87,7 +87,7 @@ class EntityRender {
   }
 
   public static function getInstanceParams(array $params = null){
-    $render = new EntityRender;
+    $render = new EntityQuery;
     if(!empty($params)) $render->setParams($params);
     return $render;
   }
@@ -161,7 +161,7 @@ class EntityRender {
   }
   public function getPage(){ return $this->page; }
   
-  public function fieldAdd (array $fields = null) {
+  public function fields(array $fields = null) {
     $this->fields = array_merge($this->fields, $fields);
     return $this;
   }
@@ -307,8 +307,8 @@ class EntityRender {
   public function column(){
     /**
      * Retorna la primera columna definida
-     * @example $render->fieldAdd(["id"]);
-     * @example $render->fieldAdd(["_count"]);
+     * @example $render->fields(["id"]);
+     * @example $render->fields(["_count"]);
      */
     $sql = $this->sql();
     $result = $this->container->getDb()->query($sql);
@@ -320,8 +320,8 @@ class EntityRender {
   public function columnOne(){
     /**
      * Retorna la primera columna definidas
-     * @example $render->fieldAdd(["id"]);
-     * @example $render->fieldAdd(["_count"]);
+     * @example $render->fields(["id"]);
+     * @example $render->fields(["_count"]);
      */
     $response = $this->column();
     if(count($response) > 1 ) throw new Exception("La consulta retorno mas de un resultado");

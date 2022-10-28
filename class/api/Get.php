@@ -1,5 +1,5 @@
 <?php
-require_once("class/model/EntityRender.php");
+require_once("class/model/EntityQuery.php");
 require_once("function/php_input.php");
 
 
@@ -17,7 +17,7 @@ class GetApi {
     
     $id = file_get_contents("php://input");
     if(empty($id)) throw new Exception("Identificador no definido");
-    $row = $this->container->getEntityRender($this->entityName)->fieldTree()->param("id",$id)->one();
+    $row = $this->container->query($this->entityName)->fieldTree()->param("id",$id)->one();
     return $this->container->getEntityTools($this->entityName)->json($row);
   }
 

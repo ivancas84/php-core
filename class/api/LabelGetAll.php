@@ -1,5 +1,5 @@
 <?php
-require_once("class/model/EntityRender.php");
+require_once("class/model/EntityQuery.php");
 require_once("function/php_input.php");
 
 
@@ -16,7 +16,7 @@ class LabelGetAllApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     
     $ids = php_input();
-    return $this->container->getEntityRender($this->entityName)->fieldAdd(["id","label"])->param("id", $ids)->all();
+    return $this->container->query($this->entityName)->fields(["id","label"])->param("id", $ids)->all();
   }
 
 }

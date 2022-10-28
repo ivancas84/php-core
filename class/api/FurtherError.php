@@ -1,6 +1,6 @@
 <?php
 require_once("class/model/Ma.php");
-require_once("class/model/EntityRender.php");
+require_once("class/model/EntityQuery.php");
 
 
 abstract class FurtherErrorApi {

@@ -11,7 +11,7 @@ class CountApi {
     $this->container->getAuth()->authorize($this->entityName, $this->permission);
     //$display = php_input();
     $display = [];
-    return intval($this->container->getEntityRender($this->entityName)->display($display)->fieldAdd(["count"])->columnOne());
+    return intval($this->container->query($this->entityName)->display($display)->fields(["count"])->columnOne());
   }
 
 }

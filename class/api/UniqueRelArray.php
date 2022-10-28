@@ -36,7 +36,7 @@ class UniqueRelArrayApi extends UniqueRel {
          * se verifica la existencia de parametros para inicializar
          */
         if(array_key_exists($prefix,$this->params)){
-          $render = $this->container->getEntityRender($tree[$prefix]["entity_name"]);
+          $render = $this->container->query($tree[$prefix]["entity_name"]);
           $row = $this->container->getDb()->unique($render->entityName, $this->params[$prefix]);
           if(!empty($row)) {
             $data = $this->container->getEntityTools($render->entityName, $prefix)->json2($row);

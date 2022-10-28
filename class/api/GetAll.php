@@ -1,5 +1,5 @@
 <?php
-require_once("class/model/EntityRender.php");
+require_once("class/model/EntityQuery.php");
 require_once("function/php_input.php");
 
 
@@ -17,7 +17,7 @@ class GetAllApi {
     
     $ids = php_input();
     if(empty($ids)) throw new Exception("Identificadores no definidos");
-    $rows = $this->container->getEntityRender($this->entityName)->param("id",$ids)->fieldTree()->all();
+    $rows = $this->container->query($this->entityName)->param("id",$ids)->fieldTree()->all();
     $rel = $this->container->getEntityTools($this->entityName);
     foreach($rows as &$row) $row = $rel->json($row);
     return $rows;

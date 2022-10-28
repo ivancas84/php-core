@@ -5,9 +5,9 @@
 require_once("function/snake_case_to.php");
 require_once("class/model/Entity.php");
 require_once("class/model/Field.php");
-require_once("class/model/EntitySqlo.php");
+require_once("class/model/EntityPersist.php");
 require_once("class/model/EntityTools.php");
-require_once("class/model/EntityRender.php");
+require_once("class/model/EntityQuery.php");
 
 
 class Container {
@@ -262,17 +262,17 @@ class Container {
     return $c;
   }
 
-  public function getEntitySqlo($entityName) {
+  public function getEntityPersist($entityName) {
     if (isset(self::$sqlo[$entityName])) return self::$sqlo[$entityName];
 
-    $c = new EntitySqlo;
+    $c = new EntityPersist;
     $c->entityName = $entityName;
     $c->container = $this;
     return self::$sqlo[$entityName] = $c;
   }
 
-  public function getEntityRender($entityName = null){
-    $render = new EntityRender;
+  public function query($entityName = null){
+    $render = new EntityQuery;
     $render->entityName = $entityName;
     $render->container = $this;
     return $render;
