@@ -78,7 +78,7 @@ class Db extends mysqli {
     if ($fieldNumber >= $result->field_count) return array();
 
     $column = array();
-    while ($row = $result->fetch_row()) array_push($column,$row[$fieldNumber]);
+    while ($val = $result->fetch_column($fieldNumber)) array_push($column,$val);
 
     return $column;
   }
