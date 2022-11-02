@@ -30,7 +30,7 @@ class EntityOptions {
     /**
      * Llamar a _callFields utilizando los fieldNames definidos en la entidad.
      */
-    return $this->_callFields($this->container->eEntity($this->entityName)->getFieldNames(), $method);
+    return $this->_callFields($this->container->entity($this->entityName)->getFieldNames(), $method);
   }
 
   function _toArrayFields($fieldNames, $method = ""){

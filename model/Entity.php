@@ -86,7 +86,7 @@ class Entity {
   public function sna_(){ return $this->s_() . $this->n_() . " AS " . $this->alias; } //schema.nombre AS alias
   public function a_(){ return $this->alias . "."; }
 
-  function getPk() { return $this->container->getField($this->getName(), "id"); }
+  function getPk() { return $this->container->field($this->getName(), "id"); }
 
   //Debido a que la estructura utiliza clases concretas, debe asignarse luego de finalizada la generacion de archivos en el contenedor
   public function setStructure(array $structure){ $this->structure = $structure; }
@@ -132,7 +132,7 @@ class Entity {
 
   public function getFieldsNf(){
     $fields = [];
-    foreach($this->nf as $fieldName) array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    foreach($this->nf as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
     return $fields;
   }
 
@@ -143,13 +143,13 @@ class Entity {
 
   public function getFieldsMu(){
     $fields = [];
-    foreach($this->mu as $fieldName) array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    foreach($this->mu as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
     return $fields;
   }
   
   public function getFields_U(){
     $fields = [];
-    foreach($this->_u as $fieldName) array_push($fields, $this->container->getField($this->getName(), $fieldName));
+    foreach($this->_u as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
     return $fields;
   }
 

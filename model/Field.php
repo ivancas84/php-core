@@ -37,7 +37,7 @@ class Field {
    * Tipo de datos definido en la base de datos.
    */
 
-  public $dataType;
+  public $dataType = "string";
   /**
    * Tipo de datos generico.
    * El framework trabaja solo con los siguientes datos.

@@ -356,7 +356,6 @@ class EntityQuery {
     $having = $this->container->controller("sql_condition", $this->entityName)->main($this->having);    
     $condition = $this->container->controller("sql_condition", $this->entityName)->main($this->condition);
     $order = $this->container->controller("sql_order", $this->entityName)->main($this->order);
-
     $sql = "SELECT DISTINCT
 {$fieldsQuery}
 {$this->from()}

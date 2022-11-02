@@ -147,7 +147,7 @@ class Container {
     if (isset(self::$field[$entityName.UNDEFINED.$fieldName])) return self::$field[$entityName.UNDEFINED.$fieldName]; 
 
     $fieldsJson = $this->fieldsJson($entityName);
-    self::$field[$entityName.UNDEFINED.$fieldName] = new Field($fieldsJson[$fieldName]);
+    self::$field[$entityName.UNDEFINED.$fieldName] = (array_key_exists($fieldName, $fieldsJson)) ? new Field($fieldsJson[$fieldName]) : new Field(["name"=>$fieldName]);
     self::$field[$entityName.UNDEFINED.$fieldName]->container = $this;
     self::$field[$entityName.UNDEFINED.$fieldName]->entityName = $entityName;
     return self::$field[$entityName.UNDEFINED.$fieldName]; 
