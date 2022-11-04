@@ -2,7 +2,7 @@
 require_once("function/php_input.php");
 
 
-class LabelApi {
+class LabelGetApi {
   /**
    * Comportamiento general de all
    */

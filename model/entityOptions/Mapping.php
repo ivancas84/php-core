@@ -37,13 +37,16 @@ class MappingEntityOptions extends EntityOptions {
     $fieldsLabel = [];
 
     $entity = $this->container->entity($this->entityName);
-    foreach($entity->getFields() as $field){
-      if($field->isMain()) array_push($fieldsLabel, $field->getName());
-    }      
 
     $tree = $this->container->tree($this->entityName);
 
-    foreach($tree as $key => $subtree) $this->recursiveLabel($key, $subtree, $fieldsLabel);
+    foreach($entity->getFieldsNf() as $field){
+      if($field->isMain()) array_push($fieldsLabel, $field->getName());
+    }      
+
+    foreach($tree as $fieldId => $subtree){
+      if($this->container->fieldById($this->entityName, $fieldId)->isMain()) $this->recursiveLabel($fieldId, $subtree, $fieldsLabel);
+    }
         
     array_walk($fieldsLabel, function(&$field) { 
       $field =  $this->container->query($this->entityName)->mapping($field, $this->prefix); });
@@ -54,11 +57,14 @@ class MappingEntityOptions extends EntityOptions {
   protected function recursiveLabel(string $key, array $tree, array &$fieldsLabel){
     $entity = $this->container->entity($tree["entity_name"]);
     
-    foreach($entity->getFields() as $field){
+    foreach($entity->getFieldsNf() as $field){
       if($field->isMain()) array_push($fieldsLabel, $key."-".$field->getName());
     }      
     
-    foreach($tree["children"] as $subkey => $subtree) $this->recursiveLabel($subkey, $subtree, $fieldsLabel);
+    foreach($tree["children"] as $fieldId => $subtree){
+      if($this->container->fieldById($entity->getName(), $fieldId)->isMain()) $this->recursiveLabel($fieldId, $subtree, $fieldsLabel);
+    }
+
   }
 
   public function search(){

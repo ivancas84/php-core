@@ -153,6 +153,11 @@ class Container {
     return self::$field[$entityName.UNDEFINED.$fieldName]; 
   }
 
+  public function fieldById($entityName, $fieldId){
+    $relations = $this->relations($entityName);
+    return $this->field($entityName, $relations[$fieldId]["field_name"]);
+  }
+
   protected function instanceFromDir($dir, $action, $entityName){
     $d = snake_case_to("xxYy", $dir);
     $D = snake_case_to("XxYy", $dir);
