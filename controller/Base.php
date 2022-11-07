@@ -8,7 +8,6 @@ abstract class BaseController {
   
   public $entityName; 
   public $container;
-  public $permission = "r";
 
   abstract public function main();
 
