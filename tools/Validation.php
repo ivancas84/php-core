@@ -93,7 +93,7 @@
                 $this->errors[] = 'Valor inferior al mínimo';
             }
         } else {
-            if ($this->value < $length) {
+            if ($this->value < floatval($length)) {
                 $this->errors[] = 'Valor inferior al mínimo';
             }
         }
@@ -104,11 +104,11 @@
         if(self::is_empty($this->value)) return $this;
 
         if (is_string($this->value)){                
-            if(strlen($this->value) > $length){
+            if(strlen($this->value) > floatval($length)){
                 $this->errors[] = 'Valor superior al máximo';
             }
         } else {
-            if($this->value > $length){
+            if($this->value > floatval($length)){
                 $this->errors[] = 'Valor superior al máximo';
             }
         }
@@ -117,14 +117,14 @@
 
       public function maxLength($length) {
         if(self::is_empty($this->value)) return $this;
-        if(strlen($this->value) > $length) $this->errors[] = 'Longitud inferior al mínimo';
+        if(strlen($this->value) > floatval($length)) $this->errors[] = 'Longitud superior al máximo';
         return $this;
       }
 
 
       public function minLength($length) {
         if(self::is_empty($this->value)) return $this;
-        if(strlen($this->value) < $length) $this->errors[] = 'Longitud inferior al mínimo';
+        if(strlen($this->value) < floatval($length)) $this->errors[] = 'Longitud inferior al mínimo';
         return $this;
       }
 
@@ -209,7 +209,7 @@
 
 
       public function maxSize($size) {
-        if($this->file['error'] != 4 && $this->file['size'] > $size){
+        if($this->file['error'] != 4 && $this->file['size'] > floatval($size)){
             $this->errors[] = 'El archivo supera el tamaño máximo de '.number_format($size / 1048576, 2).' MB.';
         }
         return $this;
