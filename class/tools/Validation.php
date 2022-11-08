@@ -117,14 +117,14 @@
 
       public function maxLength($length) {
         if(self::is_empty($this->value)) return $this;
-        if(strlen($this->value) > $length) $this->errors[] = 'Longitud inferior al mínimo';
+        if(strlen($this->value) > floatval($length)) $this->errors[] = 'Longitud superior al máximo';
         return $this;
       }
 
 
       public function minLength($length) {
         if(self::is_empty($this->value)) return $this;
-        if(strlen($this->value) < $length) $this->errors[] = 'Longitud inferior al mínimo';
+        if(strlen($this->value) < floatval($length)) $this->errors[] = 'Longitud inferior al mínimo';
         return $this;
       }
 
