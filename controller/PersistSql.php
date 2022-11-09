@@ -1,7 +1,7 @@
 <?php
 
 
-class PersistSql { //2
+class PersistSql {
   /**
    * Definir SQL de persistencia
    */

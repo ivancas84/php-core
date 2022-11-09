@@ -1,7 +1,7 @@
 <?php
 
 
-class DeleteEntityQuerySql {
+class DeleteQuerySql {
   /**
    * Definir SQL de eliminacion.
    * Se realiza una consulta a la base de datos para obtener los ids a eliminar.
