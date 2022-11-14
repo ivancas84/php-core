@@ -15,6 +15,5 @@ function concat($value, $connectNoEmpty, $connectEmpty = NULL, $connectCond = NU
     $connect = $connectNoEmpty;
   }  
 
-  return $connect . " " . $value . "
-";
+  return $connect . " " . $value;
 }

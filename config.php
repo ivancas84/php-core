@@ -11,9 +11,9 @@ define("LESS", "<"); //comparacion menor
 define("LESS_EQUAL", "<="); //comparacion menor o igual
 define("GREATER", ">"); //comparacion mayor
 define("GREATER_EQUAL", ">="); //comparacion mayor o igual
-define("FF", "!!"); //prefijo que indica field (utilizado para definir un valor como field)
-define("OR_", "OR"); //prefijo que indica field (utilizado para definir un valor como field)
-define("AND_", "AND"); //prefijo que indica field (utilizado para definir un valor como field)
+define("FF", "°°"); //prefijo que indica field (utilizado ocasionalmente para definir un valor como field)
+define("OR_", "OR"); //prefijo que indica field (utilizado para indicar concatenacion OR en condiciones)
+define("AND_", "AND"); //prefijo que indica field (utilizado para indicar concatenacion AND en condiciones)
 
 /**
  * @example 

@@ -2,7 +2,9 @@
 
 require_once("model/entityOptions/EntityOptions.php");
 
-
+/**
+ * Definir condicion a traves de 3 elementos "field, option y value" donde value es un valor válido para el field.
+ */
 class ConditionEntityOptions extends EntityOptions {
 
   protected function labelSearch($option, $value){
@@ -23,9 +25,11 @@ class ConditionEntityOptions extends EntityOptions {
     return $this->_approxCast($field, $option, $value);  
   }
 
-  protected function _defineCondition($param){
+  protected function _defineCondition($fieldName){
+    $param = explode(".",$fieldName);
     $ret = [];
     if(count($param) == 1) {
+      //traducir nombre de field sin funcion
       $field = $this->container->field($this->entityName, $param[0]);
       switch ( $field->getDataType() ) {
         case "string": case "text": return "_string"; break;
@@ -33,6 +37,7 @@ class ConditionEntityOptions extends EntityOptions {
         default: return "_default";
       }
     } else {
+      //traducir funcion
       switch($param[1]) {
         case "count": return "_default";
         case "is_set": case "exists": return "_exists";
@@ -41,11 +46,15 @@ class ConditionEntityOptions extends EntityOptions {
     }
   }
 
+  /**
+   * @example Ejemplos de metodos redefinidos por el usuario
+   * numeroDocumento($option, $value) //definicion de condicion para el fieldName "numero_documento"
+   * numeroDocumentoMax($option, $value) //definicion de condicion para el fieldName "numero_documento.max"
+   */
   public function _(string $fieldName, $option, $value){
     $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$option, $value]);
-    $param = explode(".",$fieldName);
-    $m = $this->_defineCondition($param, $option, $value);
+    $m = $this->_defineCondition($fieldName, $option, $value);
     return call_user_func_array(array($this, $m), [$fieldName,$option, $value]);
   }
 
@@ -105,4 +114,5 @@ class ConditionEntityOptions extends EntityOptions {
     if($option == "=~") return "(lower({$field}) LIKE lower('%{$value}%'))";
     if($option == "!=~") return "(lower({$field}) NOT LIKE lower('%{$value}%'))";
   }
+
 }

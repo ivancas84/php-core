@@ -28,7 +28,10 @@ class MappingEntityOptions extends EntityOptions {
     $entity = $this->container->entity($this->entityName);  
     if(empty($entity->getIdentifier())) throw new Exception ("Identificador no definido en la entidad ". $this->container->entity($this->entityName)->getName()); 
     $identifier = [];
-    foreach($entity->getIdentifier() as $id) array_push($identifier, $this->container->query($this->entityName)->mapping($id, $this->prefix));
+    foreach($entity->getIdentifier() as $identifierElement) {
+      $f = $this->container->explodeField($this->entityName, $identifierElement);
+      array_push($identifier, $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]));
+    }
     return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
 ";
   }
@@ -49,7 +52,9 @@ class MappingEntityOptions extends EntityOptions {
     }
         
     array_walk($fieldsLabel, function(&$field) { 
-      $field =  $this->container->query($this->entityName)->mapping($field, $this->prefix); });
+      $f = $this->container->explodeField($this->entityName, $field);
+      $field = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
+    });
 
     return "CONCAT_WS(' ', " . implode(",", $fieldsLabel). ")";
   }

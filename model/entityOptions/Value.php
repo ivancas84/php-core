@@ -4,29 +4,30 @@ require_once("model/entityOptions/EntityOptions.php");
 require_once("tools/Format.php");
 require_once("tools/SpanishDateTime.php");
 
+/**
+ * Manipular valores de una entidad
+ * 
+ * Cuidado con los metodos setDefault, solo setean el valor por defecto si el campo es UNDEFINED,
+ * si es otro valor o null, son ignorados. 
+ * El valor por defecto del id siempre se carga en null, el programador debe setearla (habitualmente utilizando la funcion uniqid)
+ */
 class ValueEntityOptions extends EntityOptions {
-
-  /**
-   * Manipular valores de una entidad
-   * 
-   * Cuidado con los metodos setDefault, solo setean el valor por defecto si el campo es UNDEFINED,
-   * si es otro valor o null, son ignorados y no setean el valor por defecto. 
-   * Este era un error habitual al asignar el valor por defecto del id, por lo que en versiones actuales
-   * el valor por defecto del id se carga en null, el programador debe exlicitamente indicar el valor por defeto del id
-   * habitualmente utilizando la funcion uniqid()
-   */
-
-  public $logs;
   /**
    * Logs de verificaciones
    */
+  public $logs;
 
-  public $value = [];
   /**
    * Conjunto de valores
    * 
    * Los valores se almacenan en un array asociativo
+   * 
+   * Ejemplo de elementos almacenados
+   *   nombres
+   *   nombres.max //valor maximo 
    */
+  public $value = [];
+  
   
   public function _getLogs(){ return $this->logs; }
 

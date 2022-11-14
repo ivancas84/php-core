@@ -1,7 +1,7 @@
 <?php
 
 
-
+require_once("config.php"); //configuracion general
 require_once("function/snake_case_to.php");
 require_once("model/Entity.php");
 require_once("model/Field.php");
@@ -310,6 +310,7 @@ class Container {
     $c->container = $this;
     return $c;    
   }
+
   
   public function condition($entityName, $prefix = ""){
     $dir = "model/condition/";
@@ -355,4 +356,23 @@ class Container {
     return $c;    
   }
 
+
+  /**
+   * Separar un field en 3 elementos field_id, entity_name y field_name
+   */
+  public function explodeField($entityName, $field){
+    $f = explode("-",$field);
+
+    if(count($f) == 2) return [
+        "field_id" => $f[0],
+        "entity_name" => $this->relations($entityName)[$f[0]]["entity_name"],
+        "field_name" => $f[1]
+    ];
+
+    return [
+      "field_id" => "",
+      "entity_name" => $entityName,
+      "field_name" => $field
+    ];
+  }
 }
