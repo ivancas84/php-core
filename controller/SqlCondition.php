@@ -115,12 +115,27 @@ class SqlCondition {
    */
   protected function conditionField($field, $option, $value){
     $f = explode("-",$field);
+
     if(count($f) == 2) {
       $prefix = $f[0];
       $entityName = $this->container->relations($this->entityName)[$f[0]]["entity_name"];
-      return $this->container->condition($entityName, $prefix)->_($f[1], $option, $value);
+      $field = $f[1];
+    } else{
+      $prefix = null;
+      $entityName = $this->entityName;
     } 
-    return $this->container->condition($this->entityName)->_($field, $option, $value);
+
+    if(strpos($value, "!") === 0) return $this->optionBetweenFields($field, $option, $value);
+
+    return $this->container->condition($entityName, $prefix)->_($field, $option, $value);
+
+  }
+
+  protected function optionBetweenFields($fieldName1, $option, $fieldName2){
+    $field1 = $this->container->mapping($this->entityName, $this->prefix)->_($fieldName);
+
+
+
   }
 
 }
