@@ -437,7 +437,7 @@ class EntityQuery {
     return $sql;
   }
 
-  protected function joinfk(array $tree, $tablePrefix, &$sql){
+  protected function joinFk(array $tree, $tablePrefix, &$sql){
     if (empty ($tablePrefix)) $tablePrefix = $this->container->entity($this->entityName)->getAlias();
 
     foreach ($tree as $prefix => $value) {      
@@ -475,7 +475,7 @@ class EntityQuery {
   }
 
 
-  public function condition($condition){
+  protected function condition($condition){
     if(empty($condition)) return "";
     $conditionMode = $this->conditionRecursive($condition);
     return $conditionMode["condition"];
