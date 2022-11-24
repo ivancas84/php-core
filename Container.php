@@ -165,11 +165,12 @@ class Container {
     $A = snake_case_to("XxYy", $action);
     $E = snake_case_to("XxYy", $entityName);
 
-    $path = "" . $d . "/" . $a . "/" .$E . ".php";
-    if((@include_once $path) == true){
+    $aa = @include_once $d . DIRECTORY_SEPARATOR . $a . DIRECTORY_SEPARATOR .$E . ".php";
+	
+	  if($aa){
       $className =  $E . $A . $D;
     } else{
-      require_once("". $d . "/" . $A . ".php");
+	    require_once("". $d . "/" . $A . ".php");
       $className = $A   . $D;
     }
 
