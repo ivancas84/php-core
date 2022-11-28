@@ -13,7 +13,13 @@ class CountApi {
   public function main() {
     $this->container->auth()->authorize($this->entityName, $this->permission);
     $display = php_input();
-    return intval($this->container->query($this->entityName)->display($display)->fields(["count"])->columnOne());
+    return intval(
+      $this->container->query($this->entityName)
+      ->display($display)
+      ->size(0)
+      ->fields(["count"])
+      ->columnOne()
+    );
   }
 
 }

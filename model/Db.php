@@ -18,7 +18,7 @@ class Db extends mysqli {
     if($this->error) throw new Exception($this->error);
   }
 
-  public function query($query, $resultmode = MYSQLI_STORE_RESULT){
+  public function query($query, $resultmode = MYSQLI_STORE_RESULT): mysqli_result|bool {
     $result = parent::query($query, $resultmode);
     if(!$result) throw new Exception($this->error);
     return $result;
@@ -33,7 +33,7 @@ class Db extends mysqli {
     return true;
   }
 
-  public function multi_query($query){
+  public function multi_query($query): bool{
     /**
      * cuidado, siempre espera que se recorran los resultados.
      * Se recomienda utilizar multi_query_last si se quiere evitar procesamiento adicional
