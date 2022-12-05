@@ -90,7 +90,15 @@ class Field {
 
   public function __construct(array $array){
     foreach ($array as $key => $value) {
-      $this->$key = $value;
+      if(preg_match('[\+]', $key))  {
+        $key = rtrim($key,"+");
+        $this->$key = array_values(array_merge($this->$key, $value));
+      } elseif(preg_match('[\-]', $key))  {
+        $key = rtrim($key,"-");
+        $this->$key = array_values(array_diff($this->$key, $value));
+      } else {
+        $this->$key = $value;
+      }
     }
   }
   

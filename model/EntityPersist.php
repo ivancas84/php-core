@@ -57,7 +57,7 @@ WHERE id IN ({$ids_});
      * El conjunto de valores debe estar previamente formateado
      */
 
-    $fns = $this->container->controller_("struct_tools")->getFieldNamesAdmin($this->container->entity($this->entityName));
+    $fns = $this->getFieldNamesAdmin();
     $sql = "
   INSERT INTO " . $this->container->entity($this->entityName)->sn_() . " (";    
     $sql .= implode(", ", $fns);    
@@ -75,7 +75,7 @@ VALUES ( ";
     $sql = "
 UPDATE " . $this->container->entity($this->entityName)->sn_() . " SET
 ";   
-    $fns = $this->container->controller_("struct_tools")->getFieldNamesAdmin($this->container->entity($this->entityName));
+    $fns = $this->getFieldNamesAdmin();
     foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
     $sql = substr($sql, 0, -2); //eliminar ultima coma
 
@@ -96,6 +96,15 @@ UPDATE " . $this->container->entity($this->entityName)->sn_() . " SET
     return implode(', ', $ids_);
   }
   
+
+  protected function getFieldNamesAdmin(){ //pk, nf, fk
+    $names = [];
+    $entity = $this->container->entity($this->entityName);
+    foreach($entity->getFields() as $field) {
+      if($field->isAdmin()) array_push($names, $field->getName());
+    }
+    return $names;
+  }
 
   
   

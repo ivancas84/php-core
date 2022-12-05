@@ -29,16 +29,6 @@ class StructTools {
     return $fields;
   }
 
-  public function getFieldNamesAdmin($entity){ //pk, nf, fk
-    $names = [];
-    foreach($entity->getFields() as $field) {
-      if($field->isAdmin()) array_push($names, $field->getName());
-    }
-    return $names;
-  }
-
-
-
   public function getEntityRefBySubtypeSelect($entity){
     $entities = [];  
     foreach($this->getFieldsBySubtype($entity, "select") as $field){
