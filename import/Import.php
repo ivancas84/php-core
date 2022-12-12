@@ -33,9 +33,9 @@ abstract class Import {
       $this->config(); //utiliza element
       $this->define(); //utiliza element
       $this->identify();
+
       $this->query();
       $this->process();
-
     }
 
     /**
@@ -54,7 +54,7 @@ abstract class Import {
      * @param $data Juego de datos del elemento
      */
     public function element($i, $data){
-      $element = $this->container->getImportElement($this->id, $this);
+      $element = $this->container->importElement($this->id, $this);
       $element->index = $i;
       try{
         if(empty($data)) throw new Exception("Datos vacios para el elemento ". $i);
@@ -311,17 +311,13 @@ abstract class Import {
     if(empty($this->ids[$name])) throw new Exception("query error: No se encuentran definidos los identificadores de " . $name);
 
     $entityName = $this->getEntityName($name);
-    $render = $this->container->query($entityName);
-    $render->setFields(["identifier"]);
-    $render->size(false);
-    $render->addCondition(["identifier","=",$this->ids[$name]]);
-    $rows = $this->container->db()->all($entityName, $render);
+    $rows = $this->container->query($entityName)
+    ->fieldsTree()->field("identifier")
+    ->size(0)
+    ->cond(["identifier","=",$this->ids[$name]])
+    ->all();
 
-    //si se devuelven varias instancias del mismo identificador (no deberia pasar) solo se considerara una
-    $this->dbs[$name] = array_combine_key(
-      $rows,
-      "identifier"
-    );
+    foreach($rows as $row) $this->dbs[$name][$row["identifier"]] = $row;
   }
 
 

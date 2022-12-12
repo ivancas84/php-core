@@ -26,7 +26,7 @@ class Container {
   static $db = null;
   static $modelTools = null;
   static $tools = []; //las instancias dependen de la entidad
-  static $sqlo = []; //las instancias dependen de la entidad
+  static $persist = []; //las instancias dependen de la entidad
   static $entity = []; //las instancias dependen de la entidad
   static $field = []; //las instancias dependen de la entidad
   static $controller = []; //no todos los controladores son singletones
@@ -270,12 +270,12 @@ class Container {
   }
 
   public function persist($entityName) {
-    if (isset(self::$sqlo[$entityName])) return self::$sqlo[$entityName];
+    if (isset(self::$persist[$entityName])) return self::$persist[$entityName];
 
     $c = new EntityPersist;
     $c->entityName = $entityName;
     $c->container = $this;
-    return self::$sqlo[$entityName] = $c;
+    return self::$persist[$entityName] = $c;
   }
 
   public function query($entityName = null){

@@ -91,7 +91,7 @@ abstract class ImportElement { //2
    * @return Array con los valores diferentes Si la comparacion se realizo correctamente
    */
   public function compare($name, $includeNull = false, $ignoreFields = []){
-    if(!$existent = $this->getExistentValue($name)) return false;
+    if(!$existent = $this->exists($name)) return false;
     $a = $this->entities[$name]->_toArray("sql");
     $b = $existent->_toArray("sql");
     $compare = [];
@@ -117,7 +117,7 @@ abstract class ImportElement { //2
    * Filtro de valores no nulos para una comparacion
    */
   public function filterNotNullExistentComparition($name, $compare){
-    if(!$existent = $this->getExistentValue($name)) return false;
+    if(!$existent = $this->exists($name)) return false;
     $compareAux = [];
     foreach($compare as $key){
 
@@ -129,7 +129,7 @@ abstract class ImportElement { //2
   /**
    * Deben realizarse los chequeos previos para confirmar la existencia
    */
-  public function getExistentValue($name){
+  public function exists($name){
     $identifier = $this->getIdentifier($name);
     if(!$identifier = $this->getIdentifier($name)) return false;
     if(!array_key_exists($identifier, $this->import->dbs[$name])) return false;
@@ -173,6 +173,7 @@ abstract class ImportElement { //2
    */
   public function identifyCheck($name){
     $identifier = $this->getIdentifier($name);
+    if(empty($identifier)) throw new Exception("El identificador " . $identifier . " de " . $name . " (indice " . $this->index . ") está vacío.");
     if(!key_exists($name, $this->import->ids)) $this->import->ids[$name] = [];
     if(in_array($identifier, $this->import->ids[$name])) throw new Exception("El identificador " . $identifier . " de " . $name . " (indice " . $this->index . ") está duplicado.");
     array_push($this->import->ids[$name], $identifier);
@@ -186,9 +187,10 @@ abstract class ImportElement { //2
    */
   public function identify($name){
     $identifier = $this->getIdentifier($name);
-    if(!key_exists($id, $this->import->ids)) $this->import->ids[$name] = [];
+    if(!key_exists($identifier, $this->import->ids)) $this->import->ids[$name] = [];
     if(!in_array($identifier, $this->import->ids[$name])) array_push($this->import->ids[$name], $identifier);
   }
+
   
 
 
