@@ -8,7 +8,7 @@ class EntityOptions {
    */
   public $prefix = "";
   
-  public function _pf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '_'; } 
+  public function _pf(){ return (empty($this->prefix)) ?  ''  : $this->prefix . '-'; } 
   /**
    * prefijo fields
    */

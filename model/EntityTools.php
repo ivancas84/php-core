@@ -41,7 +41,7 @@ class EntityTools {
 
   protected function jsonFk(array $tree, &$json, &$row){
     foreach ($tree as $prefix => $value) {
-      if(!is_null($row[$prefix.'_id'])) {   
+      if(!is_null($row[$prefix.'-id'])) {   
         $json[$value["field_name"]."_"] = $this->container->value($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
         if(!empty($value["children"])) $this->jsonFk($value["children"], $json[$value["field_name"]."_"], $row);
       }

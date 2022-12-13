@@ -400,9 +400,9 @@ class EntityQuery {
       } else {
         $f = $this->container->explodeField($this->entityName, $fieldName);
         $map = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
-        $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "_" : "";
-        $alias = (is_integer($key)) ? $prefix . str_replace(".","_",$f["field_name"]) : $key;
-        $f = $map . " AS " . $alias;
+        $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
+        $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
+        $f = $map . " AS \"" . $alias . "\"";
       }
       array_push($fieldsQuery_, $f);
     }
