@@ -33,9 +33,11 @@ abstract class Import {
       $this->config(); //utiliza element
       $this->define(); //utiliza element
       $this->identify();
-
       $this->query();
       $this->process();
+      // echo "<pre>";
+      // print_r($this); 
+
     }
 
     /**

@@ -91,7 +91,7 @@ abstract class ImportElement { //2
    * @return Array con los valores diferentes Si la comparacion se realizo correctamente
    */
   public function compare($name, $includeNull = false, $ignoreFields = []){
-    if(!$existent = $this->exists($name)) return false;
+    if(!$existent = $this->getExistent($name)) return false;
     $a = $this->entities[$name]->_toArray("sql");
     $b = $existent->_toArray("sql");
     $compare = [];
@@ -117,7 +117,7 @@ abstract class ImportElement { //2
    * Filtro de valores no nulos para una comparacion
    */
   public function filterNotNullExistentComparition($name, $compare){
-    if(!$existent = $this->exists($name)) return false;
+    if(!$existent = $this->getExistent($name)) return false;
     $compareAux = [];
     foreach($compare as $key){
 
@@ -127,9 +127,9 @@ abstract class ImportElement { //2
   }
 
   /**
-   * Deben realizarse los chequeos previos para confirmar la existencia
+   * Obtener elemento existente
    */
-  public function exists($name){
+  public function getExistent($name){
     $identifier = $this->getIdentifier($name);
     if(!$identifier = $this->getIdentifier($name)) return false;
     if(!array_key_exists($identifier, $this->import->dbs[$name])) return false;
@@ -208,6 +208,11 @@ abstract class ImportElement { //2
       } 
     } 
     return $this->insert($name);
+  }
+
+  public function exists($name){
+    if(!($existent = $this->getExistent($name))) throw new Exception("No existe el registro de " . $name . " (indice " . $this->index . ") está vacío.");
+    return $existent->_get("id");
   }
 
 }
