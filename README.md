@@ -1,5 +1,9 @@
 # php-core
 
+Version 0.6
+
+* Nueva asignación de nombres a los campos de respuesta: Los campos de respuesta coinciden con los de consulta
+
 Version 0.5.2
 
 * Incorporar constantes de configuracion general.

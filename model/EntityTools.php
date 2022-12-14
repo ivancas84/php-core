@@ -51,16 +51,14 @@ class EntityTools {
   public function json2($row){
     $json = [];
     $tree = $this->container->tree($this->entityName);
-    $id =  $this->entityName;
-    $json[$id] = $this->container->value($this->entityName)->_fromArray($row, "set")->_toArray("json");
+    $json[$this->entityName] = $this->container->value($this->entityName)->_fromArray($row, "set")->_toArray("json");
     $this->json2Fk($tree, $row, $json);
     return $json;
   }
 
   protected function json2Fk(array $tree, $row, &$json){
     foreach ($tree as $prefix => $value) {
-      $id =  $prefix;
-      $json[$id] = $this->container->value($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
+      $json[$prefix] = $this->container->value($value["entity_name"], $prefix)->_fromArray($row, "set")->_toArray("json");
       if(!empty($value["children"])) $this->json2Fk($value["children"], $row, $json);
     }
   }
