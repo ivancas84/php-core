@@ -420,8 +420,8 @@ class EntityQuery {
         $f = $key;
       } else {
         $f = $this->container->explodeField($this->entityName, $fieldName);
-        $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "_" : "";
-        $ff = (is_integer($key)) ? $prefix . str_replace(".","_",$f["field_name"]) : $key;
+        $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
+        $ff = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
       }
       array_push($group_, $ff);
     }
