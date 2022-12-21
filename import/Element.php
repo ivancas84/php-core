@@ -102,7 +102,7 @@ abstract class ImportElement { //2
           (
             !$includeNull && 
             (
-              is_null($va) || $va == "null"
+              is_null($va) || $va == "null" || $va == ""
             )
           ) 
           || !key_exists($ka, $b)
