@@ -67,7 +67,7 @@ class SpanishDateTime extends DateTime{
   }
 
 
-   static function createFromFormat($format, $time, $timezone = null){
+   static function createFromFormat(string $format, string $time, ?DateTimeZone $timezone = null): DateTime|false{
      if(!isset($timezone)){
        $dateTime = DateTime::createFromFormat($format, $time);
     } else {
@@ -84,7 +84,7 @@ class SpanishDateTime extends DateTime{
      return $spanishDateTime;
    }
 
-  function format($format){
+  function format(string $format): string{
 
      $english = array(
       'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
