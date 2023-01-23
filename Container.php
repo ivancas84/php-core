@@ -124,9 +124,12 @@ class Container {
       $string2 = file_get_contents($_SERVER["DOCUMENT_ROOT"] . DIRECTORY_SEPARATOR . PATH_ROOT. DIRECTORY_SEPARATOR . "model" . DIRECTORY_SEPARATOR . "fields/" .  $entityName . ".json");
       $array2 = json_decode($string2, true);
       foreach($array as $fieldName => $value){
-        if(array_key_exists($fieldName, $array2)){
+        if(array_key_exists($fieldName, $array2))
           $array[$fieldName] = array_merge($array[$fieldName], $array2[$fieldName]);
-        }
+      }
+      foreach($array2 as $fieldName => $value){
+        if(!array_key_exists($fieldName, $array)) 
+          $array[$fieldName] = $array2[$fieldName];
       }
     }
     self::$fieldsJson[$entityName] = $array;
