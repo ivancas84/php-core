@@ -19,6 +19,7 @@ class Entity {
   public $schema = DATA_SCHEMA;
   public $table = null; //nombre de la tabla de la base de datos
   /**
+   * @deprecated
    * En ocasiones el nombre de la tabla de la base de datos puede ser diferente del original
    * Si es null, se considera el mismo nombre que la entidad
    */
