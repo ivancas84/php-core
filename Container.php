@@ -30,7 +30,7 @@ class Container {
   static $entity = []; //las instancias dependen de la entidad
   static $field = []; //las instancias dependen de la entidad
   static $controller = []; //no todos los controladores son singletones
-  static $structure = false; //flag para indicar que se generaron todas las entidades
+  static $structure = false; //@deprecated? flag para indicar que se generaron todas las entidades
 
   public function vendorAutoload(){
     require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_ROOT . '/vendor/autoload.php');
