@@ -378,7 +378,7 @@ class ValueEntityOptions extends EntityOptions {
       }
     } else {
       switch($param[1]){
-        case "count": return ["type"=>"number"];
+        case "count": return ["type"=>"integer"];
         default: return $this->_defineCheck($param[0]);
       }
     }
