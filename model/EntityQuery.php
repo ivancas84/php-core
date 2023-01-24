@@ -420,10 +420,9 @@ class EntityQuery {
         $f = $key;
       } else {
         $f = $this->container->explodeField($this->entityName, $fieldName);
-        $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
-        $ff = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
+        $map = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
       }
-      array_push($group_, $ff);
+      array_push($group_, $map);
     }
 
     return empty($group_) ? "" : "GROUP BY " . implode(", ", $group_) . "
