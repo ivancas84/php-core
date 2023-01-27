@@ -32,19 +32,31 @@ class Format {
     }
   }
 
-  static function boolean($value, $format = null){
-    if(empty($format)) return $value;  
-    if(Validation::is_undefined($value)) return null;
-    switch($format){
-      case strpos(mb_strtolower($format), "si") !== false:
-      case strpos(mb_strtolower($format), "sí") !== false:
-      case strpos(mb_strtolower($format), "no") !== false:   
-        return (settypebool($value)) ? "Sí" : "No";
-      case strpos(mb_strtolower($format), "s") !== false:
-      case strpos(mb_strtolower($format), "n") !== false:              
-        return (settypebool($value)) ? "S" : "N";
-      default:         
-        return $value;
+    static function boolean($value, $format = null){
+        if(empty($format)) return $value;  
+        if(Validation::is_undefined($value)) return null;
+        switch($format){
+            case strpos($format, "si") !== false:
+            case strpos($format, "sí") !== false:
+            case strpos($format, "no") !== false:   
+                return (settypebool($value)) ? "sí" : "no";
+            case strpos($format, "Si") !== false:
+            case strpos($format, "Sí") !== false:
+            case strpos($format, "No") !== false:   
+                return (settypebool($value)) ? "Sí" : "No";
+            case strpos($format, "SÍ") !== false:
+                return (settypebool($value)) ? "SÍ" : "NO";
+            case strpos($format, "SI") !== false:
+            case strpos($format, "NO") !== false:   
+                    return (settypebool($value)) ? "SI" : "NO";
+            case strpos($format, "S") !== false:
+            case strpos($format, "N") !== false:              
+                return (settypebool($value)) ? "S" : "N";      
+            case strpos($format, "s") !== false:
+            case strpos($format, "n") !== false:              
+                return (settypebool($value)) ? "s" : "n";
+        default:         
+            return $value;
     }
   }
 
