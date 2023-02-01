@@ -46,6 +46,10 @@ class ValueEntityOptions extends EntityOptions {
     return true;
   }
 
+  public function _unset($fieldName){
+      unset($this->value[$fieldName]);
+  }
+  
   public function _equalToStrict(ValueEntityOptions $value){
     /**
      * Retorna true si es igual u otro valor si es diferente (false o string con el nombre del campo)
