@@ -1,7 +1,7 @@
 <?php
 
 
-class PersistSqlValue { //2
+class PersistSqlValue {
   /**
    * Definir SQL de persistencia a partir de una instancia de EntityValues
    */

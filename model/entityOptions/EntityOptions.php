@@ -63,7 +63,7 @@ class EntityOptions {
      */
     if(empty($row)) return $this;
 
-    foreach($fieldNames as $fieldName){      
+    foreach($fieldNames as $fieldName){
       if(array_key_exists($this->_pf().$fieldName, $row)) call_user_func_array([$this, "_".$method],[$fieldName, $row[$this->_pf().$fieldName]]);
     }
 
