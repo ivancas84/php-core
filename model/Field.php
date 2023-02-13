@@ -8,8 +8,8 @@ class Field {
 
   public $container;
   public $name;
-  public $entityName;
-  public $entityRefName;
+  public $entity_name;
+  public $entity_ref_name;
   public $alias;
   public $default;
   /**
@@ -37,7 +37,7 @@ class Field {
    * Tipo de datos definido en la base de datos.
    */
 
-  public $dataType = "string";
+  public $data_type = "string";
   /**
    * Tipo de datos generico.
    * El framework trabaja solo con los siguientes datos.
@@ -52,7 +52,7 @@ class Field {
    *   date 
    */
 
-  public $fieldType; //string con el tipo de field
+  public $field_type; //string con el tipo de field
     //"pk": Clave primaria
     //"nf": Field normal
     //"mu": Clave foranea muchos a uno
@@ -73,7 +73,7 @@ class Field {
    * file (fk)
    */
   
-  public $selectValues = array();
+  public $select_values = array();
     //si subtype = "select_text", deben asignarse valores "text"
     //si subtype = "select_int", deben asignarse valores "int"
 
@@ -104,32 +104,32 @@ class Field {
   
   //Retornar instancia de Entity correspondiente al field
   public function getEntity() {
-    return $this->container->entity($this->entityName);
+    return $this->container->entity($this->entity_name);
   }
 
   public function getEntityRef(){
-    return ($this->entityRefName) ? $this->container->entity($this->entityRefName) : null;
+    return ($this->entity_ref_name) ? $this->container->entity($this->entity_ref_name) : null;
   }
   /**
    * Debe sobrescribirse para aquellos fields que sean fk
    */
   public function getDefault(){ return $this->default; }
-  public function getFieldType(){ return $this->fieldType; }
+  public function getFieldType(){ return $this->field_type; }
   public function getLength(){ return $this->length; }
   public function getMax(){ return $this->max; }
   public function getMin(){ return $this->min; }
   public function getSubtype(){ return $this->subtype; }
-  public function getDataType(){ return $this->dataType; }
-  public function getSelectValues(){ return $this->selectValues; }
+  public function getDataType(){ return $this->data_type; }
+  public function getSelectValues(){ return $this->select_values; }
   public function getType() { return $this->type; }
   public function getCondition() { return $this->condition; }
   public function getValue() { return $this->value; }
 
-  public function isAdmin(){ return (in_array($this->getName(), $this->getEntity()->noAdmin)) ? false : true; }
-  public function isNotNull(){  return (in_array($this->getName(), $this->getEntity()->notNull)) ? true : false; }
+  public function isAdmin(){ return (in_array($this->getName(), $this->getEntity()->no_admin)) ? false : true; }
+  public function isNotNull(){  return (in_array($this->getName(), $this->getEntity()->not_null)) ? true : false; }
   public function isUnique(){ return (in_array($this->getName(), $this->getEntity()->unique)) ? true : false; }
   public function isMain(){ return (in_array($this->getName(), $this->getEntity()->main)) ? true : false; }
-  public function isUniqueMultiple(){  return (in_array($this->getName(), $this->getEntity()->uniqueMultiple)) ? true : false; }
+  public function isUniqueMultiple(){  return (in_array($this->getName(), $this->getEntity()->unique_multiple)) ? true : false; }
 
   public function getAlias($format = null) {
     switch($format){

@@ -25,8 +25,8 @@ class Entity {
    */
   
   public $nf = [];
-  public $mu = [];
-  public $_u = [];
+  public $om = [];
+  public $oo = [];
 
   public $identifier = [];
   /**
@@ -39,13 +39,13 @@ class Entity {
    * Habitualmente $identifier se define en tiempo de ejecucion, para cada bloque de codigo se puede necesitar un identifier diferente
    */
 
-  public $orderDefault = [];
+  public $order_default = [];
   /**
    * Valores por defecto para ordenamiento
    * Array asociativo, ejemplo: ["field1"=>"asc","field2"=>"desc",...];
    */
 
-  public $noAdmin = [];
+  public $no_admin = [];
   /**
    * Valores no administrables
    * Array, ejemplo: ["field1","field2",...];
@@ -63,7 +63,7 @@ class Entity {
    * Array, ejemplo: ["field1","field2",...];
    */
   
-  public $uniqueMultiple = [];
+  public $unique_multiple = [];
   /**
    * Valores unicos multiples
    * Array, ejemplo: ["field1","field2",...];
@@ -148,29 +148,29 @@ class Entity {
     return $fields;
   }
 
-  public function getFieldsFk(){ return array_merge($this->getFieldsMu(), $this->getFields_U()); }
+  public function getFieldsFk(){ return array_merge($this->getFieldsMo(), $this->getFieldsOo()); }
   /**
-   * fk (mu y _u)
+   * fk (mo y oo)
    */
 
-  public function getFieldsMu(){
+  public function getFieldsMo(){
     $fields = [];
-    foreach($this->mu as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
+    foreach($this->mo as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
     return $fields;
   }
   
-  public function getFields_U(){
+  public function getFieldsOo(){
     $fields = [];
-    foreach($this->_u as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
+    foreach($this->oo as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
     return $fields;
   }
 
-  public function getFieldsRef(){ return array_merge($this->getFieldsUm(), $this->getFieldsU_()); } //ref (um y u_)
+  public function getFieldsRef(){ return array_merge($this->getFieldsOm(), $this->getFieldsOon()); } //ref (um y u_)
 
-  public function getFieldsUm(){
+  public function getFieldsOm(){
     $fields = array();
     foreach($this->getStructure() as $entity){
-      foreach($entity->getFieldsMu() as $field){
+      foreach($entity->getFieldsMo() as $field){
         if($field->getEntityRef()->getName() == $this->getName()){
           array_push($fields, $field);
         }
@@ -179,10 +179,10 @@ class Entity {
     return $fields;
   }
 
-  public function getFieldsU_(){
+  public function getFieldsOon(){
     $fields = array();
     foreach($this->getStructure() as $entity){
-      foreach($entity->getFields_U() as $field){
+      foreach($entity->getFieldsOo() as $field){
         if($field->getEntityRef()->getName() == $this->getName()){
           array_push($fields, $field);
         }
@@ -207,11 +207,11 @@ class Entity {
     return $fields;
   }
 
-  public function getFieldsU_NotReferenced(array $referencedNames){
+  public function getFieldsOonNotReferenced(array $referencedNames){
     /**
      * Fields u_ cuyo nombre de tabla no se encuentre en el parametro)
      */
-    $fieldsAux = $this->getFieldsU_();
+    $fieldsAux = $this->getFieldsOon();
     $fields = array();
 
     foreach($fieldsAux as $fieldAux){
@@ -227,13 +227,13 @@ class Entity {
    * Tiene relaciones?
    * Utilizado generalmente para verificar si es viable la generacion de cierto codigo que requiere relaciones
    */
-  public function hasRelations(){ return ($this->hasRelationsFk() || $this->hasRelationsU_()) ? true : false; }
+  public function hasRelations(){ return ($this->hasRelationsFk() || $this->hasRelationsOon()) ? true : false; }
   public function hasRelationsFk(){ return (count($this->getFieldsFk())) ? true : false; }
-  public function hasRelationsU_(){ return (count($this->getFieldsU_())) ? true : false; }
+  public function hasRelationsOon(){ return (count($this->getFieldsOon())) ? true : false; }
   public function hasRelationsRef(){ return (count($this->getFieldsRef())) ? true : false; }
 
-  public function getFieldNames(){ return array_merge(["id"], $this->nf, $this->mu, $this->_u); }
+  public function getFieldNames(){ return array_merge(["id"], $this->nf, $this->mo, $this->oo); }
 
-  public function getOrderDefault() { return $this->orderDefault; }
+  public function getOrderDefault() { return $this->order_default; }
 
 }
