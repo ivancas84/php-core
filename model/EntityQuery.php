@@ -204,7 +204,7 @@ class EntityQuery {
      * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
      */
     $uniqueFields = $this->container->entity($this->entityName)->unique;
-    $uniqueFieldsMultiple = $this->container->entity($this->entityName)->uniqueMultiple;
+    $uniqueFieldsMultiple = $this->container->entity($this->entityName)->unique_multiple;
 
     $condition = array();
     if(array_key_exists("id",$params) && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
