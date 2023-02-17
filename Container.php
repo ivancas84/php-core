@@ -162,18 +162,16 @@ class Container {
   }
 
   protected function instanceFromDir($dir, $action, $entityName){
-    $d = snake_case_to("xxYy", $dir);
     $D = snake_case_to("XxYy", $dir);
-    $a = snake_case_to("xxYy", $action);
     $A = snake_case_to("XxYy", $action);
     $E = snake_case_to("XxYy", $entityName);
 
-    $aa = @include_once $d . DIRECTORY_SEPARATOR . $a . DIRECTORY_SEPARATOR .$E . ".php";
+    $aa = @include_once $dir . DIRECTORY_SEPARATOR . $entityName . DIRECTORY_SEPARATOR . $action . ".php";
 	
 	  if($aa){
       $className =  $E . $A . $D;
     } else{
-	    require_once("". $d . "/" . $A . ".php");
+	    require_once("". $dir . "/" . $action . ".php");
       $className = $A   . $D;
     }
 
@@ -183,15 +181,15 @@ class Container {
     return $c;
   }
 
-  public function api($action, $entityName) {
+  public function api($action, $entityName = "") {
     return $this->instanceFromDir("api",$action,$entityName);
   }
 
-  public function script($action, $entityName) {
+  public function script($action, $entityName = "") {
     return $this->instanceFromDir("script",$action,$entityName);
   }
 
-  public function pdf($action, $entityName) {
+  public function pdf($action, $entityName = "") {
     return $this->instanceFromDir("pdf",$action,$entityName);
   }
   
@@ -224,16 +222,14 @@ class Container {
     return $c;
   }
   
-  public function controller($controller, $entityName, $prefix = null){
+  public function controller($controller, $entityName = "", $prefix = ""){
     /**
      * Controlador asociado a entidad
      */
-    $path = "controller/" . snake_case_to("xxYy", $controller) . "/" . snake_case_to("XxYy", $entityName) . ".php";
-    
-    if((@include_once $path) == true){
+    if((@include_once "controller/" . $entityName . "/" . $controller . ".php") == true){
       $className = snake_case_to("XxYy", $entityName) . snake_case_to("XxYy", $controller);    
     } else{
-      require_once("controller/" . snake_case_to("XxYy", $controller) . ".php");
+      require_once("controller/" . $controller . ".php");
       $className = snake_case_to("XxYy", $controller);    
     }
 

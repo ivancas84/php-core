@@ -1,5 +1,10 @@
 # php-core
 
+Version 0.7
+
+* Cambio de camelCase a snake_case y traduccion de nombre para archivos de configuracion
+* Nueva disposicion de elementos para ser invocados por el Container
+
 Version 0.6
 
 * Nueva asignación de nombres a los campos de respuesta: Los campos de respuesta coinciden con los de consulta
@@ -8,7 +13,7 @@ Version 0.5.2
 
 * Incorporar constantes de configuracion general.
 * Soporte para valor como field en la condicion.
-* Posible nombre de la versión 1: SQLOrganize.
+* Definir nombre de la versión 1: SQLOrganize.
 * Eliminar controladores SqlCondition y SqlOrder (serán incorporados en EntityQuery)
 
 
