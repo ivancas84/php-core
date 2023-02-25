@@ -30,7 +30,7 @@ class MappingEntityOptions extends EntityOptions {
     $identifier = [];
     foreach($entity->getIdentifier() as $identifierElement) {
       $f = $this->container->explodeField($this->entityName, $identifierElement);
-      array_push($identifier, $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]));
+      array_push($identifier, $this->container->mapping($f["entity_name"], $f["field_id"])->map($f["field_name"]));
     }
     return "CONCAT_WS(\"". UNDEFINED . "\"," . implode(",", $identifier) . ")
 ";
@@ -74,11 +74,19 @@ class MappingEntityOptions extends EntityOptions {
 
   public function search(){
     $fields = $this->container->entity($this->entityName)->nf;
-    array_walk($fields, function(&$field) { $field = $this->container->mapping($this->entityName, $this->prefix)->_($field); });
+    array_walk($fields, function(&$field) { $field = $this->container->mapping($this->entityName, $this->prefix)->map($field); });
     return "CONCAT_WS(' ', " . implode(",", $fields). ")";
   }
 
-  public function _($fieldName, array $params = []){
+    /**
+     * @deprecated
+     * @todo Modificar uso de "_" por "map"
+     */
+    public function _($fieldName, array $params = []){
+        return $this->map($fieldName, $params);
+    }
+
+  public function map($fieldName, array $params = []){
     /**
      * Metodo principal de mapping
      * 
@@ -93,11 +101,11 @@ class MappingEntityOptions extends EntityOptions {
      *   _("fecha_alta.max.y"); //aplicar max y dar formato y
      *   _("edad.avg")
      */    
-    $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
+    $m = str_replace(".","_",$fieldName);
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), $params);
 
     $p = explode(".",$fieldName);
-    $m = (count($p) == 1) ? "_default" : "_".snake_case_to("xxYy", $p[1]);
+    $m = (count($p) == 1) ? "_default" : "_". $p[1];
     return call_user_func_array(array($this, $m), [$p[0]]); 
   }
 
@@ -111,8 +119,8 @@ class MappingEntityOptions extends EntityOptions {
   public function _sum($field) { return "SUM(" . $this->_($field) . ")"; }
   public function _count($field) { return "COUNT(DISTINCT " . $this->_($field) . ")"; }
   public function _exists($field) { return $this->_default($field); }
-  public function _isSet($field) { return $this->_exists($field); }
-  public function _groupConcat($field) { return "GROUP_CONCAT(DISTINCT " . $this->_($field) . " SEPARATOR ', ')"; }
+  public function _is_set($field) { return $this->_exists($field); }
+  public function _str_agg($field) { return "GROUP_CONCAT(DISTINCT " . $this->_($field) . " SEPARATOR ', ')"; }
 
 }
 
