@@ -31,12 +31,17 @@ class EntityQuery {
    * Ej ["nombres", "horas_catedra.sum", "edad.avg", "com_cur-horas_catedra]
    */
 
-  protected $groupConcat = array(); //campos a los cuales se aplica group_concat
+  protected $str_agg = array(); //campos a los cuales se aplica str_agg
   /**
+   * Array multiple definido por alias y los campos que se aplica str_agg
    * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
    * . indica aplicacion de funcion de agregacion
    * - indica que pertenece a una relacion
-   * Ej ["telefono", "nombres"], se traduce en  GROUP_CONCAT(DISTINCT telefono SEPARATOR ', ' ) AS telefono
+   * [
+   *    "alias" => ["field1","field2"] se traduce simiar a GROUP_CONCAT(DISTINCT field1_map, " ", field2_map) AS "alias"
+   * ]
+   * Para aplicar GROUP_CONCAT a un solo valor, se puede utilizar como alterna-
+   * tiva la funcion de agregacion, por ejemplo persona.str_agg se traduce a GROUP_CONCAT(DISTINCT persona) 
    */
 
   protected $group = array(); //campos de agrupacion
@@ -142,6 +147,13 @@ class EntityQuery {
     return $this;
   }
 
+    
+    public function str_agg(array $str_agg){
+        $this->str_agg = $str_agg;
+        return $this;
+    }
+
+
   public function having(array $having = null) { 
     if(!empty($having)) array_push ( $this->having, $having );
     return $this;
@@ -151,6 +163,7 @@ class EntityQuery {
     $this->entityName = $entityName; 
     return $this;
   }
+
 
   protected function addPrefixRecursive(array &$condition, $prefix){
     if(!key_exists(0, $condition)) return;
@@ -383,33 +396,46 @@ class EntityQuery {
     return [$m, $f["field_name"]];
   }
 
-  protected function fieldsQuery(){
-    $fields = array_merge($this->group, $this->fields);
+    protected function fieldsQuery(){
+        $fields = array_merge($this->group, $this->fields);
 
-    $fieldsQuery_ = [];
-    foreach($fields as $key => $fieldName){
-      if(is_array($fieldName)){
-        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
-        $map_ = [];
-        foreach($fieldName as $fn){
-          $f = $this->container->explodeField($this->entityName, $fn);
-          $m = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
-          array_push($map_, $m);
-        } 
-        $f = "CONCAT_WS(', ', " . implode(",",$map_) . ") AS " . $key;
-      } else {
-        $f = $this->container->explodeField($this->entityName, $fieldName);
-        $map = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
-        $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
-        $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
-        $f = $map . " AS \"" . $alias . "\"";
-      }
-      array_push($fieldsQuery_, $f);
+        $fieldsQuery_ = [];
+        foreach($fields as $key => $fieldName){
+            if(is_array($fieldName)){
+                if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
+                $map_ = [];
+                foreach($fieldName as $fn){
+                    $f = $this->container->explodeField($this->entityName, $fn);
+                    $m = $this->container->mapping($f["entity_name"], $f["field_id"])->map($f["field_name"]);
+                    array_push($map_, $m);
+                } 
+                $f = "CONCAT_WS(', ', " . implode(",",$map_) . ") AS " . $key;
+            } else {
+                $f = $this->container->explodeField($this->entityName, $fieldName);
+                $map = $this->container->mapping($f["entity_name"], $f["field_id"])->map($f["field_name"]);
+                $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
+                $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
+                $f = $map . " AS \"" . $alias . "\"";
+            }
+            array_push($fieldsQuery_, $f);
+        }
+
+        foreach($this->str_agg as $alias => $fieldNames){
+            if(is_integer($alias)) throw new Exception("Debe string de alias para llave de str_agg, ej ['alias'=>['field1','field2',...]]");
+            if(!is_array($fieldNames)) throw new Exception("Definir array para valor str_agg, ej ['alias'=>['field1','field2',...]], para un valor puede utilizar field.str_agg");
+            $map_ = [];
+            foreach($fieldNames as $fn){
+                $f = $this->container->explodeField($this->entityName, $fn);
+                $m = $this->container->mapping($f["entity_name"], $f["field_id"])->map($f["field_name"]);
+                array_push($map_, $m);
+            } 
+            $f = "GROUP_CONCAT(DISTINCT " . implode(", ",$map_) . ") AS " . $alias;
+            array_push($fieldsQuery_, $f);
+        }
+
+        return implode(', 
+        ', $fieldsQuery_);
     }
-
-    return implode(', 
-', $fieldsQuery_);
-  }
 
 
   protected function groupBy(){
@@ -420,7 +446,7 @@ class EntityQuery {
         $f = $key;
       } else {
         $f = $this->container->explodeField($this->entityName, $fieldName);
-        $map = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
+        $map = $this->container->mapping($f["entity_name"], $f["field_id"])->map($f["field_name"]);
       }
       array_push($group_, $map);
     }
@@ -572,8 +598,8 @@ class EntityQuery {
 
     if(strpos($value, FF) === 0) { //definir condicion entre fields
       $v = $this->container->explodeField($this->entityName, substr($value, strlen(FF)));
-      $fieldSql1 = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
-      $fieldSql2 = $this->container->mapping($v["entity_name"], $v["field_id"])->_($v["field_name"]);
+      $fieldSql1 = $this->container->mapping($f["entity_name"], $f["field_id"])->map($f["field_name"]);
+      $fieldSql2 = $this->container->mapping($v["entity_name"], $v["field_id"])->map($v["field_name"]);
       
       switch($option) {
         case "=~": return "(lower(CAST({$fieldSql1} AS CHAR)) LIKE CONCAT('%', lower(CAST({$fieldSql2} AS CHAR)), '%'))";
@@ -594,7 +620,7 @@ class EntityQuery {
      * 1) _("numero_documento.max", "=", "something") //verifica si hay metodo local "numeroDocumentoMax" sino invoca a _defineCondition("numero_documento.max")}
      * 2) _defineCondition("numero_documento.max") //traduce la funcion necesaria para armar la condicion, en este caso  se traduce como "_string"
      * 3) _string("numero_documento.max", "=", "something") //define el mapeo del field y el valor
-     *    Para el mapeo, utiliza  $field = $this->container->mapping("persona", "persona-")->_("numero_documento.max"); que se traduce a MAX(persona-numero_documento)
+     *    Para el mapeo, utiliza  $field = $this->container->mapping("persona", "persona-")->map("numero_documento.max"); que se traduce a MAX(persona-numero_documento)
      *    Para el valor, utiliza $this->container->value("persona", "persona-")->_set("numero_documento.max","something")... value->_check("numero_documento.max") ...value->_sql("numero_documento.max") que se traduce a "'something'"
      */
 
@@ -619,7 +645,7 @@ class EntityQuery {
     foreach($order as $key => $value){
       $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
       $f = $this->container->explodeField($this->entityName, $key);
-      $map_ = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
+      $map_ = $this->container->mapping($f["entity_name"], $f["field_id"])->map($f["field_name"]);
       $sql_ = "{$map_} IS NULL, {$map_} {$value}";
       $sql .= concat($sql_, ', ', ' ORDER BY', $sql);
     }
