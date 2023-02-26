@@ -429,7 +429,7 @@ class EntityQuery {
                 $m = $this->container->mapping($f["entity_name"], $f["field_id"])->map($f["field_name"]);
                 array_push($map_, $m);
             } 
-            $f = "GROUP_CONCAT(DISTINCT " . implode(", ",$map_) . ") AS " . $alias;
+            $f = "GROUP_CONCAT(DISTINCT " . implode(", ' ', ",$map_) . ") AS " . $alias;
             array_push($fieldsQuery_, $f);
         }
 
