@@ -1,6 +1,6 @@
 <?php
 
-require_once("api/Base.php");
+require_once("api/base.php");
 
 class RelationsApi extends BaseApi {
 
