@@ -22,6 +22,7 @@ function email($addresses, $subject, $body){
   $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         // Enable TLS encryption; `PHPMailer::ENCRYPTION_SMTPS` encouraged
   $mail->Port       = 587;                                    // TCP port to connect to, use 465 for `PHPMailer::ENCRYPTION_SMTPS` above
   $mail->CharSet = 'UTF-8';
+  // $mail->SMTPDebug  = 1;
 
   $mail->Host       = EMAIL_DOCENTE_HOST;                    // Set the SMTP server to send through
   $mail->Username   = EMAIL_DOCENTE_USER;                     // SMTP username
