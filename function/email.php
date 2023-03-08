@@ -22,16 +22,17 @@ function email($addresses, $subject, $body){
   $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         // Enable TLS encryption; `PHPMailer::ENCRYPTION_SMTPS` encouraged
   $mail->Port       = 587;                                    // TCP port to connect to, use 465 for `PHPMailer::ENCRYPTION_SMTPS` above
   $mail->CharSet = 'UTF-8';
+  // $mail->SMTPDebug  = 1;
 
-  $mail->Host       = "mail.planfines2.com.ar";                    // Set the SMTP server to send through
-  $mail->Username   = "docentes@planfines2.com.ar";                     // SMTP username
-  $mail->Password   = "Educacion2021";                               // SMTP password
+  $mail->Host       = EMAIL_DOCENTE_HOST;                    // Set the SMTP server to send through
+  $mail->Username   = EMAIL_DOCENTE_USER;                     // SMTP username
+  $mail->Password   = EMAIL_DOCENTE_PASSWORD;                               // SMTP password
   
 
   //Recipients
-  $mail->setFrom("docentes@planfines2.com.ar", "Docentes CENS 462");
+  $mail->setFrom(EMAIL_DOCENTE_FROM_ADRESS, EMAIL_DOCENTE_FROM_NAME);
   foreach($addresses as $email => $name) $mail->AddAddress($email, $name);
-  $mail->addBCC('docentes.cens462@gmail.com');
+  $mail->addBCC(EMAIL_DOCENTE_BCC);
 
 
   // Content
