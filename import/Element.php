@@ -48,8 +48,8 @@ abstract class ImportElement { //2
    * Comportamiento por defecto para setear una entidad
    */
   public function setEntity($data, $name, $prefix = ""){
-    $entityName = $this->import->getEntityName($name);
-    $this->entities[$name] = $this->container->value($entityName, $prefix);
+    $entity_name = $this->import->getEntityName($name);
+    $this->entities[$name] = $this->container->value($entity_name, $prefix);
     if(!$data) throw new Exception("Error al definir datos iniciales");
     $this->entities[$name]->_fromArray($data, "set");
 
@@ -73,8 +73,8 @@ abstract class ImportElement { //2
     $this->logs->addLog($name,"info","Se realizara una insercion");
     if(Validation::is_empty($this->entities[$name]->_get("id"))) $this->entities[$name]->_set("id",uniqid());
     $this->entities[$name]->_call("setDefault");
-    $entityName = $this->import->getEntityName($name);
-    $this->sql .= $this->container->persist($entityName)->insert($this->entities[$name]->_toArray("sql"));
+    $entity_name = $this->import->getEntityName($name);
+    $this->sql .= $this->container->persist($entity_name)->insert($this->entities[$name]->_toArray("sql"));
     return $this->entities[$name]->_get("id");
   }
 
@@ -133,16 +133,16 @@ abstract class ImportElement { //2
     $identifier = $this->getIdentifier($name);
     if(!$identifier = $this->getIdentifier($name)) return false;
     if(!array_key_exists($identifier, $this->import->dbs[$name])) return false;
-    $entityName = $this->import->getEntityName($name);
-    $existente = $this->container->value($entityName);
+    $entity_name = $this->import->getEntityName($name);
+    $existente = $this->container->value($entity_name);
     $existente->_fromArray($this->import->dbs[$name][$identifier], "set");
     $this->entities[$name]->_set("id",$existente->_get("id"));
     return $existente;
   }
 
   public function update($name){
-    $entityName = $this->import->getEntityName($name);
-    $this->sql .= $this->container->persist($entityName)->update($this->entities[$name]->_toArray("sql"));
+    $entity_name = $this->import->getEntityName($name);
+    $this->sql .= $this->container->persist($entity_name)->update($this->entities[$name]->_toArray("sql"));
     $this->logs->addLog($name,"info","Registro existente, se actualizara campos");
     return $this->entities[$name]->_get("id");
   }

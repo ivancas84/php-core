@@ -6,7 +6,7 @@
    * Se define de manera abstracta, se invoca de forma consciente por lo tanto requiere redefinicion
    */
 abstract class FurtherErrorApi {
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "r";
 

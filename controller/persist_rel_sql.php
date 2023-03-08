@@ -27,7 +27,7 @@ class PersistRelSql {
    * 
    */
 
-  public $entityName; //entidad principal
+  public $entity_name; //entidad principal
   public $container;
   public $data = [];
   public $detail = [];
@@ -40,11 +40,11 @@ class PersistRelSql {
   public function main($data){
     $this->data = $data;
     $this->fieldIds = array_keys($this->data);
-    $this->rel = $this->container->relations($this->entityName);
+    $this->rel = $this->container->relations($this->entity_name);
     $this->procesarData();
     //$this->procesarUm();
 
-    return ["id" => $this->data[$this->entityName]["id"], "detail" => $this->detail, "sql"=>$this->sql];
+    return ["id" => $this->data[$this->entity_name]["id"], "detail" => $this->detail, "sql"=>$this->sql];
   }
 
   public function procesarData(){
@@ -64,7 +64,7 @@ class PersistRelSql {
     /**
      * si la llave es la entidad actual, procesamos el resto de las llaves
      */
-    if($fieldId == $this->entityName){
+    if($fieldId == $this->entity_name){
       $this->index++;
       $this->procesarData();
       $this->procesarEntity();
@@ -97,8 +97,8 @@ class PersistRelSql {
   public function procesarFk($fieldId){
     array_push($this->fieldIdsProcesados, $fieldId);
 
-    //Definir $entityName, $fieldName en base a $fieldId y $this->entityName
-    $r = $this->container->relations($this->entityName)[$fieldId];
+    //Definir $entity_name, $field_name en base a $fieldId y $this->entity_name
+    $r = $this->container->relations($this->entity_name)[$fieldId];
     
     //Ejecutar controlador
     $p = $this->container->controller("persist_sql", $r["entity_name"]);
@@ -116,17 +116,17 @@ class PersistRelSql {
 
     //7) Asignar fk
     if($r["parent_id"]) $this->data[$r["parent_id"]][$r["field_name"]] = $idValue;
-    else $this->data[$this->entityName][$r["field_name"]] = $idValue;
+    else $this->data[$this->entity_name][$r["field_name"]] = $idValue;
   }
 
   public function procesarEntity(){
     //persistir
-    $persist = $this->container->controller("persist_sql", $this->entityName);
-    $p = $persist->main($this->data[$this->entityName]);
+    $persist = $this->container->controller("persist_sql", $this->entity_name);
+    $p = $persist->main($this->data[$this->entity_name]);
 
     //Actualizar $this->sql y $this->detail
     $this->sql .= $p["sql"];
-    array_push($this->detail, $this->entityName.$p["id"]);
+    array_push($this->detail, $this->entity_name.$p["id"]);
     return ($p["mode"] == "delete") ? null : $p["id"];
   }
 

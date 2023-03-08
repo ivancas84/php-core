@@ -8,15 +8,15 @@ class IdsApi {
    * Comportamiento general de api ids
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "r";
 
   public function main() {
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $display = php_input();
-    $ids = $this->container->query($this->entityName)->display($display)->field("id")->column();
+    $ids = $this->container->query($this->entity_name)->display($display)->field("id")->column();
     
     /**
      * los ids son tratados como string para evitar un error que se genera en Angular (se resta un numero en los enteros largos)

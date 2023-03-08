@@ -7,17 +7,17 @@ class GetApi {
    * Comportamiento general de all
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "r";
   
   public function main() {
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $id = file_get_contents("php://input");
     if(empty($id)) throw new Exception("Identificador no definido");
-    $row = $this->container->query($this->entityName)->fieldsTree()->param("id",$id)->one();
-    return $this->container->tools($this->entityName)->json($row);
+    $row = $this->container->query($this->entity_name)->fieldsTree()->param("id",$id)->one();
+    return $this->container->tools($this->entity_name)->json($row);
   }
 
 }

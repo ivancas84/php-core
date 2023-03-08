@@ -21,16 +21,16 @@ class ConditionEntityOptions extends EntityOptions {
     if($option == "=") $option = "=~";
     elseif($option == "!=") $option = "!=~";
     if(($option != "!=~") && ($option != "=~")) throw new Exception("Opción no válida para 'search'");
-    $field = $this->container->mapping($this->entityName, $this->prefix)->map("search");
+    $field = $this->container->mapping($this->entity_name, $this->prefix)->map("search");
     return $this->_approxCast($field, $option, $value);  
   }
 
-  protected function _defineCondition($fieldName){
-    $param = explode(".",$fieldName);
+  protected function _defineCondition($field_name){
+    $param = explode(".",$field_name);
     $ret = [];
     if(count($param) == 1) {
       //traducir nombre de field sin funcion
-      $field = $this->container->field($this->entityName, $param[0]);
+      $field = $this->container->field($this->entity_name, $param[0]);
       switch ( $field->getDataType() ) {
         case "string": case "text": return "_string"; break;
         case "boolean": return "_boolean"; break;
@@ -48,46 +48,48 @@ class ConditionEntityOptions extends EntityOptions {
 
   /**
    * @example Ejemplos de metodos redefinidos por el usuario
-   * numeroDocumento($option, $value) //definicion de condicion para el fieldName "numero_documento"
-   * numeroDocumentoMax($option, $value) //definicion de condicion para el fieldName "numero_documento.max"
+   * numeroDocumento($option, $value) //definicion de condicion para el field_name "numero_documento"
+   * numeroDocumentoMax($option, $value) //definicion de condicion para el field_name "numero_documento.max"
    */
-  public function _(string $fieldName, $option, $value){
-    $m = snake_case_to("xxYy", str_replace(".","_",$fieldName));
+  public function _(string $field_name, $option, $value){
+    $m = snake_case_to("xxYy", str_replace(".","_",$field_name));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$option, $value]);
-    $m = $this->_defineCondition($fieldName, $option, $value);
-    return call_user_func_array(array($this, $m), [$fieldName,$option, $value]);
+    $m = $this->_defineCondition($field_name, $option, $value);
+    return call_user_func_array(array($this, $m), [$field_name,$option, $value]);
   }
 
-  protected function _default($fieldName, $option, $value) { 
-    $field = $this->container->mapping($this->entityName, $this->prefix)->map($fieldName);
+  protected function _default($field_name, $option, $value) { 
+    $field = $this->container->mapping($this->entity_name, $this->prefix)->map($field_name);
     if($c = $this->_existsAux($field, $option, $value)) return $c;
     if($c = $this->_approxCast($field, $option, $value)) return $c;
-    $v = $this->container->value($this->entityName, $this->prefix);
-    $v->_set($fieldName, $value);  
-    if(!$v->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _default: " . $this->entityName . " " .$fieldName . " " . $option . " " . $value);
-    return "({$field} {$option} {$v->_sql($fieldName)}) ";  
+    $v = $this->container->value($this->entity_name, $this->prefix);
+    $v->_set($field_name, $value);  
+    if(!$v->_check($field_name)) throw new Exception("Valor incorrecto al definir condicion _default: " . $this->entity_name . " " .$field_name . " " . $option . " " . $value);
+    return "({$field} {$option} {$v->_sql($field_name)}) ";  
   }
 
-  protected function _string($fieldName, $option, $value) { 
-    $field = $this->container->mapping($this->entityName, $this->prefix)->map($fieldName);
+  protected function _string($field_name, $option, $value) {
+    $field = $this->container->mapping($this->entity_name, $this->prefix)->map($field_name);
     if($c = $this->_existsAux($field, $option, $value)) return $c;
     if($c = $this->_approx($field, $option, $value)) return $c;
-    $v = $this->container->value($this->entityName, $this->prefix);
-    $v->_set($fieldName, $value);  
-    if(!$v->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _string: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
-    return "({$field} {$option} {$v->_sql($fieldName)}) ";  
+    $v = $this->container->value($this->entity_name, $this->prefix);
+    
+    $v->_set($field_name, $value);  
+    if(!$v->_check($field_name)) throw new Exception("Valor incorrecto al definir condicion _string: " . $this->entity_name . " " . $field_name . " ". $option . " " .$value);
+    
+    return "({$field} {$option} {$v->_sql($field_name)}) ";  
   }
 
-  protected function _boolean($fieldName, $option, $value) { 
-    $field = $this->container->mapping($this->entityName, $this->prefix)->map($fieldName);
-    $v = $this->container->value($this->entityName, $this->prefix);
-    $v->_set($fieldName, $value);
-    if(!$v->_check($fieldName)) throw new Exception("Valor incorrecto al definir condicion _boolean: " . $this->entityName . " " . $fieldName . " ". $option . " " .$value);
-    return "({$field} {$option} {$v->_sql($fieldName)}) ";  
+  protected function _boolean($field_name, $option, $value) { 
+    $field = $this->container->mapping($this->entity_name, $this->prefix)->map($field_name);
+    $v = $this->container->value($this->entity_name, $this->prefix);
+    $v->_set($field_name, $value);
+    if(!$v->_check($field_name)) throw new Exception("Valor incorrecto al definir condicion _boolean: " . $this->entity_name . " " . $field_name . " ". $option . " " .$value);
+    return "({$field} {$option} {$v->_sql($field_name)}) ";  
   }
 
-  protected function _exists($fieldName, $option, $value) { 
-    $field = $this->container->mapping($this->entityName, $this->prefix)->map($fieldName);
+  protected function _exists($field_name, $option, $value) { 
+    $field = $this->container->mapping($this->entity_name, $this->prefix)->map($field_name);
     return $this->_existsAux($field, $option, settypebool($value));
   }
 

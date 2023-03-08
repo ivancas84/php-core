@@ -10,13 +10,13 @@ require_once("function/settypebool.php");
 class EntityPersist {
   
   public $container;
-  public $entityName;
+  public $entity_name;
 
  
   public function update(array $row) { //sql de actualizacion
     return "
 {$this->_update($row)}
-WHERE {$this->container->entity($this->entityName)->getPk()->getName()} = {$row['id']};
+WHERE {$this->container->entity($this->entity_name)->getPk()->getName()} = {$row['id']};
 ";
 
   }
@@ -31,10 +31,10 @@ WHERE {$this->container->entity($this->entityName)->getPk()->getName()} = {$row[
      */
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->formatIds($ids);
-    $r_ = $this->container->value($this->entityName)->_fromArray($row, "set")->_toArray("sql");
+    $r_ = $this->container->value($this->entity_name)->_fromArray($row, "set")->_toArray("sql");
     return "
 {$this->_update($r_)}
-WHERE {$this->container->entity($this->entityName)->getPk()->getName()} IN ({$ids_});
+WHERE {$this->container->entity($this->entity_name)->getPk()->getName()} IN ({$ids_});
 ";
   }
 
@@ -47,7 +47,7 @@ WHERE {$this->container->entity($this->entityName)->getPk()->getName()} IN ({$id
     if(empty($ids)) throw new Exception("No existen identificadores definidos");
     $ids_ = $this->formatIds($ids);
     return "
-DELETE FROM {$this->container->entity($this->entityName)->sn_()}
+DELETE FROM {$this->container->entity($this->entity_name)->sn_()}
 WHERE id IN ({$ids_});
 ";
   }
@@ -59,7 +59,7 @@ WHERE id IN ({$ids_});
 
     $fns = $this->getFieldNamesAdmin();
     $sql = "
-  INSERT INTO " . $this->container->entity($this->entityName)->sn_() . " (";    
+  INSERT INTO " . $this->container->entity($this->entity_name)->sn_() . " (";    
     $sql .= implode(", ", $fns);    
     $sql .= ")
 VALUES ( ";
@@ -73,7 +73,7 @@ VALUES ( ";
 
   public function _update(array $row){
     $sql = "
-UPDATE " . $this->container->entity($this->entityName)->sn_() . " SET
+UPDATE " . $this->container->entity($this->entity_name)->sn_() . " SET
 ";   
     $fns = $this->getFieldNamesAdmin();
     foreach($fns as $fn) { if (isset($row[$fn] )) $sql .= $fn . " = " . $row[$fn] . ", " ; }
@@ -88,7 +88,7 @@ UPDATE " . $this->container->entity($this->entityName)->sn_() . " SET
      * Formato sql de ids
      */
     $ids_ = [];
-    $value = $this->container->value($this->entityName);
+    $value = $this->container->value($this->entity_name);
     for($i = 0; $i < count($ids); $i++) {
       $value->_set("id",$ids[$i]);
       array_push($ids_, $value->_sql("id"));
@@ -99,7 +99,7 @@ UPDATE " . $this->container->entity($this->entityName)->sn_() . " SET
 
   protected function getFieldNamesAdmin(){ //pk, nf, fk
     $names = [];
-    $entity = $this->container->entity($this->entityName);
+    $entity = $this->container->entity($this->entity_name);
     foreach($entity->getFields() as $field) {
       if($field->isAdmin()) array_push($names, $field->getName());
     }

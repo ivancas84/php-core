@@ -6,7 +6,7 @@ abstract class BaseController {
    * Elementos en comun a todos los controladores
    **/
   
-  public $entityName; 
+  public $entity_name; 
   public $container;
 
   abstract public function main();

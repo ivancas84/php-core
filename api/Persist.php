@@ -10,17 +10,17 @@ class PersistApi {
    * @todo falta identificar el controlador (solo trabaja con id actualmente)
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "w";
 
   public function main(){
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $data = php_input();
-    $persist = $this->container->controller("persist_sql", $this->entityName)->main($data);
+    $persist = $this->container->controller("persist_sql", $this->entity_name)->main($data);
     $this->container->db()->multi_query_transaction($persist["sql"]);
-    return ["id" => $persist["id"], "detail" => [$this->entityName.$persist["id"]]];
+    return ["id" => $persist["id"], "detail" => [$this->entity_name.$persist["id"]]];
   }
 }
 

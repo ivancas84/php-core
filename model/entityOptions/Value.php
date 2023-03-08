@@ -46,8 +46,8 @@ class ValueEntityOptions extends EntityOptions {
     return true;
   }
 
-  public function _unset($fieldName){
-      unset($this->value[$fieldName]);
+  public function _unset($field_name){
+      unset($this->value[$field_name]);
   }
   
   public function _equalToStrict(ValueEntityOptions $value){
@@ -61,10 +61,10 @@ class ValueEntityOptions extends EntityOptions {
     
   }
 
-  protected function _defineSet($fieldName){
-    $param = explode(".",$fieldName);
+  protected function _defineSet($field_name){
+    $param = explode(".",$field_name);
     if(count($param) == 1) {
-      switch($this->container->field($this->entityName, $param[0])->getDataType()) {
+      switch($this->container->field($this->entity_name, $param[0])->getDataType()) {
         case "year": return "_setYear";
         case "time": case "date": case "timestamp": return "_setDatetime";
         case "integer": return "_setInteger";
@@ -82,45 +82,45 @@ class ValueEntityOptions extends EntityOptions {
     }
   }
 
-  public function _set($fieldName, $value){
+  public function _set($field_name, $value){
     /**
      * @example 
      *   _set("nombre", "something")
      *   _set("nombre.max", "something max");
      *   _set("nombre.count", 10);
      */
-    $m = "set".snake_case_to("XxYy", str_replace(".","_",$fieldName));
+    $m = "set".snake_case_to("XxYy", str_replace(".","_",$field_name));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$value]);
-    $m = $this->_defineSet($fieldName);
-    return call_user_func_array(array($this, $m), [$fieldName, $value]); 
+    $m = $this->_defineSet($field_name);
+    return call_user_func_array(array($this, $m), [$field_name, $value]); 
   }
 
-  protected function _setDatetime($fieldName, $p) {
+  protected function _setDatetime($field_name, $p) {
     if(!empty($p) && !($p instanceof DateTime)) $p = new SpanishDateTime($p);
     if($p instanceof DateTime) $p->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    return $this->value[$fieldName] = $p;
+    return $this->value[$field_name] = $p;
   }
 
-  protected function _setYear($fieldName, $p){
+  protected function _setYear($field_name, $p){
       if(!empty($p) && !($p instanceof DateTime)) {
         $p = (strlen($p) == 4) ? SpanishDateTime::createFromFormat('Y', $p) : new SpanishDateTime($p);
       }
       if($p instanceof DateTime) $p->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-      return $this->value[$fieldName] = $p;
+      return $this->value[$field_name] = $p;
   }
 
-  protected function _setString($fieldName, $p) {
-    $this->value[$fieldName] = (string)$p; 
-    return $this->value[$fieldName];
+  protected function _setString($field_name, $p) {
+    $this->value[$field_name] = (string)$p; 
+    return $this->value[$field_name];
   }
-  protected function _setInteger($fieldName, $p) { return $this->value[$fieldName] = (is_null($p)) ? null : intval($p); }
-  protected function _setFloat($fieldName, $p) { return $this->value[$fieldName] = (is_null($p)) ? null : floatval($p); }
-  protected function _setBoolean($fieldName, $p) { return $this->value[$fieldName] = settypebool($p); }
+  protected function _setInteger($field_name, $p) { return $this->value[$field_name] = (is_null($p)) ? null : intval($p); }
+  protected function _setFloat($field_name, $p) { return $this->value[$field_name] = (is_null($p)) ? null : floatval($p); }
+  protected function _setBoolean($field_name, $p) { return $this->value[$field_name] = settypebool($p); }
 
-  protected function _defineFastSet($fieldName){
-    $param = explode(".",$fieldName);
+  protected function _defineFastSet($field_name){
+    $param = explode(".",$field_name);
     if(count($param) == 1) {
-      switch($this->container->field($this->entityName, $param[0])->getDataType()) {
+      switch($this->container->field($this->entity_name, $param[0])->getDataType()) {
         case "year": return "_setYear";
         case "time": case "date": case "timestamp": return "_fastSetDatetime";
         case "integer": return "_fastSetInteger";
@@ -138,30 +138,30 @@ class ValueEntityOptions extends EntityOptions {
     }
   }
 
-  public function _fastSet($fieldName, $value){
+  public function _fastSet($field_name, $value){
     /**
      * @example 
      *   _fastSet("nombre", "something")
      *   _fastSet("nombre.max", "something max");
      *   _fastSet("nombre.count", 10);
      */
-    $m = "fastSet".snake_case_to("XxYy", str_replace(".","_",$fieldName));
+    $m = "fastSet".snake_case_to("XxYy", str_replace(".","_",$field_name));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$value]);
-    $m = $this->_defineFastSet($fieldName);
-    return call_user_func_array(array($this, $m), [$fieldName, $value]); 
+    $m = $this->_defineFastSet($field_name);
+    return call_user_func_array(array($this, $m), [$field_name, $value]); 
   }
 
-  protected function _fastSetDatetime($fieldName, DateTime $p = null) { return $this->value[$fieldName] = $p; }  
-  protected function _fastSetString($fieldName, string $p = null) { return $this->value[$fieldName] = $p; }  
-  protected function _fastSetInteger($fieldName, int $p = null) { return $this->value[$fieldName] = $p; }  
-  protected function _fastSetFloat($fieldName, float $p = null) { return $this->value[$fieldName] = $p; }  
-  protected function _fastSetBoolean($fieldName, bool $p = null) { return $this->value[$fieldName] = $p; }  
+  protected function _fastSetDatetime($field_name, DateTime $p = null) { return $this->value[$field_name] = $p; }  
+  protected function _fastSetString($field_name, string $p = null) { return $this->value[$field_name] = $p; }  
+  protected function _fastSetInteger($field_name, int $p = null) { return $this->value[$field_name] = $p; }  
+  protected function _fastSetFloat($field_name, float $p = null) { return $this->value[$field_name] = $p; }  
+  protected function _fastSetBoolean($field_name, bool $p = null) { return $this->value[$field_name] = $p; }  
 
-  protected function _defineSetDefault($fieldName){
-    $param = explode(".",$fieldName);
+  protected function _defineSetDefault($field_name){
+    $param = explode(".",$field_name);
     if(count($param)>1) return null; //los atributos derivados o calculados no tienen valor por defecto (puede que no exista el field)
     
-    $field = $this->container->field($this->entityName, $param[0]);
+    $field = $this->container->field($this->entity_name, $param[0]);
     switch($field->getDataType()){
       case "date": case "timestamp": case "year": case "time": 
         return (strpos(strtolower($field->getDefault()), "cur") !== false) ? date('c') : $field->getDefault();
@@ -169,30 +169,30 @@ class ValueEntityOptions extends EntityOptions {
     }
   }
 
-  public function _setDefault($fieldName){
+  public function _setDefault($field_name){
     /**
      * @example 
      *   _setDefault("nombre")
      */
-    if(!array_key_exists($fieldName, $this->value)) {
-      $m = "setDefault".snake_case_to("XxYy", str_replace(".","_",$fieldName));
+    if(!array_key_exists($field_name, $this->value)) {
+      $m = "setDefault".snake_case_to("XxYy", str_replace(".","_",$field_name));
       if(method_exists($this, $m)) return call_user_func(array($this, $m));
-      $value = $this->_defineSetDefault($fieldName);    
-      return $this->_set($fieldName, $value);
+      $value = $this->_defineSetDefault($field_name);    
+      return $this->_set($field_name, $value);
     }
   }
 
 
-  protected function _defineReset($fieldName){  
+  protected function _defineReset($field_name){  
     /**
      * Definir metodo de reset a ejecutar.
      * 
-     * Busca la configuracion del fieldName indicado, y selecciona el metodo 
+     * Busca la configuracion del field_name indicado, y selecciona el metodo 
      * mas adecuado.
      **/  
-    $param = explode(".",$fieldName);
+    $param = explode(".",$field_name);
     if(count($param)==1){
-      switch($this->container->field($this->entityName, $param[0])->getDataType()){
+      switch($this->container->field($this->entity_name, $param[0])->getDataType()){
         case "string": case "text": return "_resetString"; break;
         default: return null; break;
       }
@@ -203,7 +203,7 @@ class ValueEntityOptions extends EntityOptions {
     }
   }
 
-  public function _reset($fieldName){
+  public function _reset($field_name){
     /**
      * Reseteo de campo.
      * 
@@ -211,25 +211,25 @@ class ValueEntityOptions extends EntityOptions {
      * ejemplo, para una cadena de caracteres, _reset elimina espacios en
      * blanco duplicados y al principo y final de la cadena.
      */
-    if(array_key_exists($fieldName, $this->value)) { //reset se ejecuta solo si el campo existe en el conjunto de valores
-      $m = "reset".snake_case_to("XxYy", str_replace(".","_",$fieldName)); //definir metodo exclusivo
+    if(array_key_exists($field_name, $this->value)) { //reset se ejecuta solo si el campo existe en el conjunto de valores
+      $m = "reset".snake_case_to("XxYy", str_replace(".","_",$field_name)); //definir metodo exclusivo
       if(method_exists($this, $m)) return call_user_func(array($this, $m)); //ejecutar, si existe, metodo exlusivo
-      if($m = $this->_defineReset($fieldName)) //buscar metodo predefinido en funcion de la configuracion del campo
-        return call_user_func_array(array($this, $m), [$fieldName]); //ejecutar metodo predefinido
+      if($m = $this->_defineReset($field_name)) //buscar metodo predefinido en funcion de la configuracion del campo
+        return call_user_func_array(array($this, $m), [$field_name]); //ejecutar metodo predefinido
     }
   }
 
-  protected function _resetString($fieldName){
+  protected function _resetString($field_name){
     /**
      * Metodo de reseteo de strings
      */
-    $this->value[$fieldName] = preg_replace('/\s\s+/', ' ', trim($this->value[$fieldName]));
+    $this->value[$field_name] = preg_replace('/\s\s+/', ' ', trim($this->value[$field_name]));
   }
 
-  public function _defineGet($fieldName){
-    $param = explode(".",$fieldName);
+  public function _defineGet($field_name){
+    $param = explode(".",$field_name);
     if(count($param) == 1) {
-      switch($this->container->field($this->entityName, $param[0])->getDataType()) {         
+      switch($this->container->field($this->entity_name, $param[0])->getDataType()) {         
         case "year": case "time": case "date": case "timestamp": return "_getDatetime";
         case "boolean": return "_getBoolean";
         case "string": case "text": return "_getString";
@@ -244,61 +244,61 @@ class ValueEntityOptions extends EntityOptions {
     }  
   }
 
-  public function _get($fieldName, $format = null){
+  public function _get($field_name, $format = null){
     /**
      * @example 
      *   _get("nombre", "Xx Yy")
      *   _get("nombre.max");
      */
 
-    $m = "get".snake_case_to("XxYy", str_replace(".","_",$fieldName));
+    $m = "get".snake_case_to("XxYy", str_replace(".","_",$field_name));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$format]);
-    if(!array_key_exists($fieldName, $this->value)) return UNDEFINED;
-    $m = $this->_defineGet($fieldName);
+    if(!array_key_exists($field_name, $this->value)) return UNDEFINED;
+    $m = $this->_defineGet($field_name);
     
-    return call_user_func_array(array($this, $m), [$fieldName, $format]); 
+    return call_user_func_array(array($this, $m), [$field_name, $format]); 
   }
 
-  protected function _getDatetime($fieldName, $format){ return Format::date($this->value[$fieldName], $format); }
-  protected function _getBoolean($fieldName, $format){ return Format::boolean($this->value[$fieldName], $format); }
-  protected function _getString($fieldName, $format){ return Format::convertCase($this->value[$fieldName], $format); }
-  protected function _getDefault($fieldName, $format){ return $this->value[$fieldName]; }
+  protected function _getDatetime($field_name, $format){ return Format::date($this->value[$field_name], $format); }
+  protected function _getBoolean($field_name, $format){ return Format::boolean($this->value[$field_name], $format); }
+  protected function _getString($field_name, $format){ return Format::convertCase($this->value[$field_name], $format); }
+  protected function _getDefault($field_name, $format){ return $this->value[$field_name]; }
 
-  public function _isEmpty($fieldName){
-    if(!array_key_exists($fieldName, $this->value)) return true;
-    $m = "isEmpty".snake_case_to("XxYy", str_replace(".","_",$fieldName));
+  public function _isEmpty($field_name){
+    if(!array_key_exists($field_name, $this->value)) return true;
+    $m = "isEmpty".snake_case_to("XxYy", str_replace(".","_",$field_name));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m));
-    return (Validation::is_empty($this->value[$fieldName])) ? true : false;
+    return (Validation::is_empty($this->value[$field_name])) ? true : false;
   }
   
-  public function _defineJson($fieldName){    
-    $param = explode(".",$fieldName);
-    switch($this->container->field($this->entityName, $param[0])->getDataType()) {         
+  public function _defineJson($field_name){    
+    $param = explode(".",$field_name);
+    switch($this->container->field($this->entity_name, $param[0])->getDataType()) {         
       case "year": case "time": case "date": case "timestamp": return "_jsonDatetime";
       default: return "_jsonDefault";
     }
   }
 
-  public function _json($fieldName){
+  public function _json($field_name){
     /**
      * @example 
      *   _json("nombre")
      *   _json("nombre.max");
      */
-    if(!array_key_exists($fieldName, $this->value)) return UNDEFINED;
-    $m = "json".snake_case_to("XxYy", str_replace(".","_",$fieldName));
+    if(!array_key_exists($field_name, $this->value)) return UNDEFINED;
+    $m = "json".snake_case_to("XxYy", str_replace(".","_",$field_name));
     if(method_exists($this, $m)) return call_user_func(array($this, $m));
-    $m = $this->_defineJson($fieldName);
-    return call_user_func_array(array($this, $m), [$fieldName]);
+    $m = $this->_defineJson($field_name);
+    return call_user_func_array(array($this, $m), [$field_name]);
   }
 
-  protected function _jsonDatetime($fieldName){ return $this->_get($fieldName, "c"); }
-  protected function _jsonDefault($fieldName){ return $this->_get($fieldName); }
+  protected function _jsonDatetime($field_name){ return $this->_get($field_name, "c"); }
+  protected function _jsonDefault($field_name){ return $this->_get($field_name); }
 
-  protected function _defineSql($fieldName){
-    $param = explode(".",$fieldName);
+  protected function _defineSql($field_name){
+    $param = explode(".",$field_name);
     if(count($param) == 1) {
-      $field = $this->container->field($this->entityName, $param[0]);
+      $field = $this->container->field($this->entity_name, $param[0]);
       switch($field->getDataType()){
         case "integer": case "float": return "_sqlNumber";
         case "boolean": return "_sqlBoolean";
@@ -320,17 +320,17 @@ class ValueEntityOptions extends EntityOptions {
     }
   }
 
-  public function _sql($fieldName){
+  public function _sql($field_name){
     /**
      * @example 
      *   _sql("nombre")
      *   _sql("nombre.max");
      */
-    if(!array_key_exists($fieldName, $this->value)) return UNDEFINED;
-    $m = "sql".snake_case_to("XxYy", str_replace(".","_",$fieldName));
+    if(!array_key_exists($field_name, $this->value)) return UNDEFINED;
+    $m = "sql".snake_case_to("XxYy", str_replace(".","_",$field_name));
     if(method_exists($this, $m)) return call_user_func(array($this, $m));
-    $m = $this->_defineSql($fieldName);
-    return call_user_func_array(array($this, $m), [$fieldName]);    
+    $m = $this->_defineSql($field_name);
+    return call_user_func_array(array($this, $m), [$field_name]);    
   }
 
 
@@ -341,34 +341,34 @@ class ValueEntityOptions extends EntityOptions {
     return "'" . $value->format($format) . "'";
   }
 
-  protected function _sqlDate($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y-m-d"); }
-  protected function _sqlTime($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "H:i:s"); }
-  protected function _sqlTimestamp($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y-m-d H:i:s"); }
-  protected function _sqlHm($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "H:i"); }
-  protected function _sqlYm($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y-m"); }
-  protected function _sqlY($fieldName){ return $this->_sqlDateTime($this->value[$fieldName], "Y"); }
-  protected function _sqlBoolean($fieldName){ 
-    if(Validation::is_undefined($this->value[$fieldName])) return UNDEFINED;
-    return ( $this->value[$fieldName] ) ? 'true' : 'false';
+  protected function _sqlDate($field_name){ return $this->_sqlDateTime($this->value[$field_name], "Y-m-d"); }
+  protected function _sqlTime($field_name){ return $this->_sqlDateTime($this->value[$field_name], "H:i:s"); }
+  protected function _sqlTimestamp($field_name){ return $this->_sqlDateTime($this->value[$field_name], "Y-m-d H:i:s"); }
+  protected function _sqlHm($field_name){ return $this->_sqlDateTime($this->value[$field_name], "H:i"); }
+  protected function _sqlYm($field_name){ return $this->_sqlDateTime($this->value[$field_name], "Y-m"); }
+  protected function _sqlY($field_name){ return $this->_sqlDateTime($this->value[$field_name], "Y"); }
+  protected function _sqlBoolean($field_name){ 
+    if(Validation::is_undefined($this->value[$field_name])) return UNDEFINED;
+    return ( $this->value[$field_name] ) ? 'true' : 'false';
   }
 
-  protected function _sqlNumber($fieldName){ 
-    if(Validation::is_undefined($this->value[$fieldName])) return UNDEFINED;
-    if(is_null($this->value[$fieldName]) || $this->value[$fieldName] === "") return "null";
-    return $this->value[$fieldName];
+  protected function _sqlNumber($field_name){ 
+    if(Validation::is_undefined($this->value[$field_name])) return UNDEFINED;
+    if(is_null($this->value[$field_name]) || $this->value[$field_name] === "") return "null";
+    return $this->value[$field_name];
   }
 
-  protected function _sqlString($fieldName){ 
-    if(Validation::is_undefined($this->value[$fieldName])) return UNDEFINED;
-    if(Validation::is_empty($this->value[$fieldName])) return 'null';
-    return "'" . $this->container->db()->escape_string($this->value[$fieldName]) . "'";  
+  protected function _sqlString($field_name){ 
+    if(Validation::is_undefined($this->value[$field_name])) return UNDEFINED;
+    if(Validation::is_empty($this->value[$field_name])) return 'null';
+    return "'" . $this->container->db()->escape_string($this->value[$field_name]) . "'";  
   }
 
-  protected function _defineCheck($fieldName){
-    $param = explode(".",$fieldName);
+  protected function _defineCheck($field_name){
+    $param = explode(".",$field_name);
     $ret = [];
     if(count($param) == 1) {
-      $field = $this->container->field($this->entityName, $param[0]);
+      $field = $this->container->field($this->entity_name, $param[0]);
       if($field->isNotNull()) $ret["required"] = "required";
       switch($field->getDataType()){
         case "date": case "timestamp": case "year": case "time": $ret["type"] = "date"; break;
@@ -390,7 +390,7 @@ class ValueEntityOptions extends EntityOptions {
     return $ret;
   }
 
-  public function _check($fieldName, $param = null){
+  public function _check($field_name, $param = null){
     /**
      * chequear valor de un campo
      * el campo debe existir en valor para ser chequeado sino retorna null
@@ -405,22 +405,23 @@ class ValueEntityOptions extends EntityOptions {
      * En vez de _check("nombre_parecidos", $existente) se invoca checkNombresParecidos($existente);
      */
     
-    $m = "check".snake_case_to("XxYy", str_replace(".","_",$fieldName));
+    $m = "check".snake_case_to("XxYy", str_replace(".","_",$field_name));
     if(method_exists($this, $m)) return call_user_func_array(array($this, $m), [$param]);
     /**
      * En primer lugar se verifica la existencia del metodo
-     * Un metodo definido puede acceder a diferentes valores no indicados en fieldName
+     * Un metodo definido puede acceder a diferentes valores no indicados en field_name
      * Por ejemplo Persona->checkNombresParecidos accede a los valores "nombres" y "apellidos"
      */
 
-    if(!array_key_exists($fieldName, $this->value)) return null;
+    if(!array_key_exists($field_name, $this->value)) return null;
     /**
      * Si no existe metodo definido por el usuario 
      * se verifica la existencia de valor para el fieldname
      */
-    $m = $this->_defineCheck($fieldName);
-    $this->logs->resetLogs($fieldName);
-    $v = Validation::getInstanceValue($this->value[$fieldName]);
+    
+     $m = $this->_defineCheck($field_name);
+     $this->logs->resetLogs($field_name);
+    $v = Validation::getInstanceValue($this->value[$field_name]);
 
     foreach($m as $check => $value){
       switch($check) {
@@ -431,7 +432,7 @@ class ValueEntityOptions extends EntityOptions {
       }
     }
 
-    foreach($v->getErrors() as $error){ $this->logs->addLog($fieldName, "error", $error); }
+    foreach($v->getErrors() as $error){ $this->logs->addLog($field_name, "error", $error); }
     return $v->isSuccess();
   }
 

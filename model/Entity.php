@@ -144,7 +144,7 @@ class Entity {
 
   public function getFieldsNf(){
     $fields = [];
-    foreach($this->nf as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
+    foreach($this->nf as $field_name) array_push($fields, $this->container->field($this->getName(), $field_name));
     return $fields;
   }
 
@@ -155,13 +155,13 @@ class Entity {
 
   public function getFieldsMo(){
     $fields = [];
-    foreach($this->mo as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
+    foreach($this->mo as $field_name) array_push($fields, $this->container->field($this->getName(), $field_name));
     return $fields;
   }
   
   public function getFieldsOo(){
     $fields = [];
-    foreach($this->oo as $fieldName) array_push($fields, $this->container->field($this->getName(), $fieldName));
+    foreach($this->oo as $field_name) array_push($fields, $this->container->field($this->getName(), $field_name));
     return $fields;
   }
 

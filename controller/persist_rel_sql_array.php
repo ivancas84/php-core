@@ -1,6 +1,6 @@
 <?php
 
-require_once("controller/Base.php");
+require_once("controller/base.php");
 
 class PersistRelSqlArray extends BaseController {
    
@@ -24,8 +24,8 @@ class PersistRelSqlArray extends BaseController {
     foreach($data as $key => $value){
       $pos = strpos($key, "-");
       if($pos === false) {
-        if(!array_key_exists($this->entityName, $dataAux)) $dataAux[$this->entityName] = [];
-        $dataAux[$this->entityName][$key] = $value;
+        if(!array_key_exists($this->entity_name, $dataAux)) $dataAux[$this->entity_name] = [];
+        $dataAux[$this->entity_name][$key] = $value;
       } else {
         $k = substr($key, 0, $pos);
         if(!array_key_exists($k, $dataAux)) $dataAux[$k] = [];
@@ -33,7 +33,7 @@ class PersistRelSqlArray extends BaseController {
       }
     }
 
-    return $this->container->controller("persist_rel_sql",$this->entityName)->main($dataAux);
+    return $this->container->controller("persist_rel_sql",$this->entity_name)->main($dataAux);
   }
 
 }

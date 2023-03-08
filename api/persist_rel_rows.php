@@ -12,15 +12,15 @@ class PersistRelRowsApi {
    * Cuidado con la eleccion del controlador (mode), por defecto se utiliza _mode = "id", debe existir el id de la relacion fk, sino se considerara insercion
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "w";
 
   public function main(){
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $data = php_input();
-    $render = $this->container->query($this->entityName);
+    $render = $this->container->query($this->entity_name);
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
     
     $ids = [];
@@ -28,11 +28,11 @@ class PersistRelRowsApi {
     $detail = [];
 
     foreach($data as $row){
-      $persist = $this->container->controller("persist_rel_sql_array", $this->entityName);
+      $persist = $this->container->controller("persist_rel_sql_array", $this->entity_name);
       $p = $persist->main($row);
       $sql .= $p["sql"];
       array_push($ids, $p["id"]);
-      array_push($detail, $render->entityName.$p["id"]);
+      array_push($detail, $render->entity_name.$p["id"]);
     }
 
     $this->container->db()->multi_query_transaction($sql);

@@ -6,7 +6,7 @@ class UploadApi {
    * Controlador de procesamiento de un solo archivo
    */
   public $container;
-  public $entityName;
+  public $entity_name;
   public $permission = "w";
 
   public $dir = ""; //directorio relativo donde se almacenara el archivo (sera incluido en el content del fileValue)
@@ -25,7 +25,7 @@ class UploadApi {
   }
 
   public function main() {
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $this->file = filter_file("file");
     if ( $this->file["error"] > 0 ) throw new Exception ( "Error al subir archivo");

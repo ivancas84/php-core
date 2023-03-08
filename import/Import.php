@@ -26,7 +26,7 @@ abstract class Import {
     public $ids = []; //array asociativo con identificadores
     public $dbs = []; //array asociativo con el resultado de las consultas a la base de datos
     public $elements = []; //array de elementos a importar
-    public $entityNames = []; //array asociativo que indica la entidad correspondiente a un nombre
+    public $entity_names = []; //array asociativo que indica la entidad correspondiente a un nombre
     public $container;
     
     public function main(){
@@ -56,7 +56,7 @@ abstract class Import {
      * @param $data Juego de datos del elemento
      */
     public function element($i, $data){
-      $element = $this->container->importElement($this->id, $this);
+      $element = $this->container->import_element($this->id, $this);
       $element->index = $i;
       try{
         if(empty($data)) throw new Exception("Datos vacios para el elemento ". $i);
@@ -297,12 +297,12 @@ abstract class Import {
   }
  
   public function getEntityName($name){
-    return (in_array($name, $this->entityNames)) ? $this->entityNames[$name] : $name;
+    return (in_array($name, $this->entity_names)) ? $this->entity_names[$name] : $name;
   }
 
   protected function queryEntity($name){
     /**
-     * Consulta a la base de datos de la entidad $entityName.
+     * Consulta a la base de datos de la entidad $entity_name.
      * 
      * Utilizando el campo $field (supuestamente unico) y el valor almacenado 
      * de field desde el atributo "ids".
@@ -312,13 +312,12 @@ abstract class Import {
     $this->dbs[$name] = [];
     if(empty($this->ids[$name])) throw new Exception("query error: No se encuentran definidos los identificadores de " . $name);
 
-    $entityName = $this->getEntityName($name);
-    $rows = $this->container->query($entityName)
+    $entity_name = $this->getEntityName($name);
+    $rows = $this->container->query($entity_name)
     ->fieldsTree()->field("identifier")
     ->size(0)
     ->cond(["identifier","=",$this->ids[$name]])
     ->all();
-
     foreach($rows as $row) $this->dbs[$name][$row["identifier"]] = $row;
   }
 

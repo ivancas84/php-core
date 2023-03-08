@@ -98,11 +98,11 @@ class Auth {
     return $payload;
   }
 
-  protected function authorizePermissions($entityName, $permissions, $scope){
+  protected function authorizePermissions($entity_name, $permissions, $scope){
     $authorized = false;
     foreach($scope as $sc){
       $s = explode(".", $sc);
-      if($s[0] == $entityName){
+      if($s[0] == $entity_name){
         $authorized = true;
         foreach(str_split($permissions) as $p_){
           if(strpos($s[1], $p_) === false) {
@@ -116,13 +116,13 @@ class Auth {
     if($authorized) return true;
   }
 
-  public function authorize($entityName, $permissions){
+  public function authorize($entity_name, $permissions){
     require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_CONFIG . "/public_scope.php");
-    if($this->authorizePermissions($entityName, $permissions, public_scope())) return true;
+    if($this->authorizePermissions($entity_name, $permissions, public_scope())) return true;
     $token = $this->authenticate();
     require_once($_SERVER["DOCUMENT_ROOT"] . "/" . PATH_CONFIG . "/private_scope.php");
-    if($this->authorizePermissions($entityName, $permissions, private_scope())) return true;
-    if($this->authorizePermissions($entityName, $permissions, $token->scope)) return true;
+    if($this->authorizePermissions($entity_name, $permissions, private_scope())) return true;
+    if($this->authorizePermissions($entity_name, $permissions, $token->scope)) return true;
     throw new Exception("Usuario no autorizado");
   }
 

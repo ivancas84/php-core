@@ -10,7 +10,7 @@ class LoginApi {
    * ]
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "r";
 

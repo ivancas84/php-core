@@ -7,15 +7,15 @@ class LabelGetAllApi {
    * Comportamiento general de all
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "r";
   
   public function main() {
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $ids = php_input();
-    return $this->container->query($this->entityName)->fields(["id","label"])->param("id", $ids)->all();
+    return $this->container->query($this->entity_name)->fields(["id","label"])->param("id", $ids)->all();
   }
 
 }

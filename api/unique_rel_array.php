@@ -37,9 +37,9 @@ class UniqueRelArrayApi extends UniqueRel {
          */
         if(array_key_exists($prefix,$this->params)){
           $render = $this->container->query($tree[$prefix]["entity_name"]);
-          $row = $this->container->db()->unique($render->entityName, $this->params[$prefix]);
+          $row = $this->container->db()->unique($render->entity_name, $this->params[$prefix]);
           if(!empty($row)) {
-            $data = $this->container->tools($render->entityName, $prefix)->json2($row);
+            $data = $this->container->tools($render->entity_name, $prefix)->json2($row);
             foreach($data as $k => $v) $this->row[$prefix."-". $k] = $v;
           } else {
             $data = [];

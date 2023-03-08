@@ -9,13 +9,13 @@ class DeleteQuerySql {
    */
 
   public $container;
-  public $entityName;
+  public $entity_name;
 
   public function main(EntityQuery $query) {
     $ids = $query->fieldAdd("id")->column();
     if(empty($ids)) return ["ids" => [], "sql"=>""];
 
-    $sql = $this->container->persist($this->entityName)->delete($ids);
+    $sql = $this->container->persist($this->entity_name)->delete($ids);
     return["ids" => $ids, "sql"=>$sql];
   }
 }

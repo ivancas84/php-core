@@ -9,13 +9,13 @@ class DeleteApi {
    * UTILIZAR CON PRECAUCION
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "w";
 
   private function concat($id) {
     //Funcion creada para aplicar array_map
-    return($this->entityName . $id);
+    return($this->entity_name . $id);
   }  
 
   public function main(){
@@ -26,10 +26,10 @@ class DeleteApi {
      * para el caso de que la entidad a eliminar forme parte de una clave foranea dispara el error
      * Cannot delete or update a parent row: a foreign key constraint fails (`planfi10_20203`.`curso`, CONSTRAINT `fk_curso_asignatura1` FOREIGN KEY (`asignatura`) REFERENCES `asignatura` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION)
      */
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $ids = php_input();
-    $sql = $this->container->persist($this->entityName)->delete($ids);
+    $sql = $this->container->persist($this->entity_name)->delete($ids);
     $this->container->db()->multi_query_transaction($sql);
     $detail = array_map(array($this, 'concat'), $ids);    
 

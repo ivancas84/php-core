@@ -9,12 +9,12 @@ class PersistRowsApi {
    * Recibe un conjunto de tuplas de una entidad
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "w";
 
   public function main(){
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $data = php_input();
     if(empty($data)) throw new Exception("Se está intentando persistir un conjunto de datos vacío");
@@ -24,10 +24,10 @@ class PersistRowsApi {
     $detail = [];
 
     foreach($data as $row){
-        $persist = $this->container->controller("persist_sql", $this->entityName)->main($row);
+        $persist = $this->container->controller("persist_sql", $this->entity_name)->main($row);
         $sql .= $persist["sql"];
         array_push($ids, $persist["id"]);
-      array_push($detail, $this->entityName.$row["id"]);
+      array_push($detail, $this->entity_name.$row["id"]);
     }
 
     $this->container->db()->multi_query_transaction($sql);

@@ -8,7 +8,7 @@ class UniqueRelApi { //1.1
    * Trabaja con relaciones fk
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "r";
   public $params = [];
@@ -38,7 +38,7 @@ class UniqueRelApi { //1.1
    */
 
   public function main() {
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     if(empty($this->params)) $this->params = php_input();
     /**
@@ -62,30 +62,30 @@ class UniqueRelApi { //1.1
     foreach($this->params as $key => $value){
       $el = explode("-", $key);
       if(count($el) == 2) $params[$el[0]][$el[1]] = $value;
-      else $params[$this->entityName][$el[0]] = $value;
+      else $params[$this->entity_name][$el[0]] = $value;
     }
     $this->params = $params;
 
   }
 
   public function query(){
-    $tree = $this->container->tree($this->entityName);
+    $tree = $this->container->tree($this->entity_name);
 
-    if(array_key_exists($this->entityName,$this->params)){
-      $row = $this->container->query($this->entityName)->unique($this->params[$this->entityName])->fieldsTree()->one();
+    if(array_key_exists($this->entity_name,$this->params)){
+      $row = $this->container->query($this->entity_name)->unique($this->params[$this->entity_name])->fieldsTree()->one();
       
       if(!empty($row)) {
-        $data = $this->container->tools($this->entityName)->json2($row);
-        $this->row[$this->entityName] = $data[$this->entityName];
+        $data = $this->container->tools($this->entity_name)->json2($row);
+        $this->row[$this->entity_name] = $data[$this->entity_name];
       } else {
         $data = [];
-        $this->row[$this->entityName] = $this->params[$this->entityName];
+        $this->row[$this->entity_name] = $this->params[$this->entity_name];
       }
     } else {
       $data = [];
-      $this->row[$this->entityName] = [];
+      $this->row[$this->entity_name] = [];
     } 
-    $this->recursive($tree, $data, $this->entityName);
+    $this->recursive($tree, $data, $this->entity_name);
   }
 
   protected function recursive(array $tree, $data, $previousKey){

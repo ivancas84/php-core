@@ -7,15 +7,15 @@ class SelectApi {
    * Las consultas avanzadas pueden acceder a campos no habituales
    */
 
-  public $entityName;
+  public $entity_name;
   public $container;
   public $permission = "r";
 
   public function main() {
-    $this->container->auth()->authorize($this->entityName, $this->permission);
+    $this->container->auth()->authorize($this->entity_name, $this->permission);
     
     $display = php_input();
-    return $this->container->query($this->entityName)->display($display)->all();
+    return $this->container->query($this->entity_name)->display($display)->all();
   }
 
 }
