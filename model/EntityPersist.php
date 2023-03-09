@@ -13,7 +13,7 @@ class EntityPersist {
   public $entity_name;
 
  
-  public function update(array $row) { //sql de actualizacio
+  public function update(array $row) { //sql de actualizacion
     return "
 {$this->_update($row)}
 WHERE {$this->container->entity($this->entity_name)->getPk()->getName()} = {$row['id']};
@@ -102,9 +102,7 @@ UPDATE " . $sn_ . " SET
     $names = [];
     $entity = $this->container->entity($this->entity_name);
     foreach($entity->getFields() as $field) {
-      if($field->isAdmin()) { 
-        array_push($names, $field->getName());
-      }
+      if($field->isAdmin()) array_push($names, $field->getName());
     }
     return $names;
   }

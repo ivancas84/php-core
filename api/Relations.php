@@ -7,7 +7,7 @@ class RelationsApi extends BaseApi {
   public $container;
 
   public function main(){
-    return $this->container->relationsJson();    
+    return $this->container->relations_json();    
   }
 }
 
