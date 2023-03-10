@@ -72,7 +72,7 @@ VALUES ( ";
   }
 
   public function _update(array $row){
-    $sn_ = $this->container->entity($this->entityName)->sn_();
+    $sn_ = $this->container->entity($this->entity_name)->sn_();
     $sql = "
 UPDATE " . $sn_ . " SET
 ";   
