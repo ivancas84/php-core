@@ -17,13 +17,7 @@ class Entity {
   public $name;
   public $alias;
   public $schema = DATA_SCHEMA;
-  public $table = null; //nombre de la tabla de la base de datos
-  /**
-   * @deprecated
-   * En ocasiones el nombre de la tabla de la base de datos puede ser diferente del original
-   * Si es null, se considera el mismo nombre que la entidad
-   */
-  
+
   public $nf = [];
   public $om = [];
   public $oo = [];
@@ -92,7 +86,7 @@ class Entity {
   /**
    * Metodos para facilitar la sintaxis del sql
    */
-  public function n_(){ return (!empty($this->table)) ?  $this->table : $this->name; } //name
+  public function n_(){ return $this->name; } //name
   public function s_(){ return (!empty($this->schema)) ?  $this->schema . '.' : ""; } //schema.
   public function sn_(){ return $this->s_() . $this->n_(); } //schema.nombre
   public function sna_(){ return $this->s_() . $this->n_() . " AS " . $this->alias; } //schema.nombre AS alias
@@ -209,7 +203,7 @@ class Entity {
 
   public function getFieldsOonNotReferenced(array $referencedNames){
     /**
-     * Fields u_ cuyo nombre de tabla no se encuentre en el parametro)
+     * Fields oo cuyo nombre de tabla no se encuentre en el parametro)
      */
     $fieldsAux = $this->getFieldsOon();
     $fields = array();

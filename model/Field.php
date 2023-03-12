@@ -64,12 +64,6 @@ class Field {
    * Tipo de condicion a evaluar
    */
 
-  public $value = null;
-  /**
-   * Tipo de valor a definir
-   * string, integer, float, boolean, datetime
-   */
-
   public function __construct(array $array){
     foreach ($array as $key => $value) {
       if(preg_match('[\+]', $key))  {
@@ -101,10 +95,8 @@ class Field {
   public function getMax(){ return $this->max; }
   public function getMin(){ return $this->min; }
   public function getDataType(){ return $this->data_type; }
-  public function getSelectValues(){ return $this->select_values; }
   public function getType() { return $this->type; }
   public function getCondition() { return $this->condition; }
-  public function getValue() { return $this->value; }
 
   public function isAdmin(){ return (in_array($this->getName(), $this->getEntity()->no_admin)) ? false : true; }
   public function isNotNull(){  return (in_array($this->getName(), $this->getEntity()->not_null)) ? true : false; }

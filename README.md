@@ -1,5 +1,9 @@
 # php-core
 
+Version 0.8
+
+* Eliminar atributos no utilizados de entity y field: subtype, select_values, table
+
 Version 0.7
 
 * Cambio de camelCase a snake_case y traduccion de nombre para archivos de configuracion
