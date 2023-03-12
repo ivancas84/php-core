@@ -58,24 +58,6 @@ class Field {
     //"mu": Clave foranea muchos a uno
     //"_u": Clave foranea uno a uno
 
-  public $subtype = null; //tipo de datos avanzado
-  /**
-   * text texto simple
-   * textarea texto grande
-   * checkbox Booleanos
-   * date
-   * timestamp
-   * cuil Texto para cuil
-   * dni Texto para dni
-   * select Conjunto de opciones definidas
-   * Para fk las opciones se definen mediante los valores de las claves foraneas
-   * typeahead (fk)
-   * file (fk)
-   */
-  
-  public $select_values = array();
-    //si subtype = "select_text", deben asignarse valores "text"
-    //si subtype = "select_int", deben asignarse valores "int"
 
   public $condition = null;
   /**
@@ -118,7 +100,6 @@ class Field {
   public function getLength(){ return $this->length; }
   public function getMax(){ return $this->max; }
   public function getMin(){ return $this->min; }
-  public function getSubtype(){ return $this->subtype; }
   public function getDataType(){ return $this->data_type; }
   public function getSelectValues(){ return $this->select_values; }
   public function getType() { return $this->type; }
