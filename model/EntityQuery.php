@@ -208,14 +208,16 @@ class EntityQuery {
     return $this;
   }
 
+  /**
+    * @todo Implementar cambios sqlorganize_py 
+    * definir condicion para campos unicos
+    * $params:
+    *   array("nombre_field" => "valor_field", ...)
+    * los campos unicos simples se definen a traves del atributo Entity::$unique
+    * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
+    */
   public function unique(array $params){
-    /**
-     * definir condicion para campos unicos
-     * $params:
-     *   array("nombre_field" => "valor_field", ...)
-     * los campos unicos simples se definen a traves del atributo Entity::$unique
-     * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
-     */
+    
     $uniqueFields = $this->container->entity($this->entity_name)->unique;
     $uniqueFieldsMultiple = $this->container->entity($this->entity_name)->unique_multiple;
 
