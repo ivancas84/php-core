@@ -23,6 +23,9 @@ class EntityQuery {
   public $page = 1;
   public $size = 100;
 
+  /**
+   * @todo Implementar fields_concat como sqlorganize_py
+   */ 
   protected $fields = array(); //campos
   /**
    * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
@@ -44,6 +47,9 @@ class EntityQuery {
    * tiva la funcion de agregacion, por ejemplo persona.str_agg se traduce a GROUP_CONCAT(DISTINCT persona) 
    */
 
+  /**
+   * @todo Implementar group_concat como sqlorganize_py
+   */
   protected $group = array(); //campos de agrupacion
   /**
    * Deben ser campos de consulta

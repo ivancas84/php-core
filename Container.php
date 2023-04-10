@@ -358,22 +358,22 @@ class Container {
   }
 
 
-  /**
-   * Separar un field en 3 elementos field_id, entity_name y field_name
-   */
-  public function explode_field($entity_name, $field){
-    $f = explode("-",$field);
+    /**
+     * Separar un field en 3 elementos field_id, entity_name y field_name
+     */
+    public function explode_field($entity_name, $field){
+        $f = explode("-",$field);
 
-    if(count($f) == 2) return [
-        "field_id" => $f[0],
-        "entity_name" => $this->relations($entity_name)[$f[0]]["entity_name"],
-        "field_name" => $f[1]
-    ];
+        if(count($f) == 2) return [
+            "field_id" => $f[0],
+            "entity_name" => $this->relations($entity_name)[$f[0]]["entity_name"],
+            "field_name" => $f[1]
+        ];
 
-    return [
-      "field_id" => "",
-      "entity_name" => $entity_name,
-      "field_name" => $field
-    ];
-  }
+        return [
+            "field_id" => "",
+            "entity_name" => $entity_name,
+            "field_name" => $field
+        ];
+    }
 }
