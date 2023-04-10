@@ -7,154 +7,170 @@ require_once("function/concat.php");
 
 class EntityQuery {
 
-  public $container;
-  public $entity_name; //entidad principal a la que esta destinada la consulta
-  public $condition = array(); //array multiple cuya raiz es [field,option,value], 
-  /**
-   * ejemplo:  [
-   *    ["nombre","=","unNombre"],
-   *    [
-   *      ["apellido","=","unApellido"],
-   *      ["apellido","=","otroApellido","OR"]
-   *    ]
-   * ]
-   */  
-  public $order = array();
-  public $page = 1;
-  public $size = 100;
-
-  /**
-   * @todo Implementar fields_concat como sqlorganize_py
-   */ 
-  protected $fields = array(); //campos
-  /**
-   * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
-   * . indica aplicacion de funcion de agregacion
-   * - indica que pertenece a una relacion
-   * Ej ["nombres", "horas_catedra.sum", "edad.avg", "com_cur-horas_catedra]
-   */
-
-  protected $str_agg = array(); //campos a los cuales se aplica str_agg
-  /**
-   * Array multiple definido por alias y los campos que se aplica str_agg
-   * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
-   * . indica aplicacion de funcion de agregacion
-   * - indica que pertenece a una relacion
-   * [
-   *    "alias" => ["field1","field2"] se traduce simiar a GROUP_CONCAT(DISTINCT field1_map, " ", field2_map) AS "alias"
-   * ]
-   * Para aplicar GROUP_CONCAT a un solo valor, se puede utilizar como alterna-
-   * tiva la funcion de agregacion, por ejemplo persona.str_agg se traduce a GROUP_CONCAT(DISTINCT persona) 
-   */
-
-  /**
-   * @todo Implementar group_concat como sqlorganize_py
-   */
-  protected $group = array(); //campos de agrupacion
-  /**
-   * Deben ser campos de consulta
-   * Ej ["profesor", "cur_horario"]
-   */
-
-  protected $having = array(); //condicion avanzada de agrupamiento, similiar a condicion avanzadas
-  /**
-   * array multiple cuya raiz es [field,option,value], ejemplo: [["nombre","=","unNombre"],[["apellido","=","unApellido"],["apellido","=","otroApellido","OR"]]]
-   */
-
-  public function display(array $display = []){
-    if(isset($display["size"])) $this->size($display["size"]);
+    public Container $container;
+    public string $entity_name; //entidad principal a la que esta destinada la consulta
+    public array $condition = array(); //array multiple cuya raiz es [field,option,value], 
     /**
-     * puede ser 0 o false para indicar todas las filas
-     */
-    if(!empty($display["page"])) $this->page($display["page"]);
-    if(!empty($display["order"])) $this->order($display["order"]);
-    if(!empty($display["condition"])) $this->cond($display["condition"]);
-    if(!empty($display["params"])) $this->params($display["params"]);
-    if(!empty($display["fields"])) $this->fields($display["fields"]);
-    if(!empty($display["group"])) $this->group($display["group"]);
-    if(!empty($display["having"])) $this->having($display["having"]);
-    return $this;
-  }
-
-  public function cond ($condition = null) { 
-    if(!empty($condition)) {
-      array_push ( $this->condition, $condition );
-    }
-    return $this;
-  }
-
-  public function param($key, $value) { 
-    return $this->cond([$key, "=", $value]); 
-  }
-
-
-  public function params (array $params = []) {
-    foreach($params as $key => $value) {
-      $this->cond([$key, "=", $value]); 
-    }
-    return $this;
-  } 
-  
-
-  public function order (array $order) { 
-    $this->order = $order;
-    return $this;
-  }
-  /**
-   * Ordenamiento
-   * @param array $order Ordenamiento
-   *  array(
-   *    nombre_field => asc | desc,
-   *  )
-   */
-
-  public function pagination($size, $page) {
-    $this->size = $size;
-    $this->page = $page;
-    return $this;
-  }
-
-  public function size($size) { 
-    $this->size = $size; 
-    return $this;
-  }
-
-  public function page($page) { 
-    $this->page = $page; 
-    return $this;
-  }
-  
-  /**
-   * Carga de un unico field
-   * No admite alias
-   */
-  public function field(string $field) {
-    array_push($this->fields, $field);
-    return $this;
-  }
-
-  public function fields(array $fields = []) {
-    if(empty($fields)) return $this->fieldsTree();
-    $this->fields = array_merge($this->fields, $fields);
-    return $this;
-  }
-
-  /**
-   * Asigna el arbol de field
-   * Directamente reemplaza todo el array de fields, usar previo a fieldAdd
-   */
-  public function fieldsTree(){
-    $this->fields = $this->container->tools($this->entity_name)->field_names();
-    return $this;
-  }
-
-  public function group(array $group = null) { 
-    $this->group = array_merge($this->group, $group); 
-    return $this;
-  }
+     * ejemplo:  [
+     *    ["nombre","=","unNombre"],
+     *    [
+     *      ["apellido","=","unApellido"],
+     *      ["apellido","=","otroApellido","OR"]
+     *    ]
+     * ]
+     */  
+    public array $order = array();
+    public int $page = 1;
+    public int $size = 100;
 
     
-    public function str_agg(array $str_agg){
+    protected array $fields = array(); //campos (array de strings)
+    /**
+     * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
+     * . indica aplicacion de funcion de agregacion
+     * - indica que pertenece a una relacion
+     * Ej ["nombres", "horas_catedra.sum", "edad.avg", "com_cur-horas_catedra]
+     */
+
+    protected array $fields_concat = array(); //campos (array asociativo)
+    /**
+     * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
+     * . indica aplicacion de funcion de agregacion
+     * - indica que pertenece a una relacion
+     * Ej ["nombres", "horas_catedra.sum", "edad.avg", "com_cur-horas_catedra]
+     */
+
+    
+    protected array $str_agg = array(); //campos a los cuales se aplica str_agg
+    /**
+     * Array multiple definido por alias y los campos que se aplica str_agg
+     * Deben estar definidos en el mapping field, se realizará la traducción correspondiente
+     * . indica aplicacion de funcion de agregacion
+     * - indica que pertenece a una relacion
+     * [
+     *    "alias" => ["field1","field2"] se traduce simiar a GROUP_CONCAT(DISTINCT field1_map, " ", field2_map) AS "alias"
+     * ]
+     * Para aplicar GROUP_CONCAT a un solo valor, se puede utilizar como alterna-
+     * tiva la funcion de agregacion, por ejemplo persona.str_agg se traduce a GROUP_CONCAT(DISTINCT persona) 
+     */
+
+    /**
+     * @todo Implementar group_concat como sqlorganize_py
+     */
+    protected $group = array(); //campos de agrupacion
+    /**
+     * Deben ser campos de consulta
+     * Ej ["profesor", "cur_horario"]
+     */
+
+    protected $having = array(); //condicion avanzada de agrupamiento, similiar a condicion avanzadas
+    /**
+     * array multiple cuya raiz es [field,option,value], ejemplo: [["nombre","=","unNombre"],[["apellido","=","unApellido"],["apellido","=","otroApellido","OR"]]]
+     */
+
+      public function display(array $display = []){
+        if(isset($display["size"])) $this->size($display["size"]);
+        /**
+         * puede ser 0 o false para indicar todas las filas
+         */
+        if(!empty($display["page"])) $this->page($display["page"]);
+        if(!empty($display["order"])) $this->order($display["order"]);
+        if(!empty($display["condition"])) $this->cond($display["condition"]);
+        if(!empty($display["params"])) $this->params($display["params"]);
+        if(!empty($display["fields"])) $this->fields($display["fields"]);
+        if(!empty($display["group"])) $this->group($display["group"]);
+        if(!empty($display["having"])) $this->having($display["having"]);
+        return $this;
+      }
+
+      public function cond ($condition = null) { 
+        if(!empty($condition)) {
+          array_push ( $this->condition, $condition );
+        }
+        return $this;
+      }
+
+      public function param($key, $value) { 
+        return $this->cond([$key, "=", $value]); 
+      }
+
+
+      public function params (array $params = []) {
+        foreach($params as $key => $value) {
+          $this->cond([$key, "=", $value]); 
+        }
+        return $this;
+      } 
+      
+
+      public function order (array $order) { 
+        $this->order = $order;
+        return $this;
+      }
+      /**
+       * Ordenamiento
+       * @param array $order Ordenamiento
+       *  array(
+       *    nombre_field => asc | desc,
+       *  )
+       */
+
+      public function pagination($size, $page) {
+        $this->size = $size;
+        $this->page = $page;
+        return $this;
+      }
+
+      public function size($size) { 
+        $this->size = $size; 
+        return $this;
+      }
+
+      public function page($page) { 
+        $this->page = $page; 
+        return $this;
+      }
+      
+      /**
+       * Carga de un unico field
+       * No admite alias
+       */
+      public function field(string $field) {
+        array_push($this->fields, $field);
+        return $this;
+      }
+
+      public function fields(array $fields = []) {
+        if(empty($fields)) return $this->fieldsTree();
+        $this->fields = array_merge($this->fields, $fields);
+        return $this;
+  }
+
+    public function fields_concat(array $fields_concat = []): EntityQuery {
+        $this->fields_concat = array_merge($this->fields_concat, $fields_concat);
+        return $this;
+    }
+
+    /**
+     * Asigna el arbol de field
+     * Directamente reemplaza todo el array de fields, usar previo a fieldAdd
+     */
+    public function fieldsTree(){
+        $this->fields = $this->container->tools($this->entity_name)->field_names();
+        return $this;
+    }
+
+    public function group(array $group = null): EntityQuery { 
+        $this->group = array_merge($this->group, $group); 
+        return $this;
+    }
+
+    public function group_concat(array $group_concat = null): EntityQuery { 
+        $this->group_concat = array_merge($this->group_concat, $group_concat);
+        return $this;
+    }
+
+    public function str_agg(array $str_agg): EntityQuery {
         $this->str_agg = $str_agg;
         return $this;
     }
@@ -214,60 +230,67 @@ class EntityQuery {
     return $this;
   }
 
-  /**
-    * @todo Implementar cambios sqlorganize_py 
-    * definir condicion para campos unicos
-    * $params:
-    *   array("nombre_field" => "valor_field", ...)
-    * los campos unicos simples se definen a traves del atributo Entity::$unique
-    * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
-    */
-  public function unique(array $params){
-    
-    $uniqueFields = $this->container->entity($this->entity_name)->unique;
-    $uniqueFieldsMultiple = $this->container->entity($this->entity_name)->unique_multiple;
+    /**
+      * definir condicion para campos unicos
+      * $params:
+      *   array("nombre_field" => "valor_field", ...)
+      * los campos unicos simples se definen a traves del atributo Entity::$unique
+      * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
+      */
+    public function unique(array $params){
+        $uniqueFields = $this->container->entity($this->entity_name)->unique;
+        $uniqueFieldsMultiple = $this->container->entity($this->entity_name)->unique_multiple;
 
-    $condition = array();
-    if(array_key_exists("id",$params) && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
+        $condition = array();
+        // if(array_key_exists("id",$params) && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
+        $first = true;
 
-    foreach($uniqueFields as $field){
-      foreach($params as $key => $value){
-        if(($key == $field) && !empty($value)) {
-          array_push($condition, [$key, "=", $value, "or"]);
-        }
-      }
-    }
+        foreach($uniqueFields as $field){
+            foreach($params as $key => $value){
+                if ($key == $field && $value){
+                    if ($first) {
+                        $con = OR_;
+                        $first = false;
+                    } else {
+                        $con = AND_;    
+                    }
 
-    if($uniqueFieldsMultiple) {
-      $conditionMultiple = [];
-      $first = true;
-      $existsConditionMultiple = true; //si algun campo de la condicion multiple no se encuentra definido,  se carga en true.
-      foreach($uniqueFieldsMultiple as $field){
-        if(!$existsConditionMultiple) break;
-        $existsConditionMultiple = false;
-        
-        foreach($params as $key => $value){
-          if($key == $field) {
-            $existsConditionMultiple = true;
-            if($first) {
-              $con = "or";
-              $first = false;
-            } else {
-              $con = "and";
+                    array_push($condition, [$key, "=", $value, $con]);
+                }
             }
-            array_push($conditionMultiple, [$key, "=", $value, $con]);
-          }
         }
-      }
 
-      if($existsConditionMultiple && !empty($conditionMultiple)) array_push($condition, $conditionMultiple);
+        if($uniqueFieldsMultiple) {
+            $conditionMultiple = [];
+            $first = true;
+            $existsConditionMultiple = true; //si algun campo de la condicion multiple no se encuentra definido,  se carga en true.
+            foreach($uniqueFieldsMultiple as $field){
+                if(!$existsConditionMultiple) break;
+
+                $existsConditionMultiple = false;
+                
+                foreach($params as $key => $value){
+                    if($key == $field) {
+                        $existsConditionMultiple = true;
+                        if($first) {
+                          $con = OR_;
+                          $first = false;
+                        } else {
+                          $con = AND_;
+                        }
+                        array_push($conditionMultiple, [$key, "=", $value, $con]);
+                    }
+                }
+            }
+
+            if($existsConditionMultiple && !empty($conditionMultiple)) array_push($condition, $conditionMultiple);
+        }
+
+        if(empty($condition)) throw new Exception("Error al definir condicion unica");
+
+        $this->cond($condition);
+        return $this;
     }
-
-    if(empty($condition)) throw new Exception("Error al definir condicion unica");
-
-    $this->cond($condition);
-    return $this;
-  }
 
 
   /**
@@ -375,13 +398,13 @@ class EntityQuery {
    * Definir SQL
    */
   public function sql() {
-    $fieldsQuery = $this->fieldsQuery();
+    $sql_fields = $this->sql_fields();
     $group = $this->groupBy();
     $having = $this->condition($this->having);    
     $condition = $this->condition($this->condition);
     $order = $this->_order();
     $sql = "SELECT DISTINCT
-{$fieldsQuery}
+{$sql_fields}
 {$this->from()}
 {$this->join()}
 " . concat($condition, 'WHERE ') . "
@@ -395,19 +418,20 @@ class EntityQuery {
   }
 
 
-  protected function mapping($field_name){
-     /**
-     * Interpretar prefijo y obtener mapping
-     */
-    $f = $this->container->explode_field($this->entity_name, $field_name);
-    $m = $this->container->mapping($f["entity_name"], $f["field_id"]);
-    return [$m, $f["field_name"]];
-  }
+    protected function mapping($field_name){
+        /**
+         * Interpretar prefijo y obtener mapping
+         */
+        $f = $this->container->explode_field($this->entity_name, $field_name);
+        $m = $this->container->mapping($f["entity_name"], $f["field_id"]);
+        return [$m, $f["field_name"]];
+    }
 
-    protected function fieldsQuery(){
+    protected function sql_fields(){
         $fields = array_merge($this->group, $this->fields);
 
-        $fieldsQuery_ = [];
+        $sql_fields = [];
+        
         foreach($fields as $key => $field_name){
             if(is_array($field_name)){
                 if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
@@ -425,7 +449,7 @@ class EntityQuery {
                 $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
                 $f = $map . " AS \"" . $alias . "\"";
             }
-            array_push($fieldsQuery_, $f);
+            array_push($sql_fields, $f);
         }
 
         foreach($this->str_agg as $alias => $field_names){
@@ -438,11 +462,11 @@ class EntityQuery {
                 array_push($map_, $m);
             } 
             $f = "GROUP_CONCAT(DISTINCT " . implode(", ' ', ",$map_) . ") AS " . $alias;
-            array_push($fieldsQuery_, $f);
+            array_push($sql_fields, $f);
         }
 
         return implode(', 
-        ', $fieldsQuery_);
+        ', $sql_fields);
     }
 
 

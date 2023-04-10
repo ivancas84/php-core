@@ -361,8 +361,8 @@ class Container {
     /**
      * Separar un field en 3 elementos field_id, entity_name y field_name
      */
-    public function explode_field($entity_name, $field){
-        $f = explode("-",$field);
+    public function explode_field($entity_name, $field_name){
+        $f = explode("-",$field_name);
 
         if(count($f) == 2) return [
             "field_id" => $f[0],
@@ -373,7 +373,7 @@ class Container {
         return [
             "field_id" => "",
             "entity_name" => $entity_name,
-            "field_name" => $field
+            "field_name" => $field_name
         ];
     }
 }

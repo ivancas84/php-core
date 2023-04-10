@@ -3,6 +3,9 @@
 Version 0.8
 
 * Eliminar atributos no utilizados de entity y field: subtype, select_values, table
+* Incorporar atributos EntityQuery: fields_concat y group_concat. Se separa la logica de concatenacion de los atributos fields y group.
+* Metodo EntityQuery.unique: El campo id debe definirse explicitamente como unico. Se redefinen las condiciones iniciales de concatenacion con la condicion unica
+* Renombrar EntityQuery.fieldsQuery por EntityQuery.sql_fields
 
 Version 0.7
 
